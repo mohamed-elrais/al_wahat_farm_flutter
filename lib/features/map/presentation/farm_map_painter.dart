@@ -22,6 +22,10 @@ class FarmMapPainter extends CustomPainter {
   final bool showIrrigation;
   final bool showUtilities;
 
+  static const overviewTreeRadius = 2.7;
+  static const sectionTreeRadius = 4.4;
+  static const selectedTreeRadius = 6.8;
+
   @override
   void paint(Canvas canvas, Size size) {
     _drawGround(canvas, size);
@@ -175,10 +179,10 @@ class FarmMapPainter extends CustomPainter {
       }
       final selected = projected.tree.id == selectedTreeId;
       final radius = selected
-          ? 6.8
+          ? selectedTreeRadius
           : selectedSection == null
-              ? 2.7
-              : 4.4;
+              ? overviewTreeRadius
+              : sectionTreeRadius;
       if (selected) {
         canvas.drawCircle(
           projected.point,

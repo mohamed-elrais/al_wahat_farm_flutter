@@ -1,10 +1,14 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
+import 'package:al_wahat_farm_flutter/features/auth/presentation/authenticated_gate.dart';
+import 'package:al_wahat_farm_flutter/features/farm/domain/farm_hierarchy.dart';
+import 'package:al_wahat_farm_flutter/features/farm/presentation/farm_hierarchy_gate.dart';
 import 'package:al_wahat_farm_flutter/features/map/data/map_asset_repository.dart';
 import 'package:al_wahat_farm_flutter/features/map/domain/farm_map_data.dart';
 import 'package:al_wahat_farm_flutter/features/map/domain/map_projection.dart';
 import 'package:al_wahat_farm_flutter/features/map/domain/projected_map.dart';
+import 'package:al_wahat_farm_flutter/features/map/domain/tree_reconciliation.dart';
 import 'package:al_wahat_farm_flutter/features/map/presentation/farm_map_painter.dart';
 import 'package:flutter/material.dart';
 
@@ -25,6 +29,10 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
   bool _trees = true;
   bool _irrigation = true;
   bool _utilities = true;
+  ProjectedFarmMap? _lastAssetMap;
+  FarmHierarchy? _lastLiveHierarchy;
+  ProjectedFarmMap? _lastReconciledMap;
+  TreeReconciliationResult? _reconciliation;
 
   @override
   void initState() {
@@ -49,7 +57,17 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
             if (!snapshot.hasData) {
               return const Center(child: CircularProgressIndicator());
             }
-            final map = snapshot.data!;
+            final assetMap = snapshot.data!;
+            final liveHierarchy =
+                FarmHierarchyScope.maybeOf(context)?.hierarchy;
+            final map = _effectiveMap(assetMap, liveHierarchy);
+            final manager = OperationalContextScope.maybeOf(context)
+                    ?.selectedMembership
+                    .role
+                    .canManageTasks ??
+                false;
+            final showDataWarning =
+                manager && (_reconciliation?.hasDiscrepancies ?? false);
             return LayoutBuilder(
               builder: (BuildContext context, BoxConstraints constraints) {
                 final wide = constraints.maxWidth >= AppBreakpoints.tablet;
@@ -98,6 +116,10 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
                           _fit(map, section, constraints.biggest);
                         },
                       ),
+                      if (showDataWarning) ...<Widget>[
+                        const SizedBox(height: 8),
+                        _DiscrepancyBanner(result: _reconciliation!),
+                      ],
                       const SizedBox(height: 8),
                       Expanded(
                         child: wide
@@ -124,6 +146,47 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
           },
         ),
       );
+
+  ProjectedFarmMap _effectiveMap(
+    ProjectedFarmMap assetMap,
+    FarmHierarchy? liveHierarchy,
+  ) {
+    if (liveHierarchy == null) {
+      _reconciliation = null;
+      return assetMap;
+    }
+    if (identical(assetMap, _lastAssetMap) &&
+        identical(liveHierarchy, _lastLiveHierarchy) &&
+        _lastReconciledMap != null) {
+      return _lastReconciledMap!;
+    }
+
+    final result = const TreeReconciler().reconcile(
+      assetMap.data,
+      liveHierarchy,
+    );
+    final reconciledData = FarmMapData(
+      generatedFrom: assetMap.data.generatedFrom,
+      bounds: assetMap.data.bounds,
+      sections: assetMap.data.sections,
+      trees: result.trees,
+      layout: assetMap.data.layout,
+      utilities: assetMap.data.utilities,
+      waterLines: assetMap.data.waterLines,
+    );
+    final reconciledMap = ProjectedFarmMap(reconciledData);
+    _lastAssetMap = assetMap;
+    _lastLiveHierarchy = liveHierarchy;
+    _lastReconciledMap = reconciledMap;
+    _reconciliation = result;
+    debugPrint(
+      'farm_tree_reconciliation '
+      '{matched_by_id: ${result.matchedById}, '
+      'matched_by_code: ${result.matchedByCode}, '
+      'discrepancies: ${result.discrepancies.length}}',
+    );
+    return reconciledMap;
+  }
 
   void _selectTree(FarmTree tree) {
     setState(() {
@@ -160,6 +223,53 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
         (available.height - rect.height * scale) / 2 - rect.top * scale,
       )
       ..scale(scale);
+  }
+}
+
+class _DiscrepancyBanner extends StatelessWidget {
+  const _DiscrepancyBanner({required this.result});
+
+  final TreeReconciliationResult result;
+
+  @override
+  Widget build(BuildContext context) {
+    final summary = result.discrepancyCounts.entries
+        .map((entry) => '${entry.key.name}: ${entry.value}')
+        .join(' · ');
+    return Semantics(
+      label: 'Farm data discrepancy warning',
+      child: DecoratedBox(
+        key: const Key('map-data-warning'),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFEFE5),
+          border: Border.all(color: AppColors.orange.withOpacity(0.55)),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Row(
+            children: <Widget>[
+              const Icon(
+                Icons.warning_amber_rounded,
+                color: AppColors.orange,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Farm data check · ${result.discrepancies.length} '
+                  'difference${result.discrepancies.length == 1 ? '' : 's'}\n'
+                  '$summary',
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 11),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 

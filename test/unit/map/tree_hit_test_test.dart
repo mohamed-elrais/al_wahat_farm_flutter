@@ -1,7 +1,9 @@
 import 'dart:ui';
 
+import 'package:al_wahat_farm_flutter/features/map/data/map_asset_repository.dart';
 import 'package:al_wahat_farm_flutter/features/map/domain/farm_map_data.dart';
 import 'package:al_wahat_farm_flutter/features/map/domain/map_projection.dart';
+import 'package:al_wahat_farm_flutter/features/map/domain/projected_map.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 FarmTree tree(String id, String section) => FarmTree(
@@ -19,6 +21,8 @@ FarmTree tree(String id, String section) => FarmTree(
     );
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   test('nearest eligible tree wins within tolerance', () {
     final index = ProjectedTreeIndex(<ProjectedTree>[
       ProjectedTree(
@@ -55,5 +59,21 @@ void main() {
           .id,
       'TREE-A-001',
     );
+  });
+
+  test('a known tree is selectable in every planted section', () async {
+    final map = ProjectedFarmMap(await const MapAssetRepository().load());
+
+    for (final section in const <String>['A', 'B', 'C', 'D', 'F', 'G']) {
+      final known = map.trees.firstWhere(
+        (tree) => tree.tree.section == section,
+      );
+      final selected = map.treeIndex.nearest(
+        known.point,
+        tolerance: 44,
+        section: section,
+      );
+      expect(selected?.tree.id, known.tree.id, reason: 'Section $section');
+    }
   });
 }

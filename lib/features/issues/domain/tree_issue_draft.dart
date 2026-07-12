@@ -16,9 +16,33 @@ enum TreeIssueType {
         treeDamage => 'tree_damage',
         other => 'other',
       };
+
+  factory TreeIssueType.fromJson(String value) => switch (value) {
+        'insufficient_irrigation' => insufficientIrrigation,
+        'clogged_dripper' => cloggedDripper,
+        'leak_or_dripper_damage' => leakOrDripperDamage,
+        'harmful_weed' => harmfulWeed,
+        'pest_or_disease' => pestOrDisease,
+        'tree_damage' => treeDamage,
+        'other' => other,
+        _ => throw FormatException('Unknown tree issue type: $value'),
+      };
 }
 
-enum IssueSeverity { low, medium, high, urgent }
+enum IssueSeverity {
+  low,
+  medium,
+  high,
+  urgent;
+
+  factory IssueSeverity.fromJson(String value) => switch (value) {
+        'low' => low,
+        'medium' => medium,
+        'high' => high,
+        'urgent' => urgent,
+        _ => throw FormatException('Unknown issue severity: $value'),
+      };
+}
 
 class TreeIssueDraft {
   const TreeIssueDraft({

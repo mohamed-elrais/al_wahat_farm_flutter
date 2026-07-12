@@ -1,0 +1,282 @@
+import 'package:al_wahat_farm_flutter/features/tasks/domain/task_draft.dart';
+
+enum TaskStatus {
+  draft,
+  assigned,
+  inProgress,
+  completed,
+  needsEngineerReview,
+  approved,
+  returned,
+  cancelled;
+
+  factory TaskStatus.fromJson(String value) => switch (value) {
+        'draft' => draft,
+        'assigned' => assigned,
+        'in_progress' => inProgress,
+        'completed' => completed,
+        'needs_engineer_review' => needsEngineerReview,
+        'approved' => approved,
+        'returned' => returned,
+        'cancelled' => cancelled,
+        _ => throw FormatException('Unknown task status: $value'),
+      };
+}
+
+enum TaskActivityAction {
+  created,
+  assigned,
+  unassigned,
+  started,
+  completed,
+  flaggedForReview,
+  reviewedApproved,
+  reviewedReturned,
+  commented,
+  cancelled,
+  photoAdded;
+
+  factory TaskActivityAction.fromJson(String value) => switch (value) {
+        'created' => created,
+        'assigned' => assigned,
+        'unassigned' => unassigned,
+        'started' => started,
+        'completed' => completed,
+        'flagged_for_review' => flaggedForReview,
+        'reviewed_approved' => reviewedApproved,
+        'reviewed_returned' => reviewedReturned,
+        'commented' => commented,
+        'cancelled' => cancelled,
+        'photo_added' => photoAdded,
+        _ => throw FormatException('Unknown task activity action: $value'),
+      };
+}
+
+enum TaskPhotoType {
+  before,
+  after,
+  evidence,
+  issue,
+  review;
+
+  factory TaskPhotoType.fromJson(String value) => switch (value) {
+        'before' => before,
+        'after' => after,
+        'evidence' => evidence,
+        'issue' => issue,
+        'review' => review,
+        _ => throw FormatException('Unknown task photo type: $value'),
+      };
+}
+
+class FarmTask {
+  const FarmTask({
+    required this.id,
+    required this.farmId,
+    required this.type,
+    required this.title,
+    required this.priority,
+    required this.status,
+    required this.instructions,
+    required this.requiresEngineerReview,
+    required this.createdByProfileId,
+    required this.createdAt,
+    required this.updatedAt,
+    this.sectionId,
+    this.irrigationZoneId,
+    this.treeId,
+    this.relatedTreeIssueId,
+    this.description,
+    this.scheduledFor,
+    this.plannedStartTime,
+    this.plannedDurationMinutes,
+    this.dueAt,
+    this.completedByProfileId,
+    this.completedAt,
+    this.approvedByProfileId,
+    this.approvedAt,
+    this.cancelledByProfileId,
+    this.cancelledAt,
+    this.cancellationReason,
+  });
+
+  final String id;
+  final String farmId;
+  final String? sectionId;
+  final String? irrigationZoneId;
+  final String? treeId;
+  final String? relatedTreeIssueId;
+  final TaskType type;
+  final String title;
+  final String? description;
+  final TaskPriority priority;
+  final TaskStatus status;
+  final DateTime? scheduledFor;
+  final String? plannedStartTime;
+  final int? plannedDurationMinutes;
+  final DateTime? dueAt;
+  final Map<String, Object?> instructions;
+  final bool requiresEngineerReview;
+  final String createdByProfileId;
+  final String? completedByProfileId;
+  final DateTime? completedAt;
+  final String? approvedByProfileId;
+  final DateTime? approvedAt;
+  final String? cancelledByProfileId;
+  final DateTime? cancelledAt;
+  final String? cancellationReason;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+
+  factory FarmTask.fromJson(Map<String, Object?> json) => FarmTask(
+        id: json['id']! as String,
+        farmId: json['farm_id']! as String,
+        sectionId: json['section_id'] as String?,
+        irrigationZoneId: json['irrigation_zone_id'] as String?,
+        treeId: json['tree_id'] as String?,
+        relatedTreeIssueId: json['related_tree_issue_id'] as String?,
+        type: TaskType.fromJson(json['task_type']! as String),
+        title: json['title']! as String,
+        description: json['description'] as String?,
+        priority: TaskPriority.fromJson(json['priority']! as String),
+        status: TaskStatus.fromJson(json['status']! as String),
+        scheduledFor: _optionalDate(json['scheduled_for']),
+        plannedStartTime: json['planned_start_time'] as String?,
+        plannedDurationMinutes:
+            (json['planned_duration_minutes'] as num?)?.toInt(),
+        dueAt: _optionalDate(json['due_at']),
+        instructions: Map<String, Object?>.unmodifiable(
+          Map<String, Object?>.from(json['instructions']! as Map),
+        ),
+        requiresEngineerReview: json['requires_engineer_review']! as bool,
+        createdByProfileId: json['created_by_profile_id']! as String,
+        completedByProfileId: json['completed_by_profile_id'] as String?,
+        completedAt: _optionalDate(json['completed_at']),
+        approvedByProfileId: json['approved_by_profile_id'] as String?,
+        approvedAt: _optionalDate(json['approved_at']),
+        cancelledByProfileId: json['cancelled_by_profile_id'] as String?,
+        cancelledAt: _optionalDate(json['cancelled_at']),
+        cancellationReason: json['cancellation_reason'] as String?,
+        createdAt: DateTime.parse(json['created_at']! as String),
+        updatedAt: DateTime.parse(json['updated_at']! as String),
+      );
+}
+
+class TaskAssignment {
+  const TaskAssignment({
+    required this.id,
+    required this.taskId,
+    required this.assigneeProfileId,
+    required this.assignedByProfileId,
+    required this.assignedAt,
+    required this.isActive,
+    required this.createdAt,
+    this.unassignedAt,
+  });
+
+  final String id;
+  final String taskId;
+  final String assigneeProfileId;
+  final String assignedByProfileId;
+  final DateTime assignedAt;
+  final bool isActive;
+  final DateTime? unassignedAt;
+  final DateTime createdAt;
+
+  factory TaskAssignment.fromJson(Map<String, Object?> json) => TaskAssignment(
+        id: json['id']! as String,
+        taskId: json['task_id']! as String,
+        assigneeProfileId: json['assignee_profile_id']! as String,
+        assignedByProfileId: json['assigned_by_profile_id']! as String,
+        assignedAt: DateTime.parse(json['assigned_at']! as String),
+        isActive: json['is_active']! as bool,
+        unassignedAt: _optionalDate(json['unassigned_at']),
+        createdAt: DateTime.parse(json['created_at']! as String),
+      );
+}
+
+class TaskActivity {
+  const TaskActivity({
+    required this.id,
+    required this.taskId,
+    required this.actorProfileId,
+    required this.action,
+    required this.metadata,
+    required this.createdAt,
+    this.oldStatus,
+    this.newStatus,
+    this.note,
+  });
+
+  final String id;
+  final String taskId;
+  final String actorProfileId;
+  final TaskActivityAction action;
+  final TaskStatus? oldStatus;
+  final TaskStatus? newStatus;
+  final String? note;
+  final Map<String, Object?> metadata;
+  final DateTime createdAt;
+
+  factory TaskActivity.fromJson(Map<String, Object?> json) => TaskActivity(
+        id: json['id']! as String,
+        taskId: json['task_id']! as String,
+        actorProfileId: json['actor_profile_id']! as String,
+        action: TaskActivityAction.fromJson(json['action']! as String),
+        oldStatus: _optionalTaskStatus(json['old_status']),
+        newStatus: _optionalTaskStatus(json['new_status']),
+        note: json['note'] as String?,
+        metadata: Map<String, Object?>.unmodifiable(
+          Map<String, Object?>.from(json['metadata']! as Map),
+        ),
+        createdAt: DateTime.parse(json['created_at']! as String),
+      );
+}
+
+class TaskPhoto {
+  const TaskPhoto({
+    required this.id,
+    required this.taskId,
+    required this.storageBucketId,
+    required this.storagePath,
+    required this.photoType,
+    required this.uploadedByProfileId,
+    required this.createdAt,
+    this.taskActivityLogId,
+    this.engineerReviewId,
+    this.caption,
+    this.takenAt,
+  });
+
+  final String id;
+  final String taskId;
+  final String? taskActivityLogId;
+  final String? engineerReviewId;
+  final String storageBucketId;
+  final String storagePath;
+  final TaskPhotoType photoType;
+  final String? caption;
+  final String uploadedByProfileId;
+  final DateTime? takenAt;
+  final DateTime createdAt;
+
+  factory TaskPhoto.fromJson(Map<String, Object?> json) => TaskPhoto(
+        id: json['id']! as String,
+        taskId: json['task_id']! as String,
+        taskActivityLogId: json['task_activity_log_id'] as String?,
+        engineerReviewId: json['engineer_review_id'] as String?,
+        storageBucketId: json['storage_bucket_id']! as String,
+        storagePath: json['storage_path']! as String,
+        photoType: TaskPhotoType.fromJson(json['photo_type']! as String),
+        caption: json['caption'] as String?,
+        uploadedByProfileId: json['uploaded_by_profile_id']! as String,
+        takenAt: _optionalDate(json['taken_at']),
+        createdAt: DateTime.parse(json['created_at']! as String),
+      );
+}
+
+TaskStatus? _optionalTaskStatus(Object? value) =>
+    value == null ? null : TaskStatus.fromJson(value as String);
+
+DateTime? _optionalDate(Object? value) =>
+    value == null ? null : DateTime.parse(value as String);

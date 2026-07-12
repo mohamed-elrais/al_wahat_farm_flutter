@@ -14,9 +14,33 @@ enum TaskType {
         engineerReview => 'engineer_review',
         _ => name,
       };
+
+  factory TaskType.fromJson(String value) => switch (value) {
+        'irrigation' => irrigation,
+        'fertilization' => fertilization,
+        'harmful_weed_control' => harmfulWeedControl,
+        'dripper_maintenance' => dripperMaintenance,
+        'tree_inspection' => treeInspection,
+        'engineer_review' => engineerReview,
+        'general' => general,
+        _ => throw FormatException('Unknown task type: $value'),
+      };
 }
 
-enum TaskPriority { low, medium, high, urgent }
+enum TaskPriority {
+  low,
+  medium,
+  high,
+  urgent;
+
+  factory TaskPriority.fromJson(String value) => switch (value) {
+        'low' => low,
+        'medium' => medium,
+        'high' => high,
+        'urgent' => urgent,
+        _ => throw FormatException('Unknown task priority: $value'),
+      };
+}
 
 class TaskDraft {
   const TaskDraft({

@@ -81,6 +81,13 @@ class OperationalContext {
   final UserProfile profile;
   final List<FarmMembership> memberships;
 
+  FarmMembership get selectedMembership {
+    if (memberships.isEmpty) {
+      throw StateError('Operational context has no active membership');
+    }
+    return memberships.first;
+  }
+
   FarmMembership? membershipForFarm(String farmId) {
     for (final membership in memberships) {
       if (membership.farm.id == farmId) return membership;

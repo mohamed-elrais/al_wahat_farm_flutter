@@ -27,7 +27,7 @@ not evidence.
 - [x] Phone bottom navigation has Home, Map, raised orange Scan, Tasks, More.
 - [ ] Selected-tree details appear above navigation as a draggable sheet.
 - [ ] Forms use full-height or large rounded sheets on phones.
-- [ ] Section filters scroll horizontally without clipping.
+- [x] Section filters scroll horizontally without clipping.
 - [ ] Tablet preserves a three-region composition with the map dominant.
 - [ ] Text scaling does not clip core actions at 200%.
 - [ ] Reduced-motion setting suppresses nonessential transitions.
@@ -38,23 +38,23 @@ not evidence.
 - [x] Parser asserts 12 sections, 6 planted sections, and 1,567 trees.
 - [x] Per-section counts are A 298, B 330, C 168, D 303, E 0, F 360, G 108,
   L 0, M 0, N 0, O 0, Q 0.
-- [ ] Bounds are 28.747598–28.754600 longitude and 28.293348–28.300016 latitude.
-- [ ] Projection uses an 820 × 880 canvas, 24-unit padding, midpoint cosine
+- [x] Bounds are 28.747598–28.754600 longitude and 28.293348–28.300016 latitude.
+- [x] Projection uses an 820 × 880 canvas, 24-unit padding, midpoint cosine
   correction, and a single fit scale.
-- [ ] One painter renders tree points; there are no 1,567 marker widgets.
-- [ ] Render order exactly follows background, boundary, roads/shared area, sections,
+- [x] One painter renders tree points; there are no 1,567 marker widgets.
+- [x] Render order exactly follows background, boundary, roads/shared area, sections,
   water network, utilities, labels, trees, selection/overlays.
-- [ ] All seven layout shapes, twelve utilities, and eleven water lines are rendered.
-- [ ] Overview/section/selected tree radii are 2.7/4.4/6.8 logical units.
-- [ ] Selected tree has a strong white outline and remains visibly distinct.
-- [ ] Nearest-point hit testing honors an approximately 44 dp minimum touch target.
-- [ ] Spatial lookup is deterministic and never chooses an arbitrary overlapping tree.
-- [ ] One known tree in each planted section is selected in automated tests.
+- [x] All seven layout shapes, twelve utilities, and eleven water lines are rendered.
+- [x] Overview/section/selected tree radii are 2.7/4.4/6.8 logical units.
+- [x] Selected tree has a strong white outline and remains visibly distinct.
+- [x] Nearest-point hit testing honors an approximately 44 dp minimum touch target.
+- [x] Spatial lookup is deterministic and never chooses an arbitrary overlapping tree.
+- [x] One known tree in each planted section is selected in automated tests.
 - [ ] Filtering fits the selected polygon with padding and hides/dims unrelated data.
 - [ ] Reset restores complete farm bounds.
-- [ ] Trees, Irrigation network, and Buildings/utilities toggle independently.
-- [ ] Painter is isolated in a `RepaintBoundary`; projected geometry is precomputed.
-- [ ] Manager sees a nonblocking structured discrepancy warning when live data differs.
+- [x] Trees, Irrigation network, and Buildings/utilities toggle independently.
+- [x] Painter is isolated in a `RepaintBoundary`; projected geometry is precomputed.
+- [x] Manager sees a nonblocking structured discrepancy warning when live data differs.
 
 ## Tree, task, issue, and review workflows
 
@@ -110,6 +110,6 @@ not evidence.
 - [ ] Opt-in live Supabase integration suite is documented.
 - [x] `dart format --set-exit-if-changed .` passes.
 - [x] `flutter analyze` passes with no suppressed product diagnostics.
-- [x] `flutter test` passes (25 unit/widget/golden tests).
+- [x] `flutter test` passes (49 unit/widget/golden tests).
 - [ ] Screenshots inspected at 390×844, 430×932, a common Android size, and 1024×1366.
 - [ ] `FIDELITY_REPORT.md` records comparisons, adaptations, and remaining mismatches.

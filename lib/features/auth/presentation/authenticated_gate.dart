@@ -4,6 +4,7 @@ import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
 import 'package:al_wahat_farm_flutter/features/auth/data/operational_context_repository.dart';
 import 'package:al_wahat_farm_flutter/features/auth/domain/operational_context.dart';
 import 'package:al_wahat_farm_flutter/features/auth/presentation/auth_bootstrap_controller.dart';
+import 'package:al_wahat_farm_flutter/features/farm/presentation/farm_hierarchy_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -62,7 +63,10 @@ class _AuthenticatedGateState extends State<AuthenticatedGate> {
         builder: (context, _) => switch (_controller.state) {
           AuthBootstrapReady(:final context) => OperationalContextScope(
               contextData: context,
-              child: widget.child,
+              child: FarmHierarchyGate(
+                farmId: context.selectedMembership.farm.id,
+                child: widget.child,
+              ),
             ),
           AuthBootstrapBlocked(:final reason) => _BlockedAccess(reason: reason),
           AuthBootstrapFailure() => _LoadFailure(onRetry: _retry),

@@ -12,9 +12,7 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final operational = OperationalContextScope.maybeOf(context);
-    final membership = operational == null || operational.memberships.isEmpty
-        ? null
-        : operational.memberships.first;
+    final membership = operational?.selectedMembership;
     final name = operational?.profile.fullName ?? 'Farm member';
     return PaperBackground(
       child: ListView(

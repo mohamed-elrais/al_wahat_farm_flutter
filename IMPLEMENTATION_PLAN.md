@@ -44,47 +44,63 @@ and related unit/widget tests. These do not complete Phases 2–4 by themselves.
 
 Gate evidence (2026-07-12): after the authorized Flutter 3.13 compatibility pass,
 dependency resolution passes on Flutter 3.13.9 / Dart 3.1.5;
-`dart format --set-exit-if-changed .` reports 43 files and 0 changes;
-`flutter analyze` reports no issues; all 28 unit/widget/golden tests pass; and a
+`dart format --set-exit-if-changed .` reports 65 files and 0 changes;
+`flutter analyze` reports no issues; all 49 unit/widget/golden tests pass; and a
 Chrome debug launch connects successfully. The Xcode 14.2 iOS simulator build also
 passes and the app renders on an iPhone 14 Pro Max simulator. Phase 1 is complete.
 
-## Phase 2 — Supabase domain foundation (in progress)
+## Phase 2 — Supabase domain foundation
 
-- [ ] Add immutable models for profile, membership, farm, section, zone, tree, task,
-  issue, activity, photo, and review. Profile, membership, and farm context models are
-  implemented; remaining operational models are pending.
-- [ ] Add repository interfaces, Supabase services, cache boundary, and deterministic
-  fakes. Auth bootstrap service/repository and fakes are implemented; caching remains.
+- [x] Add immutable models for profile, membership, farm, section, zone, tree, task,
+  assignment, issue, activity, photo, and review using the final tree columns/enums.
+- [x] Add repository interfaces, Supabase data sources, an explicit hierarchy cache
+  boundary, and deterministic test fakes. Persistent offline storage remains Phase 7.
 - [x] Implement auth bootstrap and role capability policy, including intentional
   profile-missing, inactive-profile, no-operational-membership, loading, retry, and
   failure states.
-- [ ] Query active profile, memberships, selected farm, 12 sections, zones, and trees.
-- [ ] Add repository and exact RPC payload-contract tests.
-- [ ] Keep live credentials optional and production fixtures isolated from providers.
+- [x] Query active profile, memberships, selected farm, sections, zones, and paginated
+  active trees. The authenticated shell waits for this hierarchy before rendering.
+- [x] Add repository, parsing, query-column, and exact RPC payload-contract tests.
+- [x] Keep public project configuration optional and canonical fixtures isolated under
+  `test/`; no fake operational rows are wired into production providers.
 
 Gate: authenticated context resolves role/farm and 12/120/1,567 against live backend,
 or 12/1,567 with the isolated fixture while the unverified live 120-zone gate remains
 clearly reported.
 
-Evidence (2026-07-12): authenticated routes now resolve the signed-in profile and all
-active operational memberships before showing the app shell; the profile screen uses
-the resolved name, role, and farm. Five new repository/controller tests pass. Full
-suite: 28 tests; formatter: 43 files, 0 changed; analyzer: no issues. Authenticated
-live-data and 120-zone verification remain pending.
+Evidence (2026-07-13): authenticated routes resolve the active profile/memberships and
+then load the selected farm's active sections, zones, and trees before showing the app
+shell. Tree reads page in 1,000-row chunks so 1,567 rows cannot be silently truncated.
+The isolated canonical fixture passes 12 sections and 1,567 UUID trees and reports the
+known asset-only 56-zone-ID discrepancy; authenticated live verification of all 120
+database zones remains pending. Full suite: 49 tests; formatter: 65 files, 0 changed;
+analyzer: no issues. Phase 2 is complete under the explicit fixture alternative.
 
 ## Phase 3 — Coordinate map
 
-- [ ] Copy canonical JSON to `assets/data/al_wahat_map_data.json`.
-- [ ] Implement parser, projection, precomputed paths/points, and spatial hit index.
-- [ ] Implement custom painter with exact layer order and styles.
-- [ ] Add pan/zoom/reset, section fit, filters, layer toggles, and selection.
-- [ ] Reconcile live trees by UUID then code and expose discrepancy diagnostics.
-- [ ] Add count, projection, hit-test, painter, filter, and selection tests.
-- [ ] Profile map responsiveness and isolate painter in `RepaintBoundary`.
+- [x] Copy canonical JSON to `assets/data/al_wahat_map_data.json`.
+- [x] Implement parser, projection, precomputed paths/points, and spatial hit index.
+- [x] Implement custom painter with reference layer order and styles.
+- [x] Add pan/zoom/reset, section fit, filters, layer toggles, and selection.
+- [x] Reconcile live trees by UUID then code, retain unmatched canonical geometry,
+  never fabricate unexpected live rows, and expose manager-only diagnostics.
+- [x] Add count, projection, reconciliation, hit-test, painter structure, filter,
+  layer-toggle, and planted-section selection tests.
+- [ ] Capture profile-mode map performance on a physical device. Painter isolation in
+  `RepaintBoundary`, 1024-wide tablet structure, and a real iPhone-simulator debug
+  pan flow with all 1,567 points pass. Flutter 3.13 does not support iOS profile builds
+  for simulators, and no physical iPhone is available to Codex.
 
 Gate: exact counts render, known trees in A/B/C/D/F/G select, unplanted sections remain,
 and controls/tests pass.
+
+Evidence (2026-07-13): UUID-first/code-second reconciliation passes exact-match,
+ID-mismatch, missing/unexpected, and coordinate-drift tests. A known tree in every
+planted section is deterministically selected; the single painter owns 1,567 points,
+is inside a `RepaintBoundary`, and independent layer state passes at the tablet
+breakpoint. The iPhone 14 Pro Max simulator integration flow builds, launches, pans the
+complete map twice, and passes. A profile attempt genuinely failed at Flutter 3.13's
+physical-device-only iOS AOT boundary, so Phase 3 remains in progress for that evidence.
 
 ## Phase 4 — Tree selection, QR, and issues
 

@@ -351,13 +351,14 @@ Results using the resulting declared Flutter 3.13-compatible dependency versions
 
 ```text
 flutter pub get                          PASS
-dart format --set-exit-if-changed .     PASS (43 files, 0 changed)
+dart format --set-exit-if-changed .     PASS (65 files, 0 changed)
 flutter analyze                         PASS (no issues)
-flutter test --reporter expanded        PASS (28 tests)
+flutter test --reporter expanded        PASS (49 tests)
 flutter run -d chrome                    PASS (debug service connected)
 flutter build ios --simulator            PASS (Runner.app produced)
 iPhone 14 Pro Max simulator launch       PASS (sign-in screen rendered)
 Supabase Auth settings endpoint          PASS (HTTP 200 with public key)
+map simulator integration flow           PASS (1,567 points; pan interactions)
 ```
 
 Compatibility changes are limited to Dart/Flutter source and package declarations.
@@ -373,6 +374,12 @@ remain unverified. The passing suite genuinely covers unit, widget, and Flutter
 3.13-regenerated golden tests; the iOS simulator build and configured rendered launch
 were also verified with the public project configuration but no authenticated user
 session.
+
+The map profile integration target is committed and records a timeline when run in
+profile mode on hardware. It cannot genuinely run in profile mode on the available iOS
+simulator: Flutter 3.13 reports that release/profile builds are supported only for
+physical devices. The same test passes in simulator debug mode; no physical iPhone was
+available for profile capture.
 
 ## Audit decisions
 
