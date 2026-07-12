@@ -31,7 +31,10 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
-
+.agents/
+reference_web_app/
+supabase/
+.claude/
 # Symbolication related
 app.*.symbols
 
@@ -42,3 +45,8 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Local Dart define files may contain Supabase credentials.
+config.json
+config.*.json
+!config.example.json

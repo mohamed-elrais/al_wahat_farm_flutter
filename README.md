@@ -1,16 +1,33 @@
-# al_wahat_farm_flutter
+# Al Wahat Farm Operations
 
-A new Flutter project.
+Flutter field-operations client for the Al Wahat farm, using the existing Supabase
+tree/task workflow and the canonical coordinate geometry from the reference app.
 
-## Getting Started
+## Configuration
 
-This project is a starting point for a Flutter application.
+Copy `config.example.json` to the ignored `config.json` and supply the public Supabase
+project URL and anon/publishable key. Never place a service-role key in this app.
 
-A few resources to get you started if this is your first Flutter project:
+```sh
+flutter run --dart-define-from-file=config.json
+```
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+This project resolves and runs with Flutter 3.13.9 / Dart 3.1.5. A browser launch can
+be selected explicitly with `flutter run -d chrome`. The iOS project is configured for
+its existing iOS 11.0 target and Xcode 14.2-compatible pod releases. If CocoaPods reports
+an encoding error when run directly, invoke it with a UTF-8 locale; Flutter's wrapper
+handles the normal `flutter run` flow.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+The immutable map renders from `assets/data/al_wahat_map_data.json`. Operational data
+requires an authenticated active profile and farm membership.
+
+## Verification
+
+```sh
+dart format --set-exit-if-changed .
+flutter analyze
+flutter test
+```
+
+See `REFERENCE_AUDIT.md`, `IMPLEMENTATION_PLAN.md`, and `FIDELITY_CHECKLIST.md` for
+verified reference facts, phase gates, and known blockers.
