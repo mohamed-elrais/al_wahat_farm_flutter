@@ -33,6 +33,17 @@ enum TaskStatus {
         cancelled => 'Cancelled',
       };
 
+  String get wireValue => switch (this) {
+        draft => 'draft',
+        assigned => 'assigned',
+        inProgress => 'in_progress',
+        completed => 'completed',
+        needsEngineerReview => 'needs_engineer_review',
+        approved => 'approved',
+        returned => 'returned',
+        cancelled => 'cancelled',
+      };
+
   bool get canStart => this == assigned || this == returned;
 
   bool get canComplete =>
@@ -82,6 +93,20 @@ enum TaskActivityAction {
         commented => 'Comment added',
         cancelled => 'Task cancelled',
         photoAdded => 'Evidence added',
+      };
+
+  String get wireValue => switch (this) {
+        created => 'created',
+        assigned => 'assigned',
+        unassigned => 'unassigned',
+        started => 'started',
+        completed => 'completed',
+        flaggedForReview => 'flagged_for_review',
+        reviewedApproved => 'reviewed_approved',
+        reviewedReturned => 'reviewed_returned',
+        commented => 'commented',
+        cancelled => 'cancelled',
+        photoAdded => 'photo_added',
       };
 }
 
@@ -224,6 +249,36 @@ class FarmTask {
         createdAt: DateTime.parse(json['created_at']! as String),
         updatedAt: DateTime.parse(json['updated_at']! as String),
       );
+
+  Map<String, Object?> toJson() => <String, Object?>{
+        'id': id,
+        'farm_id': farmId,
+        'section_id': sectionId,
+        'irrigation_zone_id': irrigationZoneId,
+        'tree_id': treeId,
+        'related_tree_issue_id': relatedTreeIssueId,
+        'task_type': type.wireValue,
+        'title': title,
+        'description': description,
+        'priority': priority.name,
+        'status': status.wireValue,
+        'scheduled_for': scheduledFor?.toIso8601String(),
+        'planned_start_time': plannedStartTime,
+        'planned_duration_minutes': plannedDurationMinutes,
+        'due_at': dueAt?.toIso8601String(),
+        'instructions': instructions,
+        'requires_engineer_review': requiresEngineerReview,
+        'created_by_profile_id': createdByProfileId,
+        'completed_by_profile_id': completedByProfileId,
+        'completed_at': completedAt?.toIso8601String(),
+        'approved_by_profile_id': approvedByProfileId,
+        'approved_at': approvedAt?.toIso8601String(),
+        'cancelled_by_profile_id': cancelledByProfileId,
+        'cancelled_at': cancelledAt?.toIso8601String(),
+        'cancellation_reason': cancellationReason,
+        'created_at': createdAt.toIso8601String(),
+        'updated_at': updatedAt.toIso8601String(),
+      };
 }
 
 class TaskAssignment {
@@ -257,6 +312,17 @@ class TaskAssignment {
         unassignedAt: _optionalDate(json['unassigned_at']),
         createdAt: DateTime.parse(json['created_at']! as String),
       );
+
+  Map<String, Object?> toJson() => <String, Object?>{
+        'id': id,
+        'task_id': taskId,
+        'assignee_profile_id': assigneeProfileId,
+        'assigned_by_profile_id': assignedByProfileId,
+        'assigned_at': assignedAt.toIso8601String(),
+        'is_active': isActive,
+        'unassigned_at': unassignedAt?.toIso8601String(),
+        'created_at': createdAt.toIso8601String(),
+      };
 }
 
 class TaskActivity {
@@ -295,6 +361,18 @@ class TaskActivity {
         ),
         createdAt: DateTime.parse(json['created_at']! as String),
       );
+
+  Map<String, Object?> toJson() => <String, Object?>{
+        'id': id,
+        'task_id': taskId,
+        'actor_profile_id': actorProfileId,
+        'action': action.wireValue,
+        'old_status': oldStatus?.wireValue,
+        'new_status': newStatus?.wireValue,
+        'note': note,
+        'metadata': metadata,
+        'created_at': createdAt.toIso8601String(),
+      };
 }
 
 class TaskPhoto {
@@ -337,6 +415,20 @@ class TaskPhoto {
         takenAt: _optionalDate(json['taken_at']),
         createdAt: DateTime.parse(json['created_at']! as String),
       );
+
+  Map<String, Object?> toJson() => <String, Object?>{
+        'id': id,
+        'task_id': taskId,
+        'task_activity_log_id': taskActivityLogId,
+        'engineer_review_id': engineerReviewId,
+        'storage_bucket_id': storageBucketId,
+        'storage_path': storagePath,
+        'photo_type': photoType.wireValue,
+        'caption': caption,
+        'uploaded_by_profile_id': uploadedByProfileId,
+        'taken_at': takenAt?.toIso8601String(),
+        'created_at': createdAt.toIso8601String(),
+      };
 }
 
 TaskStatus? _optionalTaskStatus(Object? value) =>

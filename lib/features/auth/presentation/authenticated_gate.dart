@@ -1,3 +1,4 @@
+import 'package:al_wahat_farm_flutter/core/app_services.dart';
 import 'package:al_wahat_farm_flutter/core/supabase/auth_repository.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
@@ -5,6 +6,7 @@ import 'package:al_wahat_farm_flutter/features/auth/data/operational_context_rep
 import 'package:al_wahat_farm_flutter/features/auth/domain/operational_context.dart';
 import 'package:al_wahat_farm_flutter/features/auth/presentation/auth_bootstrap_controller.dart';
 import 'package:al_wahat_farm_flutter/features/farm/presentation/farm_hierarchy_gate.dart';
+import 'package:al_wahat_farm_flutter/features/tasks/data/caching_task_repository.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/data/task_repository.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_workspace_controller.dart';
 import 'package:flutter/material.dart';
@@ -39,13 +41,12 @@ class AuthenticatedGate extends StatefulWidget {
 
 class _AuthenticatedGateState extends State<AuthenticatedGate> {
   late final AuthBootstrapController _controller;
-  late final TaskRepository _taskRepository;
+  TaskRepository? _taskRepository;
 
   @override
   void initState() {
     super.initState();
     final client = Supabase.instance.client;
-    _taskRepository = SupabaseTaskRepository(client);
     _controller = AuthBootstrapController(
       DefaultOperationalContextRepository(
         SupabaseAuthBootstrapDataSource(client),
@@ -53,6 +54,16 @@ class _AuthenticatedGateState extends State<AuthenticatedGate> {
     );
     final userId = client.auth.currentUser?.id;
     if (userId != null) _controller.load(userId);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_taskRepository != null) return;
+    final base = SupabaseTaskRepository(Supabase.instance.client);
+    final store = AppServicesScope.maybeOf(context)?.cacheStore;
+    _taskRepository =
+        store == null ? base : CachingTaskRepository(inner: base, store: store);
   }
 
   @override
@@ -71,7 +82,8 @@ class _AuthenticatedGateState extends State<AuthenticatedGate> {
                 farmId: context.selectedMembership.farm.id,
                 child: TaskWorkspaceProvider(
                   farmId: context.selectedMembership.farm.id,
-                  repository: _taskRepository,
+                  repository: _taskRepository ??
+                      SupabaseTaskRepository(Supabase.instance.client),
                   child: widget.child,
                 ),
               ),
@@ -118,9 +130,14 @@ class _BlockedAccess extends StatelessWidget {
           BootstrapBlockReason.noActiveOperationalMembership =>
             'No active operational farm membership is assigned.',
         },
-        action: OutlinedButton(
-          onPressed: () => AuthRepository(Supabase.instance.client).signOut(),
-          child: const Text('Log out'),
+        action: Builder(
+          builder: (context) => OutlinedButton(
+            onPressed: () => AuthRepository(
+              Supabase.instance.client,
+              onSignOut: AppServicesScope.maybeOf(context)?.clearPrivateData,
+            ).signOut(),
+            child: const Text('Log out'),
+          ),
         ),
       );
 }

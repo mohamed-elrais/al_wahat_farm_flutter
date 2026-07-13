@@ -1,4 +1,5 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
+import 'package:al_wahat_farm_flutter/core/logging/safe_log.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
 import 'package:al_wahat_farm_flutter/features/auth/presentation/authenticated_gate.dart';
@@ -182,11 +183,13 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
     _lastLiveHierarchy = liveHierarchy;
     _lastReconciledMap = reconciledMap;
     _reconciliation = result;
-    debugPrint(
-      'farm_tree_reconciliation '
-      '{matched_by_id: ${result.matchedById}, '
-      'matched_by_code: ${result.matchedByCode}, '
-      'discrepancies: ${result.discrepancies.length}}',
+    SafeLog.event(
+      'farm_tree_reconciliation',
+      data: <String, Object?>{
+        'matched_by_id': result.matchedById,
+        'matched_by_code': result.matchedByCode,
+        'discrepancies': result.discrepancies.length,
+      },
     );
     return reconciledMap;
   }

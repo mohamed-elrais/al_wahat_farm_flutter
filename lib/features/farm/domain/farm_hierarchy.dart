@@ -57,6 +57,19 @@ class FarmSection {
         createdAt: DateTime.parse(json['created_at']! as String),
         updatedAt: DateTime.parse(json['updated_at']! as String),
       );
+
+  Map<String, Object?> toJson() => <String, Object?>{
+        'id': id,
+        'farm_id': farmId,
+        'code': code,
+        'name': name,
+        'sort_order': sortOrder,
+        'area_m2': areaM2,
+        'notes': notes,
+        'is_active': isActive,
+        'created_at': createdAt.toIso8601String(),
+        'updated_at': updatedAt.toIso8601String(),
+      };
 }
 
 class IrrigationZone {
@@ -93,6 +106,18 @@ class IrrigationZone {
         createdAt: DateTime.parse(json['created_at']! as String),
         updatedAt: DateTime.parse(json['updated_at']! as String),
       );
+
+  Map<String, Object?> toJson() => <String, Object?>{
+        'id': id,
+        'section_id': sectionId,
+        'code': code,
+        'name': name,
+        'valve_code': valveCode,
+        'notes': notes,
+        'is_active': isActive,
+        'created_at': createdAt.toIso8601String(),
+        'updated_at': updatedAt.toIso8601String(),
+      };
 }
 
 class FarmTreeRecord {
@@ -151,6 +176,25 @@ class FarmTreeRecord {
         createdAt: DateTime.parse(json['created_at']! as String),
         updatedAt: DateTime.parse(json['updated_at']! as String),
       );
+
+  Map<String, Object?> toJson() => <String, Object?>{
+        'id': id,
+        'farm_id': farmId,
+        'section_id': sectionId,
+        'irrigation_zone_id': irrigationZoneId,
+        'tree_code': treeCode,
+        'row_number': rowNumber,
+        'tree_number': treeNumber,
+        'planted_on': plantedOn?.toIso8601String(),
+        'latitude': latitude,
+        'longitude': longitude,
+        'health_status': healthStatus.wireValue,
+        'type': type,
+        'notes': notes,
+        'is_active': isActive,
+        'created_at': createdAt.toIso8601String(),
+        'updated_at': updatedAt.toIso8601String(),
+      };
 }
 
 class FarmHierarchy {
@@ -183,6 +227,36 @@ class FarmHierarchy {
     }
     return null;
   }
+
+  /// A cache-safe representation that round-trips through [fromCacheJson] using
+  /// the same column names the Supabase `fromJson` factories read.
+  Map<String, Object?> toCacheJson() => <String, Object?>{
+        'farm_id': farmId,
+        'sections':
+            sections.map((section) => section.toJson()).toList(growable: false),
+        'zones': zones.map((zone) => zone.toJson()).toList(growable: false),
+        'trees': trees.map((tree) => tree.toJson()).toList(growable: false),
+      };
+
+  factory FarmHierarchy.fromCacheJson(Map<String, Object?> json) =>
+      FarmHierarchy(
+        farmId: json['farm_id']! as String,
+        sections: (json['sections']! as List<Object?>)
+            .map((row) => FarmSection.fromJson(
+                  Map<String, Object?>.from(row! as Map),
+                ))
+            .toList(growable: false),
+        zones: (json['zones']! as List<Object?>)
+            .map((row) => IrrigationZone.fromJson(
+                  Map<String, Object?>.from(row! as Map),
+                ))
+            .toList(growable: false),
+        trees: (json['trees']! as List<Object?>)
+            .map((row) => FarmTreeRecord.fromJson(
+                  Map<String, Object?>.from(row! as Map),
+                ))
+            .toList(growable: false),
+      );
 
   void _validateRelationships() {
     final sectionIds = <String>{};

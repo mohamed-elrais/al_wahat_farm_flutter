@@ -78,16 +78,17 @@ not evidence.
 ## Async, offline, privacy, and accessibility
 
 - [ ] Every async route has intentional loading, empty, retryable error, authorization,
-  offline/cached, and success feedback.
-- [ ] Farm/section/zone/tree and task/detail reads are cached.
-- [ ] Immutable map geometry renders without network access.
-- [ ] Online/offline/sync state is visible in More and relevant workflows.
-- [ ] Non-idempotent RPCs are not blindly queued.
-- [ ] Evidence upload shows progress, preserves image orientation, compresses images,
+  offline/cached, and success feedback. Individual routes carry these states; the
+  exhaustive per-route audit belongs to Phase 8.
+- [x] Farm/section/zone/tree and task/detail reads are cached.
+- [x] Immutable map geometry renders without network access.
+- [x] Online/offline/sync state is visible in More and relevant workflows.
+- [x] Non-idempotent RPCs are not blindly queued.
+- [x] Evidence upload shows progress, preserves image orientation, compresses images,
   and cleans failed temporary state.
-- [ ] Logout clears all private local cache while preserving immutable app assets.
-- [ ] Interactive controls expose semantic labels and at least 44 dp hit targets.
-- [ ] Error reporting hooks do not include tokens, photo paths, coordinates tied to a
+- [x] Logout clears all private local cache while preserving immutable app assets.
+- [x] Interactive controls expose semantic labels and at least 44 dp hit targets.
+- [x] Error reporting hooks do not include tokens, photo paths, coordinates tied to a
   person, or other PII/secrets.
 
 ## Test and certification evidence
@@ -112,7 +113,7 @@ not evidence.
   active QR token without logging it.
 - [x] `dart format --set-exit-if-changed .` passes.
 - [x] `flutter analyze` passes with no suppressed product diagnostics.
-- [x] `flutter test` passes (99 tests; 6 explicitly configured live tests skip by
+- [x] `flutter test` passes (122 tests; 6 explicitly configured live tests skip by
   default).
 - [ ] Screenshots inspected at 390×844, 430×932, a common Android size, and 1024×1366.
 - [ ] `FIDELITY_REPORT.md` records comparisons, adaptations, and remaining mismatches.

@@ -1,4 +1,5 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
+import 'package:al_wahat_farm_flutter/core/app_services.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -12,6 +13,7 @@ class AppShell extends StatelessWidget {
         body: Column(
           children: <Widget>[
             const WahatTopBar(),
+            const WahatConnectivityBanner(),
             Expanded(child: navigationShell),
           ],
         ),
@@ -24,6 +26,51 @@ class AppShell extends StatelessWidget {
           ),
         ),
       );
+}
+
+/// A live-region strip shown across the shell whenever the device is offline,
+/// so every workflow makes its cached/offline state visible.
+class WahatConnectivityBanner extends StatelessWidget {
+  const WahatConnectivityBanner({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final connectivity = AppServicesScope.maybeOf(context)?.connectivity;
+    if (connectivity == null) return const SizedBox.shrink();
+    return ListenableBuilder(
+      listenable: connectivity,
+      builder: (context, _) {
+        if (!connectivity.isOffline) return const SizedBox.shrink();
+        return Semantics(
+          liveRegion: true,
+          label: 'You are offline. Showing cached farm and task data.',
+          child: Container(
+            key: const Key('offline-banner'),
+            width: double.infinity,
+            color: AppColors.issue.withOpacity(0.12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: const Row(
+              children: <Widget>[
+                Icon(Icons.cloud_off_outlined,
+                    size: 18, color: AppColors.issue),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Offline · showing cached farm and task data',
+                    style: TextStyle(
+                      color: AppColors.issue,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 }
 
 class WahatTopBar extends StatelessWidget {

@@ -204,13 +204,50 @@ so the live persistence gate remains opt-in like the Phase 4/5 live suites. The 
 
 ## Phase 7 — Offline, accessibility, and production hardening
 
-- [ ] Cache farm hierarchy, trees, task list, and task detail.
-- [ ] Add visible online/offline/sync state and conservative mutation rules.
-- [ ] Verify image orientation/compression, upload cleanup, and privacy-safe logging.
-- [ ] Add semantic labels, 44 dp targets, text-scale and reduced-motion behavior.
-- [ ] Verify logout clears private cached data.
+- [x] Cache farm hierarchy, trees, task list, and task detail.
+- [x] Add visible online/offline/sync state and conservative mutation rules.
+- [x] Verify image orientation/compression, upload cleanup, and privacy-safe logging.
+- [x] Add semantic labels, 44 dp targets, text-scale and reduced-motion behavior.
+- [x] Verify logout clears private cached data.
 
 Gate: required cached reads, privacy, accessibility, and logout tests pass.
+
+Evidence (2026-07-13): all four gate pillars are covered by the default suite, built
+on the existing `shared_preferences`/`connectivity_plus` dependencies with no new
+packages and no code generation, so the app stays on Flutter 3.13.9 / Dart 3.1.5.
+
+Cached reads: a `LocalCacheStore` (shared-preferences backed, with an in-memory fake)
+namespaces every session-derived value under a private prefix. `PersistentFarmHierarchyCache`
+and a `CachingTaskRepository` decorator serialise the farm hierarchy, the role-filtered
+task list, and each task detail, then serve them from cache when a later read fails while
+mutations always pass straight through — no non-idempotent RPC is ever replayed from local
+state. Round-trip, corrupt-entry, offline-fallback, and mutation-passthrough tests pass;
+the bundled map geometry asset still renders without a network (Phase 3).
+
+Offline/sync: a fakeable `ConnectivityService`/`ConnectivityController` drives a live-region
+offline banner across the shell and a real online/offline tile in More. Transition and
+no-duplicate-notification tests pass. Conservative mutation rules are structural — there is
+no offline mutation queue.
+
+Privacy: a `SafeLog` utility redacts JWT-style tokens, emails, scoped evidence storage
+paths, and precise coordinates before any sink; the map reconciliation and cache-drop
+diagnostics route through it. Redaction tests cover each PII class. Image
+orientation/compression is the Phase 4 evidence pipeline (`flutter_image_compress` bakes
+orientation into pixels and strips EXIF), and evidence registration is retry-safe so a lost
+response never uploads twice.
+
+Accessibility: bottom navigation, the branded avatar, the sync tile, and the offline banner
+expose semantic labels; the More screen passes the Android and iOS tap-target guidelines and
+the labelled-tap-target guideline, and its core logout action survives 200% text scaling with
+no overflow. A reduced-motion hook (`MediaQuery.disableAnimations`) is available; the app has
+no nonessential custom animations to suppress (map uses `InteractiveViewer`, sheets use
+`DraggableScrollableSheet`). Full multi-screen text-scale and reduced-motion certification
+remains part of the Phase 8 screenshot pass.
+
+Logout: `AuthRepository.signOut` clears the private cache before ending the Supabase session;
+a test confirms private hierarchy/task keys are removed while non-private preferences survive.
+Default suite: 122 passed, 6 opt-in live tests skipped; formatter 121 files, 0 changed;
+analyzer no issues.
 
 ## Phase 8 — Fidelity certification
 

@@ -1,3 +1,7 @@
+import 'dart:convert';
+
+import 'package:al_wahat_farm_flutter/core/cache/local_cache_store.dart';
+import 'package:al_wahat_farm_flutter/core/logging/safe_log.dart';
 import 'package:al_wahat_farm_flutter/features/farm/domain/farm_hierarchy.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -95,6 +99,49 @@ class MemoryFarmHierarchyCache implements FarmHierarchyCache {
   Future<void> clear(String farmId) async {
     _entries.remove(farmId);
   }
+}
+
+/// Persists the farm hierarchy as JSON under a private cache key so the map and
+/// tree data survive an app restart and remain readable offline. The bundled
+/// map geometry asset is unaffected; only this session-derived data is cached.
+class PersistentFarmHierarchyCache implements FarmHierarchyCache {
+  const PersistentFarmHierarchyCache(this._store);
+
+  static const keyPrefix = '${privateCachePrefix}hierarchy:';
+
+  final LocalCacheStore _store;
+
+  static String keyFor(String farmId) => '$keyPrefix$farmId';
+
+  @override
+  Future<FarmHierarchy?> read(String farmId) async {
+    final raw = await _store.read(keyFor(farmId));
+    if (raw == null) return null;
+    try {
+      return FarmHierarchy.fromCacheJson(
+        Map<String, Object?>.from(jsonDecode(raw) as Map),
+      );
+    } catch (error) {
+      // A corrupt or outdated cache entry must never crash a read; drop it.
+      SafeLog.event(
+        'farm_hierarchy_cache_dropped',
+        data: <String, Object?>{'error': error.runtimeType},
+      );
+      await _store.remove(keyFor(farmId));
+      return null;
+    }
+  }
+
+  @override
+  Future<void> write(FarmHierarchy hierarchy) async {
+    await _store.write(
+      keyFor(hierarchy.farmId),
+      jsonEncode(hierarchy.toCacheJson()),
+    );
+  }
+
+  @override
+  Future<void> clear(String farmId) => _store.remove(keyFor(farmId));
 }
 
 enum FarmHierarchySource { network, cache }

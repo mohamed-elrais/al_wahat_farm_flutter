@@ -210,6 +210,35 @@ class TaskDetails {
 
   bool hasPhotoPath(String path) =>
       photos.any((photo) => photo.storagePath == path);
+
+  Map<String, Object?> toCacheJson() => <String, Object?>{
+        'task': task.toJson(),
+        'assignments':
+            assignments.map((item) => item.toJson()).toList(growable: false),
+        'activity':
+            activity.map((item) => item.toJson()).toList(growable: false),
+        'photos': photos.map((item) => item.toJson()).toList(growable: false),
+      };
+
+  factory TaskDetails.fromCacheJson(Map<String, Object?> json) => TaskDetails(
+        task:
+            FarmTask.fromJson(Map<String, Object?>.from(json['task']! as Map)),
+        assignments: (json['assignments']! as List<Object?>)
+            .map((row) => TaskAssignment.fromJson(
+                  Map<String, Object?>.from(row! as Map),
+                ))
+            .toList(growable: false),
+        activity: (json['activity']! as List<Object?>)
+            .map((row) => TaskActivity.fromJson(
+                  Map<String, Object?>.from(row! as Map),
+                ))
+            .toList(growable: false),
+        photos: (json['photos']! as List<Object?>)
+            .map((row) => TaskPhoto.fromJson(
+                  Map<String, Object?>.from(row! as Map),
+                ))
+            .toList(growable: false),
+      );
 }
 
 Future<T> _guard<T>(Future<T> Function() operation) async {

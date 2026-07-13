@@ -1,3 +1,4 @@
+import 'package:al_wahat_farm_flutter/core/app_services.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
 import 'package:al_wahat_farm_flutter/features/farm/data/farm_hierarchy_repository.dart';
@@ -40,15 +41,19 @@ class FarmHierarchyGate extends StatefulWidget {
 }
 
 class _FarmHierarchyGateState extends State<FarmHierarchyGate> {
-  late final FarmHierarchyController _controller;
+  FarmHierarchyController? _controller;
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_controller != null) return;
+    final store = AppServicesScope.maybeOf(context)?.cacheStore;
     final repository = widget.repository ??
         DefaultFarmHierarchyRepository(
           SupabaseFarmHierarchyDataSource(Supabase.instance.client),
-          MemoryFarmHierarchyCache(),
+          store == null
+              ? MemoryFarmHierarchyCache()
+              : PersistentFarmHierarchyCache(store),
         );
     _controller = FarmHierarchyController(repository)..load(widget.farmId);
   }
@@ -57,34 +62,44 @@ class _FarmHierarchyGateState extends State<FarmHierarchyGate> {
   void didUpdateWidget(FarmHierarchyGate oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.farmId != widget.farmId) {
-      _controller.load(widget.farmId);
+      _controller?.load(widget.farmId);
     }
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _controller?.dispose();
     super.dispose();
   }
 
   @override
-  Widget build(BuildContext context) => ListenableBuilder(
-        listenable: _controller,
-        builder: (context, _) => switch (_controller.state) {
-          FarmHierarchyReady(:final snapshot) => FarmHierarchyScope(
-              snapshot: snapshot,
-              child: widget.child,
-            ),
-          FarmHierarchyFailure() => _HierarchyFailure(
-              onRetry: () => _controller.load(widget.farmId),
-            ),
-          _ => const Scaffold(
-              body: PaperBackground(
-                child: Center(child: CircularProgressIndicator()),
-              ),
-            ),
-        },
+  Widget build(BuildContext context) {
+    final controller = _controller;
+    if (controller == null) {
+      return const Scaffold(
+        body: PaperBackground(
+          child: Center(child: CircularProgressIndicator()),
+        ),
       );
+    }
+    return ListenableBuilder(
+      listenable: controller,
+      builder: (context, _) => switch (controller.state) {
+        FarmHierarchyReady(:final snapshot) => FarmHierarchyScope(
+            snapshot: snapshot,
+            child: widget.child,
+          ),
+        FarmHierarchyFailure() => _HierarchyFailure(
+            onRetry: () => controller.load(widget.farmId),
+          ),
+        _ => const Scaffold(
+            body: PaperBackground(
+              child: Center(child: CircularProgressIndicator()),
+            ),
+          ),
+      },
+    );
+  }
 }
 
 class _HierarchyFailure extends StatelessWidget {
