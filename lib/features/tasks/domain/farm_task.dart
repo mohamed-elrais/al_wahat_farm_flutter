@@ -21,6 +21,25 @@ enum TaskStatus {
         'cancelled' => cancelled,
         _ => throw FormatException('Unknown task status: $value'),
       };
+
+  String get label => switch (this) {
+        draft => 'Draft',
+        assigned => 'Assigned',
+        inProgress => 'In progress',
+        completed => 'Completed',
+        needsEngineerReview => 'Needs review',
+        approved => 'Approved',
+        returned => 'Returned',
+        cancelled => 'Cancelled',
+      };
+
+  bool get canStart => this == assigned || this == returned;
+
+  bool get canComplete =>
+      this == assigned || this == inProgress || this == returned;
+
+  bool get isClosed =>
+      this == completed || this == approved || this == cancelled;
 }
 
 enum TaskActivityAction {
@@ -50,6 +69,20 @@ enum TaskActivityAction {
         'photo_added' => photoAdded,
         _ => throw FormatException('Unknown task activity action: $value'),
       };
+
+  String get label => switch (this) {
+        created => 'Task created',
+        assigned => 'Assignments updated',
+        unassigned => 'Assignments cleared',
+        started => 'Work started',
+        completed => 'Work completed',
+        flaggedForReview => 'Sent for engineer review',
+        reviewedApproved => 'Work approved',
+        reviewedReturned => 'Returned for correction',
+        commented => 'Comment added',
+        cancelled => 'Task cancelled',
+        photoAdded => 'Evidence added',
+      };
 }
 
 enum TaskPhotoType {
@@ -67,6 +100,37 @@ enum TaskPhotoType {
         'review' => review,
         _ => throw FormatException('Unknown task photo type: $value'),
       };
+
+  String get wireValue => name;
+
+  String get label => switch (this) {
+        before => 'Before work',
+        after => 'After work',
+        evidence => 'Evidence',
+        issue => 'Issue',
+        review => 'Review',
+      };
+}
+
+class TaskAssignee {
+  const TaskAssignee({
+    required this.profileId,
+    required this.fullName,
+    required this.role,
+  });
+
+  final String profileId;
+  final String fullName;
+  final String role;
+
+  factory TaskAssignee.fromMembershipJson(Map<String, Object?> json) {
+    final profile = Map<String, Object?>.from(json['profiles']! as Map);
+    return TaskAssignee(
+      profileId: json['profile_id']! as String,
+      fullName: profile['full_name']! as String,
+      role: json['role']! as String,
+    );
+  }
 }
 
 class FarmTask {

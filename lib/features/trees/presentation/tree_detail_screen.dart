@@ -44,7 +44,7 @@ class TreeDetailScreen extends StatelessWidget {
           if (canManageTasks)
             FilledButton.icon(
               key: const Key('tree-detail-attach-task'),
-              onPressed: () => context.go('/tasks?treeId=${tree.id}'),
+              onPressed: () => context.go('/tasks/create?treeId=${tree.id}'),
               icon: const Icon(Icons.assignment_add),
               label: const Text('Attach a task'),
             ),

@@ -60,13 +60,13 @@ not evidence.
 
 - [ ] Tree detail shows code, section, row/tree, health, type, zone/color, and
   coordinates to seven decimals when available.
-- [ ] Owner/engineer can attach a persisted farm/section/zone/tree task.
-- [ ] Task form exposes every required field and sends exact final RPC parameters.
-- [ ] Assignees are active operational farm members only.
-- [ ] New tasks appear after repository refresh and survive restart.
-- [ ] Worker task queries expose only active assignments.
-- [ ] Worker/manager can start eligible tasks and see activity history.
-- [ ] Completion handles before/after/evidence upload and final status refresh.
+- [x] Owner/engineer can attach a persisted farm/section/zone/tree task.
+- [x] Task form exposes every required field and sends exact final RPC parameters.
+- [x] Assignees are active operational farm members only.
+- [x] New tasks appear after repository refresh and survive restart.
+- [x] Worker task queries expose only active assignments.
+- [x] Worker/manager can start eligible tasks and see activity history.
+- [x] Completion handles before/after/evidence upload and final status refresh.
 - [ ] Scanner calls `scan_tree_by_qr`; no simulation exists in production.
 - [ ] Issue types exactly match the final `tree_issue_type` enum.
 - [ ] Issue reports surface both returned IDs and refresh the review queue.

@@ -143,14 +143,36 @@ real-device capture, and the provider work explicitly deferred to Phases 5–6.
 
 ## Phase 5 — Tasks
 
-- [ ] Implement role-filtered task list, detail, and immutable activity history.
-- [ ] Implement all-scope create form and `create_farm_task`.
-- [ ] Implement assignment editing through `set_task_assignments`.
-- [ ] Implement start/complete transitions and evidence uploads/metadata.
-- [ ] Add validation, RPC contract, refresh, transition, and persistence tests.
+- [x] Implement role-filtered task list, detail, and immutable activity history.
+- [x] Implement all-scope create form and `create_farm_task`.
+- [x] Implement assignment editing through `set_task_assignments`.
+- [x] Implement start/complete transitions and evidence uploads/metadata.
+- [x] Add validation, RPC contract, refresh, transition, and persistence tests.
 
 Gate: created task survives restart, appears for assignee, transitions correctly, and
 records evidence/activity.
+
+Evidence (2026-07-13): the authenticated shell owns a shared paginated task workspace;
+the Home and Tasks views consume repository refreshes rather than temporary cards. The
+manager form covers farm/section/zone/tree scope, active operational assignees, schedule,
+priority, duration, instructions, and review requirements. Detail actions call only the
+declared lifecycle RPCs, reload persisted detail/activity, and preserve evidence state
+across an unconfirmed completion response so a retry cannot upload twice. The private
+evidence path and metadata contracts are exact. A shared-store integration test creates
+and assigns a tree task, reconstructs the worker workspace to simulate restart, starts
+and completes it, and verifies the persisted activity/photo metadata. The Flutter 3.13.9
+default suite passes 81 tests with 5 opt-in live checks skipped; the separate configured
+read-only Supabase suite passes all 4 hierarchy/count/QR/task checks.
+
+Gate evidence (2026-07-13): with explicit operator authorization, the opt-in live suite
+created one clearly labeled persistent tree task through `create_farm_task`, assigned an
+active real worker through `set_task_assignments`, started it, uploaded valid private
+Storage evidence, registered it through `add_task_photo`, and completed it. A new
+repository instance found the completed task after reload and verified its active worker
+assignment, private photo metadata, and created/assigned/started/photo-added/completed
+activity history. The test uses a fixed title and resumes the same row, preventing repeat
+runs from creating duplicate tasks. It passed on the first run. No Supabase migration or
+copied schema file was changed. Phase 5 is complete.
 
 ## Phase 6 — Engineer/owner review
 

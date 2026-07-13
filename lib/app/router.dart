@@ -9,6 +9,8 @@ import 'package:al_wahat_farm_flutter/features/map/presentation/farm_map_screen.
 import 'package:al_wahat_farm_flutter/features/map/presentation/scanner_screen.dart';
 import 'package:al_wahat_farm_flutter/features/profile/presentation/profile_screen.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/presentation/tasks_screen.dart';
+import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_create_screen.dart';
+import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_detail_screen.dart';
 import 'package:al_wahat_farm_flutter/features/trees/presentation/tree_detail_screen.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/app_shell.dart';
 import 'package:flutter/material.dart';
@@ -84,9 +86,21 @@ GoRouter createRouter(AppConfig config) {
             routes: <RouteBase>[
               GoRoute(
                 path: '/tasks',
-                builder: (_, state) => TasksScreen(
-                  initialTreeId: state.uri.queryParameters['treeId'],
-                ),
+                builder: (_, __) => const TasksScreen(),
+                routes: <RouteBase>[
+                  GoRoute(
+                    path: 'create',
+                    builder: (_, state) => TaskCreateScreen(
+                      initialTreeId: state.uri.queryParameters['treeId'],
+                    ),
+                  ),
+                  GoRoute(
+                    path: ':taskId',
+                    builder: (_, state) => TaskDetailScreen(
+                      taskId: state.pathParameters['taskId']!,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

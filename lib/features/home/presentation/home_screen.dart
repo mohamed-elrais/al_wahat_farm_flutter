@@ -1,6 +1,10 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
+import 'package:al_wahat_farm_flutter/features/farm/presentation/farm_hierarchy_gate.dart';
+import 'package:al_wahat_farm_flutter/features/tasks/domain/farm_task.dart';
+import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_widgets.dart';
+import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_workspace_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -199,37 +203,65 @@ class _OperationsPanel extends StatelessWidget {
   const _OperationsPanel();
 
   @override
-  Widget build(BuildContext context) => WahatCard(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            Text('Today’s tasks',
-                style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 6),
-            const Text('Tasks load after your farm membership is resolved.'),
-            const SizedBox(height: 16),
-            const _TaskPreview(
-              title: 'Irrigation check',
-              meta: 'Section A · Zone 01',
+  Widget build(BuildContext context) {
+    final controller = TaskWorkspaceScope.maybeOf(context);
+    final hierarchy = FarmHierarchyScope.maybeOf(context)?.hierarchy;
+    return WahatCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          Text('Today’s tasks', style: Theme.of(context).textTheme.titleLarge),
+          const SizedBox(height: 6),
+          if (controller == null)
+            const Text('Task workspace is unavailable.')
+          else
+            ListenableBuilder(
+              listenable: controller,
+              builder: (context, _) {
+                final tasks = controller
+                    .tasksForDay(DateTime.now())
+                    .take(3)
+                    .toList(growable: false);
+                if (controller.snapshot.status == TaskWorkspaceStatus.loading &&
+                    controller.snapshot.tasks.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 18),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
+                if (tasks.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 14),
+                    child: Text('No tasks are scheduled for today.'),
+                  );
+                }
+                return Column(
+                  children: tasks
+                      .map(
+                        (task) => _TaskPreview(
+                          task: task,
+                          target: taskTargetLabel(task, hierarchy),
+                        ),
+                      )
+                      .toList(growable: false),
+                );
+              },
             ),
-            const _TaskPreview(
-              title: 'Tree inspection',
-              meta: 'Section C · Trees 101–136',
-            ),
-            const SizedBox(height: 12),
-            OutlinedButton(
-              onPressed: () => context.go('/tasks'),
-              child: const Text('View all tasks'),
-            ),
-          ],
-        ),
-      );
+          const SizedBox(height: 12),
+          OutlinedButton(
+            onPressed: () => context.go('/tasks'),
+            child: const Text('View all tasks'),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _TaskPreview extends StatelessWidget {
-  const _TaskPreview({required this.title, required this.meta});
-  final String title;
-  final String meta;
+  const _TaskPreview({required this.task, required this.target});
+  final FarmTask task;
+  final String target;
 
   @override
   Widget build(BuildContext context) => ListTile(
@@ -239,7 +271,9 @@ class _TaskPreview extends StatelessWidget {
           foregroundColor: AppColors.green,
           child: Icon(Icons.water_drop_outlined),
         ),
-        title: Text(title),
-        subtitle: Text(meta),
+        title: Text(task.title),
+        subtitle: Text('$target · ${task.status.label}'),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () => context.go('/tasks/${task.id}'),
       );
 }

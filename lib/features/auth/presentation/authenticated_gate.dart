@@ -5,6 +5,8 @@ import 'package:al_wahat_farm_flutter/features/auth/data/operational_context_rep
 import 'package:al_wahat_farm_flutter/features/auth/domain/operational_context.dart';
 import 'package:al_wahat_farm_flutter/features/auth/presentation/auth_bootstrap_controller.dart';
 import 'package:al_wahat_farm_flutter/features/farm/presentation/farm_hierarchy_gate.dart';
+import 'package:al_wahat_farm_flutter/features/tasks/data/task_repository.dart';
+import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_workspace_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -37,11 +39,13 @@ class AuthenticatedGate extends StatefulWidget {
 
 class _AuthenticatedGateState extends State<AuthenticatedGate> {
   late final AuthBootstrapController _controller;
+  late final TaskRepository _taskRepository;
 
   @override
   void initState() {
     super.initState();
     final client = Supabase.instance.client;
+    _taskRepository = SupabaseTaskRepository(client);
     _controller = AuthBootstrapController(
       DefaultOperationalContextRepository(
         SupabaseAuthBootstrapDataSource(client),
@@ -65,7 +69,11 @@ class _AuthenticatedGateState extends State<AuthenticatedGate> {
               contextData: context,
               child: FarmHierarchyGate(
                 farmId: context.selectedMembership.farm.id,
-                child: widget.child,
+                child: TaskWorkspaceProvider(
+                  farmId: context.selectedMembership.farm.id,
+                  repository: _taskRepository,
+                  child: widget.child,
+                ),
               ),
             ),
           AuthBootstrapBlocked(:final reason) => _BlockedAccess(reason: reason),

@@ -1,0 +1,94 @@
+import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
+import 'package:al_wahat_farm_flutter/features/farm/domain/farm_hierarchy.dart';
+import 'package:al_wahat_farm_flutter/features/tasks/domain/farm_task.dart';
+import 'package:flutter/material.dart';
+
+class TaskStatusBadge extends StatelessWidget {
+  const TaskStatusBadge(this.status, {super.key});
+
+  final TaskStatus status;
+
+  @override
+  Widget build(BuildContext context) => DecoratedBox(
+        decoration: BoxDecoration(
+          color: _statusColor(status).withOpacity(0.12),
+          borderRadius: BorderRadius.circular(99),
+          border: Border.all(color: _statusColor(status).withOpacity(0.35)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+          child: Text(
+            status.label,
+            style: TextStyle(
+              color: _statusColor(status),
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+      );
+}
+
+String taskTargetLabel(FarmTask task, FarmHierarchy? hierarchy) {
+  if (task.treeId != null) {
+    final tree = hierarchy == null
+        ? null
+        : _firstWhereOrNull(hierarchy.trees, (item) => item.id == task.treeId);
+    return tree == null ? 'Tree' : 'Tree ${tree.treeCode}';
+  }
+  if (task.irrigationZoneId != null) {
+    final zone = hierarchy == null
+        ? null
+        : _firstWhereOrNull(
+            hierarchy.zones,
+            (item) => item.id == task.irrigationZoneId,
+          );
+    return zone == null ? 'Irrigation zone' : 'Zone ${zone.code}';
+  }
+  if (task.sectionId != null) {
+    final section = hierarchy?.sectionById(task.sectionId!);
+    return section == null ? 'Farm section' : 'Section ${section.code}';
+  }
+  return 'Whole farm';
+}
+
+String taskScheduleLabel(FarmTask task) {
+  final scheduled = task.scheduledFor;
+  if (scheduled != null) {
+    final date = _dateLabel(scheduled);
+    final time = task.plannedStartTime;
+    return time == null || time.isEmpty ? date : '$date · ${_shortTime(time)}';
+  }
+  final due = task.dueAt?.toLocal();
+  return due == null ? 'Not scheduled' : 'Due ${_dateTimeLabel(due)}';
+}
+
+String taskDateTimeLabel(DateTime value) => _dateTimeLabel(value.toLocal());
+
+Color _statusColor(TaskStatus status) => switch (status) {
+      TaskStatus.draft => AppColors.muted,
+      TaskStatus.assigned => AppColors.waterMain,
+      TaskStatus.inProgress => AppColors.orange,
+      TaskStatus.completed => AppColors.green,
+      TaskStatus.needsEngineerReview => AppColors.issue,
+      TaskStatus.approved => AppColors.green,
+      TaskStatus.returned => AppColors.issue,
+      TaskStatus.cancelled => AppColors.muted,
+    };
+
+String _dateLabel(DateTime value) => '${value.day.toString().padLeft(2, '0')}/'
+    '${value.month.toString().padLeft(2, '0')}/${value.year}';
+
+String _dateTimeLabel(DateTime value) => '${_dateLabel(value)} · '
+    '${value.hour.toString().padLeft(2, '0')}:'
+    '${value.minute.toString().padLeft(2, '0')}';
+
+String _shortTime(String value) =>
+    value.length >= 5 ? value.substring(0, 5) : value;
+
+T? _firstWhereOrNull<T>(Iterable<T> values, bool Function(T) matches) {
+  for (final value in values) {
+    if (matches(value)) return value;
+  }
+  return null;
+}

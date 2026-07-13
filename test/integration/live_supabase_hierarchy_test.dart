@@ -2,6 +2,8 @@ import 'package:al_wahat_farm_flutter/features/auth/data/operational_context_rep
 import 'package:al_wahat_farm_flutter/features/auth/domain/operational_context.dart';
 import 'package:al_wahat_farm_flutter/features/farm/data/farm_hierarchy_repository.dart';
 import 'package:al_wahat_farm_flutter/features/farm/domain/farm_hierarchy.dart';
+import 'package:al_wahat_farm_flutter/features/tasks/data/task_repository.dart';
+import 'package:al_wahat_farm_flutter/features/tasks/domain/farm_task.dart';
 import 'package:al_wahat_farm_flutter/features/trees/data/tree_qr_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -24,6 +26,8 @@ void main() {
       late SupabaseClient client;
       late OperationalContext operationalContext;
       late FarmHierarchy hierarchy;
+      late List<FarmTask> visibleTasks;
+      late List<TaskAssignee> assignableMembers;
       late String qrToken;
       late String qrTreeId;
 
@@ -47,6 +51,10 @@ void main() {
           MemoryFarmHierarchyCache(),
         ).load(membership.farm.id, allowCachedFallback: false))
             .hierarchy;
+        final taskRepository = SupabaseTaskRepository(client);
+        visibleTasks = await taskRepository.listForFarm(membership.farm.id);
+        assignableMembers =
+            await taskRepository.listAssignableMembers(membership.farm.id);
         final qrRow = await client
             .from('tree_qr_codes')
             .select('qr_token, tree_id')
@@ -94,6 +102,21 @@ void main() {
         expect(tree, isNotNull);
         expect(tree!.id, qrTreeId);
         expect(hierarchy.trees.any((record) => record.id == tree.id), isTrue);
+      });
+
+      test('task and active-assignee read contracts pass live RLS', () {
+        final farmId = operationalContext.selectedMembership.farm.id;
+        expect(visibleTasks.every((task) => task.farmId == farmId), isTrue);
+        expect(assignableMembers, isNotEmpty);
+        expect(
+          assignableMembers.map((member) => member.profileId).toSet(),
+          hasLength(assignableMembers.length),
+        );
+        expect(
+          assignableMembers
+              .every((member) => member.fullName.trim().isNotEmpty),
+          isTrue,
+        );
       });
     },
     skip: _hasLiveConfiguration

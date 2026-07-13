@@ -25,6 +25,16 @@ enum TaskType {
         'general' => general,
         _ => throw FormatException('Unknown task type: $value'),
       };
+
+  String get label => switch (this) {
+        irrigation => 'Irrigation',
+        fertilization => 'Fertilization',
+        harmfulWeedControl => 'Harmful weed control',
+        dripperMaintenance => 'Dripper maintenance',
+        treeInspection => 'Tree inspection',
+        engineerReview => 'Engineer review',
+        general => 'General field work',
+      };
 }
 
 enum TaskPriority {
@@ -39,6 +49,13 @@ enum TaskPriority {
         'high' => high,
         'urgent' => urgent,
         _ => throw FormatException('Unknown task priority: $value'),
+      };
+
+  String get label => switch (this) {
+        low => 'Low',
+        medium => 'Medium',
+        high => 'High',
+        urgent => 'Urgent',
       };
 }
 
@@ -80,6 +97,7 @@ class TaskDraft {
   final List<String> assigneeProfileIds;
 
   String? validate() {
+    if (farmId.trim().isEmpty) return 'Farm identity is required';
     if (title.trim().isEmpty) return 'Task title is required';
     if (<String?>[
           sectionId,
@@ -91,6 +109,9 @@ class TaskDraft {
     }
     if (plannedDurationMinutes != null && plannedDurationMinutes! <= 0) {
       return 'Planned duration must be positive';
+    }
+    if (assigneeProfileIds.any((id) => id.trim().isEmpty)) {
+      return 'Every assignee must have a profile identity';
     }
     return null;
   }

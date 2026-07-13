@@ -224,7 +224,7 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
         onAttachTask: isLive && canManageTasks
             ? () {
                 Navigator.of(sheetContext).pop();
-                context.go('/tasks?treeId=${tree.id}');
+                context.go('/tasks/create?treeId=${tree.id}');
               }
             : null,
         onReportIssue: isLive
