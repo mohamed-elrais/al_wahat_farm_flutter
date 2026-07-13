@@ -1,4 +1,5 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
+import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/core/logging/safe_log.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
@@ -276,7 +277,7 @@ class _DiscrepancyBanner extends StatelessWidget {
         .map((entry) => '${entry.key.name}: ${entry.value}')
         .join(' · ');
     return Semantics(
-      label: 'Farm data discrepancy warning',
+      label: context.l10n.mapDiscrepancySemantics,
       child: DecoratedBox(
         key: const Key('map-data-warning'),
         decoration: BoxDecoration(
@@ -296,9 +297,10 @@ class _DiscrepancyBanner extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Farm data check · ${result.discrepancies.length} '
-                  'difference${result.discrepancies.length == 1 ? '' : 's'}\n'
-                  '$summary',
+                  context.l10n.mapDiscrepancy(
+                    result.discrepancies.length,
+                    summary,
+                  ),
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontSize: 11),
@@ -388,22 +390,29 @@ class _MapPanelState extends State<_MapPanel> {
                         if (nearest != null) widget.onTapTree(nearest.tree);
                       }
                     : null,
-                child: InteractiveViewer(
-                  constrained: false,
-                  minScale: 0.1,
-                  maxScale: 8,
-                  transformationController: widget.transformation,
-                  boundaryMargin: const EdgeInsets.all(220),
-                  child: RepaintBoundary(
-                    child: CustomPaint(
-                      size: MapProjection.canvasSize,
-                      painter: FarmMapPainter(
-                        map: widget.map,
-                        selectedSection: widget.section,
-                        selectedTreeId: widget.selectedTree?.id,
-                        showTrees: widget.showTrees,
-                        showIrrigation: widget.showIrrigation,
-                        showUtilities: widget.showUtilities,
+                // North-up geographic canvas uses absolute projected pixel
+                // coordinates, so it must never be mirrored in RTL locales.
+                // Only this map subtree is locked to LTR; the surrounding
+                // chrome keeps the ambient (RTL in Arabic) direction.
+                child: Directionality(
+                  textDirection: TextDirection.ltr,
+                  child: InteractiveViewer(
+                    constrained: false,
+                    minScale: 0.1,
+                    maxScale: 8,
+                    transformationController: widget.transformation,
+                    boundaryMargin: const EdgeInsets.all(220),
+                    child: RepaintBoundary(
+                      child: CustomPaint(
+                        size: MapProjection.canvasSize,
+                        painter: FarmMapPainter(
+                          map: widget.map,
+                          selectedSection: widget.section,
+                          selectedTreeId: widget.selectedTree?.id,
+                          showTrees: widget.showTrees,
+                          showIrrigation: widget.showIrrigation,
+                          showUtilities: widget.showUtilities,
+                        ),
                       ),
                     ),
                   ),
@@ -450,11 +459,11 @@ class _MapHeader extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              const Eyebrow('Coordinate-accurate 2D map'),
+              Eyebrow(context.l10n.mapEyebrow),
               Text(
                 selected == null
-                    ? 'Al Wahat farm overview'
-                    : '${selected.name} · ${selected.treeCount == 0 ? 'Unplanted' : selected.treeCount}',
+                    ? context.l10n.homeFarmOverview
+                    : '${selected.name} · ${selected.treeCount == 0 ? context.l10n.mapSectionUnplanted : selected.treeCount}',
                 style: Theme.of(context).textTheme.titleLarge,
               ),
             ],
@@ -462,37 +471,37 @@ class _MapHeader extends StatelessWidget {
         ),
         _Control(
           icon: Icons.add,
-          tooltip: 'Zoom in',
+          tooltip: context.l10n.mapZoomIn,
           onTap: () => onZoom(1.25),
         ),
         _Control(
           icon: Icons.remove,
-          tooltip: 'Zoom out',
+          tooltip: context.l10n.mapZoomOut,
           onTap: () => onZoom(0.8),
         ),
         _Control(
           icon: Icons.center_focus_strong,
-          tooltip: 'Reset map',
+          tooltip: context.l10n.mapReset,
           onTap: onReset,
         ),
         PopupMenuButton<String>(
-          tooltip: 'Map layers',
+          tooltip: context.l10n.mapLayers,
           icon: const Icon(Icons.layers_outlined),
           itemBuilder: (_) => <PopupMenuEntry<String>>[
             CheckedPopupMenuItem(
               value: 'trees',
               checked: trees,
-              child: const Text('Trees'),
+              child: Text(context.l10n.mapLayerTrees),
             ),
             CheckedPopupMenuItem(
               value: 'irrigation',
               checked: irrigation,
-              child: const Text('Irrigation network'),
+              child: Text(context.l10n.mapLayerIrrigation),
             ),
             CheckedPopupMenuItem(
               value: 'utilities',
               checked: utilities,
-              child: const Text('Buildings & utilities'),
+              child: Text(context.l10n.mapLayerUtilities),
             ),
           ],
           onSelected: (value) {
@@ -551,8 +560,8 @@ class _SectionFilter extends StatelessWidget {
               onSelected: (_) => onSelected(section?.id),
               label: Text(
                 section == null
-                    ? 'All 12 sections'
-                    : '${section.name}  ${section.treeCount == 0 ? 'Empty' : section.treeCount}',
+                    ? context.l10n.mapAllSections
+                    : '${section.name}  ${section.treeCount == 0 ? context.l10n.mapSectionEmpty : section.treeCount}',
               ),
             );
           },
@@ -578,11 +587,13 @@ class _MapSummary extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Select any tree',
+                    context.l10n.mapSelectAnyTree,
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(height: 6),
-                  Text('${map.data.trees.length} tree points are available.'),
+                  Text(
+                    context.l10n.mapTreePointsAvailable(map.data.trees.length),
+                  ),
                 ],
               )
             : TreeDetailContent(
@@ -600,7 +611,7 @@ class _MapError extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Text(
-            'The bundled farm geometry could not be loaded.\n$error',
+            context.l10n.mapGeometryFailed(error.toString()),
             textAlign: TextAlign.center,
           ),
         ),

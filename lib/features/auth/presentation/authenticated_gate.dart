@@ -1,4 +1,5 @@
 import 'package:al_wahat_farm_flutter/core/app_services.dart';
+import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/core/supabase/auth_repository.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
@@ -110,9 +111,12 @@ class _LoadFailure extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => _MessageCard(
-        title: 'Unable to load farm access',
-        message: 'Check your connection and try again.',
-        action: FilledButton(onPressed: onRetry, child: const Text('Retry')),
+        title: context.l10n.gateLoadFailedTitle,
+        message: context.l10n.gateLoadFailedMessage,
+        action: FilledButton(
+          onPressed: onRetry,
+          child: Text(context.l10n.commonRetry),
+        ),
       );
 }
 
@@ -122,13 +126,14 @@ class _BlockedAccess extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => _MessageCard(
-        title: 'Farm access unavailable',
+        title: context.l10n.gateAccessUnavailableTitle,
         message: switch (reason) {
           BootstrapBlockReason.profileMissing =>
-            'Your account profile has not been provisioned.',
-          BootstrapBlockReason.profileInactive => 'Your account is inactive.',
+            context.l10n.gateProfileMissing,
+          BootstrapBlockReason.profileInactive =>
+            context.l10n.gateProfileInactive,
           BootstrapBlockReason.noActiveOperationalMembership =>
-            'No active operational farm membership is assigned.',
+            context.l10n.gateNoMembership,
         },
         action: Builder(
           builder: (context) => OutlinedButton(
@@ -136,7 +141,7 @@ class _BlockedAccess extends StatelessWidget {
               Supabase.instance.client,
               onSignOut: AppServicesScope.maybeOf(context)?.clearPrivateData,
             ).signOut(),
-            child: const Text('Log out'),
+            child: Text(context.l10n.logout),
           ),
         ),
       );

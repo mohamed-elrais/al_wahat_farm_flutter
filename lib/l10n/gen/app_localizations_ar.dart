@@ -1,0 +1,1069 @@
+import 'package:intl/intl.dart' as intl;
+
+import 'app_localizations.dart';
+
+/// The translations for Arabic (`ar`).
+class AppLocalizationsAr extends AppLocalizations {
+  AppLocalizationsAr([String locale = 'ar']) : super(locale);
+
+  @override
+  String get appTitle => 'عمليات مزرعة الواحة';
+
+  @override
+  String get brandName => 'الواحة';
+
+  @override
+  String get navHome => 'الرئيسية';
+
+  @override
+  String get navMap => 'الخريطة';
+
+  @override
+  String get navScan => 'مسح';
+
+  @override
+  String get navTasks => 'المهام';
+
+  @override
+  String get navMore => 'المزيد';
+
+  @override
+  String get notifications => 'الإشعارات';
+
+  @override
+  String get commonRetry => 'إعادة المحاولة';
+
+  @override
+  String get commonCancel => 'إلغاء';
+
+  @override
+  String get commonSave => 'حفظ';
+
+  @override
+  String get commonClose => 'إغلاق';
+
+  @override
+  String get commonBack => 'رجوع';
+
+  @override
+  String get commonLoading => 'جارٍ التحميل…';
+
+  @override
+  String routeUnavailable(String path) {
+    return 'المسار غير متاح: $path';
+  }
+
+  @override
+  String get commonCamera => 'الكاميرا';
+
+  @override
+  String get commonGallery => 'المعرض';
+
+  @override
+  String get commonRemove => 'إزالة';
+
+  @override
+  String get offlineBanner => 'غير متصل · عرض بيانات المزرعة والمهام المخزّنة';
+
+  @override
+  String get offlineBannerSemantics =>
+      'أنت غير متصل. يتم عرض بيانات المزرعة والمهام المخزّنة.';
+
+  @override
+  String get languageLabel => 'اللغة';
+
+  @override
+  String get languageSystem => 'الإعداد الافتراضي للنظام';
+
+  @override
+  String get languageEnglish => 'English';
+
+  @override
+  String get languageArabic => 'العربية';
+
+  @override
+  String get loginWelcomeTitle => 'مرحبًا بك في\nالواحة.';
+
+  @override
+  String get loginEyebrow => 'عمليات المزرعة';
+
+  @override
+  String get loginSignInTitle => 'تسجيل الدخول';
+
+  @override
+  String get loginSignInSubtitle => 'استخدم حساب عمليات المزرعة الخاص بك.';
+
+  @override
+  String get loginEmailLabel => 'البريد الإلكتروني';
+
+  @override
+  String get loginPasswordLabel => 'كلمة المرور';
+
+  @override
+  String get loginSignInButton => 'تسجيل الدخول';
+
+  @override
+  String get loginNotConfigured =>
+      'لم يتم إعداد Supabase. شغّل التطبيق باستخدام --dart-define-from-file=config.json.';
+
+  @override
+  String get loginInvalidEmail => 'أدخل عنوان بريد إلكتروني صالحًا';
+
+  @override
+  String get loginInvalidPassword => 'كلمة المرور مطلوبة';
+
+  @override
+  String get loginFailed => 'تعذّر تسجيل الدخول. تحقق من اتصالك.';
+
+  @override
+  String get homeDateEyebrow => 'الأحد · 12 يوليو';
+
+  @override
+  String get homeHeroTitle => 'مزرعتك.\nشجرةً شجرة.';
+
+  @override
+  String get homeHeroLede =>
+      'عمليات ميدانية قائمة على كل شجرة ومنطقة ري مُدرجة على الخريطة.';
+
+  @override
+  String get homeScanTreeQr => 'مسح رمز QR للشجرة';
+
+  @override
+  String get homeLiveMapData => 'بيانات الخريطة المباشرة';
+
+  @override
+  String get homeFarmOverview => 'نظرة عامة على مزرعة الواحة';
+
+  @override
+  String get homeMappedTrees => 'الأشجار المُدرجة على الخريطة';
+
+  @override
+  String get homeSections => 'الأقسام';
+
+  @override
+  String get homeIrrigationZones => 'مناطق الري';
+
+  @override
+  String get homeOpenMap => 'فتح خريطة الإحداثيات';
+
+  @override
+  String get homeTodaysTasks => 'مهام اليوم';
+
+  @override
+  String get homeNoTasksToday => 'لا توجد مهام مجدولة لهذا اليوم.';
+
+  @override
+  String get homeViewAllTasks => 'عرض جميع المهام';
+
+  @override
+  String get homeWorkspaceUnavailable => 'مساحة عمل المهام غير متاحة.';
+
+  @override
+  String get moreEyebrow => 'الحساب والمزامنة';
+
+  @override
+  String get moreTitle => 'المزيد';
+
+  @override
+  String get moreFarmMember => 'عضو المزرعة';
+
+  @override
+  String get moreRoleResolves => 'يُحدَّد الدور من عضوية المزرعة النشطة';
+
+  @override
+  String moreSignedInAs(String name) {
+    return 'تم تسجيل الدخول باسم $name';
+  }
+
+  @override
+  String get syncOnline => 'متصل';
+
+  @override
+  String get syncOffline => 'غير متصل';
+
+  @override
+  String get syncOnlineSubtitle =>
+      'متصل · يتم تحديث بيانات العمليات من Supabase';
+
+  @override
+  String get syncOfflineSubtitle =>
+      'غير متصل · عرض بيانات المزرعة والمهام المخزّنة';
+
+  @override
+  String get syncStatusOnlineSemantics => 'حالة المزامنة: متصل';
+
+  @override
+  String get syncStatusOfflineSemantics => 'حالة المزامنة: غير متصل';
+
+  @override
+  String get syncDefaultSubtitle => 'يتم تحديث بيانات العمليات من Supabase';
+
+  @override
+  String get logout => 'تسجيل الخروج';
+
+  @override
+  String get gateAccessUnavailableTitle => 'الوصول إلى المزرعة غير متاح';
+
+  @override
+  String get gateProfileMissing => 'لم يتم إعداد ملف حسابك الشخصي.';
+
+  @override
+  String get gateProfileInactive => 'حسابك غير نشط.';
+
+  @override
+  String get gateNoMembership => 'لم يتم تعيين عضوية تشغيلية نشطة في المزرعة.';
+
+  @override
+  String get gateLoadFailedTitle => 'تعذّر تحميل صلاحية الوصول إلى المزرعة';
+
+  @override
+  String get gateLoadFailedMessage => 'تحقق من اتصالك وحاول مرة أخرى.';
+
+  @override
+  String get hierarchyFailedTitle => 'تعذّر تحميل بيانات المزرعة';
+
+  @override
+  String get hierarchyFailedMessage =>
+      'تحقق من اتصالك ومن صلاحية وصولك إلى المزرعة، ثم حاول مرة أخرى.';
+
+  @override
+  String get roleOwner => 'المالك';
+
+  @override
+  String get roleAgriculturalEngineer => 'مهندس زراعي';
+
+  @override
+  String get roleWorker => 'عامل';
+
+  @override
+  String get roleAccountant => 'محاسب';
+
+  @override
+  String get taskStatusDraft => 'مسودة';
+
+  @override
+  String get taskStatusAssigned => 'مُسندة';
+
+  @override
+  String get taskStatusInProgress => 'قيد التنفيذ';
+
+  @override
+  String get taskStatusCompleted => 'مكتملة';
+
+  @override
+  String get taskStatusNeedsReview => 'بحاجة إلى مراجعة';
+
+  @override
+  String get taskStatusApproved => 'معتمدة';
+
+  @override
+  String get taskStatusReturned => 'مُعادة';
+
+  @override
+  String get taskStatusCancelled => 'ملغاة';
+
+  @override
+  String get taskTypeIrrigation => 'الري';
+
+  @override
+  String get taskTypeFertilization => 'التسميد';
+
+  @override
+  String get taskTypeHarmfulWeedControl => 'مكافحة الأعشاب الضارة';
+
+  @override
+  String get taskTypeDripperMaintenance => 'صيانة النقّاطات';
+
+  @override
+  String get taskTypeTreeInspection => 'فحص الأشجار';
+
+  @override
+  String get taskTypeEngineerReview => 'مراجعة المهندس الزراعي';
+
+  @override
+  String get taskTypeGeneral => 'عمل ميداني عام';
+
+  @override
+  String get priorityLow => 'منخفضة';
+
+  @override
+  String get priorityMedium => 'متوسطة';
+
+  @override
+  String get priorityHigh => 'عالية';
+
+  @override
+  String get priorityUrgent => 'عاجلة';
+
+  @override
+  String get activityCreated => 'تم إنشاء المهمة';
+
+  @override
+  String get activityAssigned => 'تم تحديث الإسنادات';
+
+  @override
+  String get activityUnassigned => 'تم مسح الإسنادات';
+
+  @override
+  String get activityStarted => 'بدأ العمل';
+
+  @override
+  String get activityCompleted => 'اكتمل العمل';
+
+  @override
+  String get activityFlaggedForReview => 'أُرسلت لمراجعة المهندس الزراعي';
+
+  @override
+  String get activityReviewedApproved => 'تم اعتماد العمل';
+
+  @override
+  String get activityReviewedReturned => 'أُعيدت للتصحيح';
+
+  @override
+  String get activityCommented => 'تمت إضافة تعليق';
+
+  @override
+  String get activityCancelled => 'تم إلغاء المهمة';
+
+  @override
+  String get activityPhotoAdded => 'تمت إضافة دليل';
+
+  @override
+  String get photoTypeBefore => 'قبل العمل';
+
+  @override
+  String get photoTypeAfter => 'بعد العمل';
+
+  @override
+  String get photoTypeEvidence => 'دليل';
+
+  @override
+  String get photoTypeIssue => 'مشكلة';
+
+  @override
+  String get photoTypeReview => 'مراجعة';
+
+  @override
+  String get issueTypeInsufficientIrrigation => 'ري غير كافٍ';
+
+  @override
+  String get issueTypeCloggedDripper => 'نقّاط مسدود';
+
+  @override
+  String get issueTypeLeakOrDripperDamage => 'تسرّب أو تلف في النقّاط';
+
+  @override
+  String get issueTypeHarmfulWeed => 'أعشاب ضارة';
+
+  @override
+  String get issueTypePestOrDisease => 'آفة أو مرض';
+
+  @override
+  String get issueTypeTreeDamage => 'تلف في الشجرة';
+
+  @override
+  String get issueTypeOther => 'أخرى';
+
+  @override
+  String get reviewDecisionApproved => 'معتمدة';
+
+  @override
+  String get reviewDecisionReturned => 'أُعيدت للتصحيح';
+
+  @override
+  String get reviewDecisionFollowUp => 'تتطلب متابعة';
+
+  @override
+  String get reviewActionApprove => 'اعتماد';
+
+  @override
+  String get reviewActionReturn => 'إعادة للتصحيح';
+
+  @override
+  String get reviewActionFollowUp => 'طلب متابعة';
+
+  @override
+  String get tasksEyebrow => 'عمليات المزرعة';
+
+  @override
+  String get tasksTitle => 'مهام المزرعة';
+
+  @override
+  String get tasksCreate => 'إنشاء';
+
+  @override
+  String get tasksFilterToday => 'اليوم';
+
+  @override
+  String tasksFilterAll(int count) {
+    return 'الكل ($count)';
+  }
+
+  @override
+  String get tasksLoadingTitle => 'جارٍ تحميل مهام المزرعة';
+
+  @override
+  String get tasksLoadingMessage =>
+      'جارٍ التحقق من قائمة مهامك المصفّاة حسب دورك…';
+
+  @override
+  String get tasksLoadFailedTitle => 'تعذّر تحميل المهام';
+
+  @override
+  String get tasksFailureDefault =>
+      'تعذّر تحميل مهام المزرعة. تحقق من اتصالك وحاول مرة أخرى.';
+
+  @override
+  String get tasksEmptyTodayTitle => 'لا توجد مهام مجدولة اليوم';
+
+  @override
+  String get tasksEmptyAllTitle => 'لا توجد مهام مرئية';
+
+  @override
+  String get tasksEmptyManager =>
+      'أنشئ مهمة أو غيّر التاريخ والإسناد في Supabase.';
+
+  @override
+  String get tasksEmptyWorker => 'تظهر هنا فقط المهام النشطة المُسندة إليك.';
+
+  @override
+  String get reviewQueueEntryTitle => 'قائمة انتظار المراجعة';
+
+  @override
+  String get reviewQueueEntryNone => 'لا توجد مهام بانتظار المراجعة';
+
+  @override
+  String reviewQueueEntryCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count مهام بانتظار المراجعة',
+      one: 'مهمة واحدة بانتظار المراجعة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String targetTree(String code) {
+    return 'الشجرة $code';
+  }
+
+  @override
+  String get targetTreeGeneric => 'شجرة';
+
+  @override
+  String targetZone(String code) {
+    return 'المنطقة $code';
+  }
+
+  @override
+  String get targetZoneGeneric => 'منطقة ري';
+
+  @override
+  String targetSection(String code) {
+    return 'القسم $code';
+  }
+
+  @override
+  String get targetSectionGeneric => 'قسم من المزرعة';
+
+  @override
+  String get targetWholeFarm => 'المزرعة بأكملها';
+
+  @override
+  String get scheduleNotScheduled => 'غير مجدولة';
+
+  @override
+  String scheduleDue(String value) {
+    return 'الاستحقاق $value';
+  }
+
+  @override
+  String get taskDetailEyebrow => 'تفاصيل المهمة';
+
+  @override
+  String get backToTasks => 'العودة إلى المهام';
+
+  @override
+  String get detailType => 'النوع';
+
+  @override
+  String get detailTarget => 'الهدف';
+
+  @override
+  String get detailSchedule => 'الجدولة';
+
+  @override
+  String get detailPriority => 'الأولوية';
+
+  @override
+  String get detailPlannedDuration => 'المدة المخطط لها';
+
+  @override
+  String durationMinutes(int minutes) {
+    return '$minutes دقيقة';
+  }
+
+  @override
+  String get detailDescription => 'الوصف';
+
+  @override
+  String get detailInstructions => 'التعليمات';
+
+  @override
+  String get assignmentsTitle => 'الإسنادات';
+
+  @override
+  String get editAction => 'تعديل';
+
+  @override
+  String get noActiveAssignees => 'لا يوجد مكلّفون نشطون.';
+
+  @override
+  String assignedAt(String value) {
+    return 'تم الإسناد $value';
+  }
+
+  @override
+  String get assignedFarmMember => 'عضو المزرعة المُكلّف';
+
+  @override
+  String get actionsTitle => 'الإجراءات';
+
+  @override
+  String get startTask => 'بدء المهمة';
+
+  @override
+  String get completeAction => 'إكمال';
+
+  @override
+  String get addEvidence => 'إضافة دليل';
+
+  @override
+  String evidenceCount(int count) {
+    return 'الأدلة ($count)';
+  }
+
+  @override
+  String get noEvidence => 'لم يتم تسجيل أي دليل للمهمة.';
+
+  @override
+  String get activityTitle => 'النشاط';
+
+  @override
+  String get noActivity => 'لا يوجد نشاط مرئي للمهمة.';
+
+  @override
+  String get editAssignments => 'تعديل الإسنادات';
+
+  @override
+  String get noOperationalMembers => 'لا يوجد أعضاء تشغيليون نشطون متاحون.';
+
+  @override
+  String get saveAssignments => 'حفظ الإسنادات';
+
+  @override
+  String get completeTaskTitle => 'إكمال المهمة';
+
+  @override
+  String get completionNote => 'ملاحظة الإكمال';
+
+  @override
+  String get sendForReview => 'إرسال لمراجعة المهندس الزراعي';
+
+  @override
+  String get optionalCompletionEvidence => 'دليل إكمال اختياري';
+
+  @override
+  String selectedFile(String file) {
+    return 'المحدد: $file';
+  }
+
+  @override
+  String get evidenceTypeLabel => 'نوع الدليل';
+
+  @override
+  String get evidenceCaptionLabel => 'تعليق الدليل';
+
+  @override
+  String get confirmCompletion => 'تأكيد الإكمال';
+
+  @override
+  String get addTaskEvidenceTitle => 'إضافة دليل للمهمة';
+
+  @override
+  String get choosePhotoToContinue => 'اختر صورة للمتابعة.';
+
+  @override
+  String get captionLabel => 'التعليق';
+
+  @override
+  String get saveEvidence => 'حفظ الدليل';
+
+  @override
+  String get unableToLoadTask => 'تعذّر تحميل هذه المهمة.';
+
+  @override
+  String get taskWorkspaceUnavailable => 'مساحة عمل المهام غير متاحة.';
+
+  @override
+  String get stageReady => 'جاهز';
+
+  @override
+  String get stageStarting => 'جارٍ بدء المهمة…';
+
+  @override
+  String get stageAssigning => 'جارٍ حفظ الإسنادات…';
+
+  @override
+  String get stagePickingEvidence => 'جارٍ تجهيز الدليل…';
+
+  @override
+  String get stageUploadingEvidence => 'جارٍ رفع الدليل الخاص…';
+
+  @override
+  String get stageRegisteringEvidence => 'جارٍ تسجيل الدليل…';
+
+  @override
+  String get stageCompleting => 'جارٍ إكمال المهمة…';
+
+  @override
+  String get msgTaskStarted => 'بدأت المهمة.';
+
+  @override
+  String get msgAssignmentsUpdated => 'تم تحديث الإسنادات.';
+
+  @override
+  String get msgTaskEvidenceSaved => 'تم حفظ دليل المهمة.';
+
+  @override
+  String get msgTaskCompleted => 'اكتملت المهمة.';
+
+  @override
+  String get msgTaskCompletedReview =>
+      'اكتملت المهمة وأُرسلت لمراجعة المهندس الزراعي.';
+
+  @override
+  String get errTaskStart => 'تعذّر بدء المهمة.';
+
+  @override
+  String get errAssignmentsUpdate => 'تعذّر تحديث الإسنادات.';
+
+  @override
+  String get errEvidencePrepare => 'تعذّر تجهيز صورة الدليل تلك.';
+
+  @override
+  String get errEvidenceRegister =>
+      'لم يتم تأكيد تسجيل الدليل. يمكنك إعادة المحاولة بأمان.';
+
+  @override
+  String get errTaskComplete => 'تعذّر إكمال المهمة.';
+
+  @override
+  String get errCompletionUnconfirmed =>
+      'تم حفظ الدليل، لكن لم يتم تأكيد إكمال المهمة. أعد محاولة الإكمال دون الرفع مرة أخرى.';
+
+  @override
+  String get createEyebrow => 'التخطيط للعمل الميداني';
+
+  @override
+  String get createTitle => 'إنشاء مهمة';
+
+  @override
+  String get taskTitleField => 'عنوان المهمة *';
+
+  @override
+  String get enterTaskTitle => 'أدخل عنوانًا للمهمة';
+
+  @override
+  String get taskTypeField => 'نوع المهمة';
+
+  @override
+  String get descriptionField => 'الوصف';
+
+  @override
+  String get workerInstructionsField => 'تعليمات العامل';
+
+  @override
+  String get targetTitle => 'الهدف';
+
+  @override
+  String get scopeField => 'النطاق';
+
+  @override
+  String get scopeWholeFarm => 'المزرعة بأكملها';
+
+  @override
+  String get scopeSection => 'قسم';
+
+  @override
+  String get scopeZone => 'منطقة ري';
+
+  @override
+  String get scopeTree => 'شجرة';
+
+  @override
+  String get scheduleTitle => 'الجدولة';
+
+  @override
+  String get scheduledDate => 'التاريخ المجدول';
+
+  @override
+  String get startTimeLabel => 'وقت البدء';
+
+  @override
+  String get dueDateLabel => 'تاريخ الاستحقاق';
+
+  @override
+  String get dueTimeLabel => 'وقت الاستحقاق';
+
+  @override
+  String get plannedDurationField => 'المدة المخطط لها (بالدقائق)';
+
+  @override
+  String get enterPositiveMinutes => 'أدخل عددًا موجبًا من الدقائق';
+
+  @override
+  String get priorityField => 'الأولوية';
+
+  @override
+  String get requireEngineerReview => 'طلب مراجعة المهندس الزراعي';
+
+  @override
+  String get membersLoadFailed => 'تعذّر تحميل أعضاء المزرعة القابلين للإسناد.';
+
+  @override
+  String get creatingTask => 'جارٍ الإنشاء…';
+
+  @override
+  String get createTaskButton => 'إنشاء مهمة';
+
+  @override
+  String get chooseTargetSnack => 'اختر هدفًا لهذه المهمة.';
+
+  @override
+  String get chooseTargetValidator => 'اختر هدفًا';
+
+  @override
+  String get createUnavailableRole =>
+      'لا يسمح دورك في المزرعة بإنشاء المهام أو إسنادها.';
+
+  @override
+  String get createUnavailableWorkspace => 'مساحة عمل مهام المزرعة غير جاهزة.';
+
+  @override
+  String get msgTaskCreated => 'تم إنشاء المهمة وإسنادها.';
+
+  @override
+  String get errTaskCreate => 'تعذّر إنشاء المهمة.';
+
+  @override
+  String get reviewTaskEyebrow => 'مراجعة المهمة';
+
+  @override
+  String get reviewQueueEyebrow => 'مراجعة المهندس الزراعي';
+
+  @override
+  String get reviewQueueTitle => 'قائمة انتظار المراجعة';
+
+  @override
+  String reviewQueuePending(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count مهام بانتظار القرار.',
+      one: 'مهمة واحدة بانتظار القرار.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get reviewQueueLoadingTitle => 'جارٍ تحميل قائمة انتظار المراجعة';
+
+  @override
+  String get reviewQueueLoadingMessage =>
+      'جارٍ التحقق من المهام المحوّلة لمراجعة المهندس الزراعي…';
+
+  @override
+  String get reviewQueueFailedTitle => 'تعذّر تحميل قائمة الانتظار';
+
+  @override
+  String get reviewQueueEmptyTitle => 'لا توجد مهام قيد الانتظار';
+
+  @override
+  String get reviewQueueEmptyMessage =>
+      'سيظهر هنا العمل المكتمل المُرسل للمراجعة.';
+
+  @override
+  String get reviewQueueUnavailableTitle => 'مساحة عمل المراجعة غير متاحة';
+
+  @override
+  String get reviewQueueUnavailableMessage =>
+      'أعد فتح التطبيق لاستعادة قائمة انتظار مراجعة المزرعة.';
+
+  @override
+  String get reviewDeniedTitle => 'المراجعات مقيّدة';
+
+  @override
+  String get reviewDeniedMessage =>
+      'يمكن للمالك أو المهندس الزراعي فقط مراجعة العمل المكتمل.';
+
+  @override
+  String get backToReviewQueue => 'العودة إلى قائمة انتظار المراجعة';
+
+  @override
+  String get reviewLinkedIssue => 'مرتبطة ببلاغ عن مشكلة في شجرة.';
+
+  @override
+  String get reviewCompleted => 'مكتملة';
+
+  @override
+  String get decisionTitle => 'القرار';
+
+  @override
+  String get decisionNotAwaiting => 'هذه المهمة ليست بانتظار قرار مراجعة.';
+
+  @override
+  String get decisionPrompt => 'سجّل نتيجة مراجعة المهندس الزراعي لهذا العمل.';
+
+  @override
+  String get reviewNotesLabel => 'ملاحظات المراجعة';
+
+  @override
+  String get reviewNotesHint => 'اشرح القرار للمكلّف.';
+
+  @override
+  String get optionalReviewPhoto => 'صورة مراجعة اختيارية';
+
+  @override
+  String reviewHistory(int count) {
+    return 'سجل المراجعات ($count)';
+  }
+
+  @override
+  String get noReviews => 'لم يتم تسجيل أي قرارات مراجعة بعد.';
+
+  @override
+  String get reviewWorkspaceUnavailable => 'مساحة عمل المراجعة غير متاحة.';
+
+  @override
+  String get unableToLoadReview => 'تعذّر تحميل هذه المراجعة.';
+
+  @override
+  String confirmDecision(String action) {
+    return 'تأكيد $action';
+  }
+
+  @override
+  String get reviewStagePickingPhoto => 'جارٍ تجهيز الصورة…';
+
+  @override
+  String get reviewStageUploadingPhoto => 'جارٍ رفع الصورة الخاصة…';
+
+  @override
+  String get reviewStageSubmitting => 'جارٍ تسجيل القرار…';
+
+  @override
+  String msgReviewRecorded(String decision) {
+    return 'تم تسجيل المراجعة: $decision.';
+  }
+
+  @override
+  String get errReviewPhotoUnconfirmed =>
+      'تم رفع صورة المراجعة، لكن لم يتم تأكيد القرار. أعد المحاولة دون الرفع مرة أخرى.';
+
+  @override
+  String get errReviewRecord => 'تعذّر تسجيل قرار المراجعة.';
+
+  @override
+  String get errReviewPhotoPrepare => 'تعذّر تجهيز صورة المراجعة تلك.';
+
+  @override
+  String get reportIssueTitle => 'الإبلاغ عن مشكلة في شجرة';
+
+  @override
+  String issueSectionRow(String section, String row, String tree) {
+    return 'القسم $section · الصف $row / الشجرة $tree';
+  }
+
+  @override
+  String get issueTypeLabel => 'نوع المشكلة';
+
+  @override
+  String get issueSeverityLabel => 'الخطورة';
+
+  @override
+  String get issueObservationLabel => 'ملاحظة (اختياري)';
+
+  @override
+  String issueKibPrepared(int kib) {
+    return 'تم تجهيز $kib ك.ب';
+  }
+
+  @override
+  String get issueRemovePhoto => 'إزالة الصورة';
+
+  @override
+  String get reportIssueButton => 'الإبلاغ عن مشكلة';
+
+  @override
+  String get issueReportedButton => 'تم الإبلاغ عن المشكلة';
+
+  @override
+  String get issueRetryPhoto => 'إعادة محاولة الصورة';
+
+  @override
+  String get issueUnavailable => 'هذه الشجرة غير متاحة للإبلاغ عن مشكلة.';
+
+  @override
+  String get issueStagePreparingPhoto => 'جارٍ تجهيز الصورة…';
+
+  @override
+  String get issueStageReporting => 'جارٍ إنشاء المشكلة ومهمة المراجعة…';
+
+  @override
+  String get issueStageUploadingPhoto => 'جارٍ رفع الدليل الخاص…';
+
+  @override
+  String get issueStageRegisteringPhoto => 'جارٍ تسجيل الدليل…';
+
+  @override
+  String get issueErrPhotoPrepare => 'تعذّر تجهيز تلك الصورة.';
+
+  @override
+  String get issueMsgReported =>
+      'تم الإبلاغ عن المشكلة وإنشاء مهمة مراجعة للمهندس الزراعي.';
+
+  @override
+  String get issueErrReport => 'تعذّر الإبلاغ عن المشكلة. تحقق من اتصالك.';
+
+  @override
+  String get issueMsgReportedWithPhoto =>
+      'تم حفظ المشكلة ومهمة المراجعة ودليل الصورة.';
+
+  @override
+  String get issueErrPartialPrefix =>
+      'تم حفظ المشكلة ومهمة المراجعة، لكن لم يتم تأكيد تسجيل الصورة. ';
+
+  @override
+  String get issueMsgRetryPhoto => 'يمكنك إعادة محاولة رفع الصورة بأمان.';
+
+  @override
+  String get selectedTree => 'الشجرة المحددة';
+
+  @override
+  String get attachTask => 'إرفاق مهمة';
+
+  @override
+  String get reportAnIssue => 'الإبلاغ عن مشكلة';
+
+  @override
+  String get treeUnavailableActions =>
+      'نقطة الإحداثيات هذه غير متوفرة في بيانات المزرعة المباشرة، لذا فإن الإجراءات التشغيلية معطّلة.';
+
+  @override
+  String get treeDetailSection => 'القسم';
+
+  @override
+  String get treeDetailRowTree => 'الصف / الشجرة';
+
+  @override
+  String get treeDetailHealth => 'الحالة الصحية';
+
+  @override
+  String get treeDetailZone => 'المنطقة';
+
+  @override
+  String get treeZoneUnassigned => 'غير مُعيّنة';
+
+  @override
+  String get treeUnavailableTitle => 'الشجرة غير متاحة';
+
+  @override
+  String get treeUnavailableMessage =>
+      'هذه الشجرة غير نشطة أو لم تعد مرئية لمزرعتك.';
+
+  @override
+  String get goBack => 'العودة';
+
+  @override
+  String get scanQrInactive => 'رمز QR هذا غير نشط أو غير مرئي لمزرعتك.';
+
+  @override
+  String get scanOffline =>
+      'تعذّر المسح أثناء عدم الاتصال. حاول مرة أخرى عند الاتصال.';
+
+  @override
+  String get scanLookingUp => 'جارٍ البحث عن الشجرة…';
+
+  @override
+  String get scanPointCamera => 'وجّه الكاميرا نحو ملصق QR الخاص بالشجرة.';
+
+  @override
+  String get scanCameraOff =>
+      'الوصول إلى الكاميرا معطّل. فعّله في الإعدادات لمسح ملصقات الأشجار.';
+
+  @override
+  String get scanCameraUnavailable =>
+      'الكاميرا غير متاحة. يمكنك المحاولة مرة أخرى بعد التحقق من الأذونات.';
+
+  @override
+  String get mapEyebrow => 'خريطة ثنائية الأبعاد دقيقة الإحداثيات';
+
+  @override
+  String get mapZoomIn => 'تكبير';
+
+  @override
+  String get mapZoomOut => 'تصغير';
+
+  @override
+  String get mapReset => 'إعادة تعيين الخريطة';
+
+  @override
+  String get mapLayers => 'طبقات الخريطة';
+
+  @override
+  String get mapLayerTrees => 'الأشجار';
+
+  @override
+  String get mapLayerIrrigation => 'شبكة الري';
+
+  @override
+  String get mapLayerUtilities => 'المباني والمرافق';
+
+  @override
+  String get mapAllSections => 'جميع الأقسام الـ 12';
+
+  @override
+  String get mapSectionEmpty => 'فارغ';
+
+  @override
+  String get mapSectionUnplanted => 'غير مزروع';
+
+  @override
+  String get mapSelectAnyTree => 'اختر أي شجرة';
+
+  @override
+  String mapTreePointsAvailable(int count) {
+    return 'تتوفر $count نقطة شجرة.';
+  }
+
+  @override
+  String mapGeometryFailed(String error) {
+    return 'تعذّر تحميل هندسة المزرعة المُضمّنة.\n$error';
+  }
+
+  @override
+  String get mapDiscrepancySemantics => 'تحذير من تعارض في بيانات المزرعة';
+
+  @override
+  String mapDiscrepancy(int count, String summary) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'فحص بيانات المزرعة · $count فروقات',
+      one: 'فحص بيانات المزرعة · فرق واحد',
+    );
+    return '$_temp0\n$summary';
+  }
+}

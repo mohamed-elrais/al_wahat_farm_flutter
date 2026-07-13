@@ -1,4 +1,5 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
+import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
 import 'package:al_wahat_farm_flutter/features/trees/domain/tree_identity.dart';
 import 'package:flutter/material.dart';
@@ -48,14 +49,14 @@ class TreeDetailSheet extends StatelessWidget {
                   key: const Key('tree-attach-task'),
                   onPressed: onAttachTask,
                   icon: const Icon(Icons.assignment_add),
-                  label: const Text('Attach a task'),
+                  label: Text(context.l10n.attachTask),
                 ),
               if (onReportIssue != null)
                 OutlinedButton.icon(
                   key: const Key('tree-report-issue'),
                   onPressed: onReportIssue,
                   icon: const Icon(Icons.report_outlined),
-                  label: const Text('Report an issue'),
+                  label: Text(context.l10n.reportAnIssue),
                 )
               else
                 const _UnavailableTreeMessage(),
@@ -77,7 +78,7 @@ class TreeDetailContent extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        const Eyebrow('Selected tree'),
+        Eyebrow(context.l10n.selectedTree),
         Text(
           tree.code,
           key: const Key('tree-detail-code'),
@@ -88,14 +89,19 @@ class TreeDetailContent extends StatelessWidget {
           spacing: 18,
           runSpacing: 12,
           children: <Widget>[
-            _Detail(label: 'Section', value: tree.sectionCode),
             _Detail(
-              label: 'Row / tree',
+                label: context.l10n.treeDetailSection, value: tree.sectionCode),
+            _Detail(
+              label: context.l10n.treeDetailRowTree,
               value: '${tree.rowNumber ?? '—'} / ${tree.treeNumber ?? '—'}',
             ),
-            _Detail(label: 'Health', value: tree.healthStatus),
-            _Detail(label: 'Type', value: tree.type),
-            _Detail(label: 'Zone', value: tree.zoneLabel ?? 'Unassigned'),
+            _Detail(
+                label: context.l10n.treeDetailHealth, value: tree.healthStatus),
+            _Detail(label: context.l10n.detailType, value: tree.type),
+            _Detail(
+              label: context.l10n.treeDetailZone,
+              value: tree.zoneLabel ?? context.l10n.treeZoneUnassigned,
+            ),
           ],
         ),
         if (latitude != null && longitude != null) ...<Widget>[
@@ -123,9 +129,9 @@ class _UnavailableTreeMessage extends StatelessWidget {
   const _UnavailableTreeMessage();
 
   @override
-  Widget build(BuildContext context) => const WahatCard(
+  Widget build(BuildContext context) => WahatCard(
         child: Text(
-          'This geometry point is not available in live farm data, so operational actions are disabled.',
+          context.l10n.treeUnavailableActions,
           textAlign: TextAlign.center,
         ),
       );

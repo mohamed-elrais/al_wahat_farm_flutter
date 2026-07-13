@@ -4,6 +4,7 @@ import 'package:al_wahat_farm_flutter/app/theme/app_theme.dart';
 import 'package:al_wahat_farm_flutter/core/app_services.dart';
 import 'package:al_wahat_farm_flutter/core/cache/local_cache_store.dart';
 import 'package:al_wahat_farm_flutter/core/connectivity/connectivity_service.dart';
+import 'package:al_wahat_farm_flutter/core/l10n/locale_controller.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/app_shell.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -41,6 +42,7 @@ void main() {
     final services = AppServices(
       cacheStore: InMemoryCacheStore(),
       connectivity: connectivity,
+      locale: LocaleController(InMemoryCacheStore()),
     );
 
     await tester.pumpWidget(

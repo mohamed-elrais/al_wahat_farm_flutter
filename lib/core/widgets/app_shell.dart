@@ -1,5 +1,6 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
 import 'package:al_wahat_farm_flutter/core/app_services.dart';
+import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -43,21 +44,21 @@ class WahatConnectivityBanner extends StatelessWidget {
         if (!connectivity.isOffline) return const SizedBox.shrink();
         return Semantics(
           liveRegion: true,
-          label: 'You are offline. Showing cached farm and task data.',
+          label: context.l10n.offlineBannerSemantics,
           child: Container(
             key: const Key('offline-banner'),
             width: double.infinity,
             color: AppColors.issue.withOpacity(0.12),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: const Row(
+            child: Row(
               children: <Widget>[
-                Icon(Icons.cloud_off_outlined,
+                const Icon(Icons.cloud_off_outlined,
                     size: 18, color: AppColors.issue),
-                SizedBox(width: 8),
+                const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Offline · showing cached farm and task data',
-                    style: TextStyle(
+                    context.l10n.offlineBanner,
+                    style: const TextStyle(
                       color: AppColors.issue,
                       fontWeight: FontWeight.w700,
                       fontSize: 12,
@@ -93,11 +94,11 @@ class WahatTopBar extends StatelessWidget {
                   const Icon(Icons.park_outlined,
                       size: 30, color: AppColors.ink),
                   const SizedBox(width: 10),
-                  Text('Al Wahat',
+                  Text(context.l10n.brandName,
                       style: Theme.of(context).textTheme.titleLarge),
                   const Spacer(),
                   IconButton(
-                    tooltip: 'Notifications',
+                    tooltip: context.l10n.notifications,
                     onPressed: () {},
                     icon: const Badge(child: Icon(Icons.notifications_none)),
                   ),
@@ -127,12 +128,13 @@ class WahatNavigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const items = <(IconData, String)>[
-      (Icons.home_outlined, 'Home'),
-      (Icons.map_outlined, 'Map'),
-      (Icons.qr_code_scanner, 'Scan'),
-      (Icons.assignment_outlined, 'Tasks'),
-      (Icons.more_horiz, 'More'),
+    final l10n = context.l10n;
+    final items = <(IconData, String, String)>[
+      (Icons.home_outlined, 'home', l10n.navHome),
+      (Icons.map_outlined, 'map', l10n.navMap),
+      (Icons.qr_code_scanner, 'scan', l10n.navScan),
+      (Icons.assignment_outlined, 'tasks', l10n.navTasks),
+      (Icons.more_horiz, 'more', l10n.navMore),
     ];
     return SafeArea(
       minimum: const EdgeInsets.fromLTRB(12, 0, 12, 10),
@@ -156,11 +158,11 @@ class WahatNavigation extends StatelessWidget {
             final active = itemIndex == index;
             final scan = itemIndex == 2;
             return Semantics(
-              key: Key('nav-${item.$2.toLowerCase()}'),
+              key: Key('nav-${item.$2}'),
               excludeSemantics: true,
               selected: active,
               button: true,
-              label: item.$2,
+              label: item.$3,
               child: InkResponse(
                 onTap: () => onSelected(itemIndex),
                 radius: 30,
@@ -187,7 +189,7 @@ class WahatNavigation extends StatelessWidget {
                       if (!scan) ...<Widget>[
                         const SizedBox(height: 2),
                         Text(
-                          item.$2,
+                          item.$3,
                           style: TextStyle(
                             color:
                                 active ? Colors.white : const Color(0xFFB6C6B9),

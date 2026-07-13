@@ -1,4 +1,5 @@
 import 'package:al_wahat_farm_flutter/core/errors/operation_failure.dart';
+import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/data/task_repository.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/farm_task.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/task_evidence.dart';
@@ -43,13 +44,13 @@ class TaskDetailController extends ChangeNotifier {
   PreparedTaskEvidence? _evidence;
   String? _uploadedPath;
   bool _evidenceRegistered = false;
-  String? _message;
+  String Function(AppLocalizations)? _message;
 
   TaskDetailStatus get status => _status;
   TaskMutationStage get stage => _stage;
   TaskDetails? get details => _details;
   PreparedTaskEvidence? get evidence => _evidence;
-  String? get message => _message;
+  String Function(AppLocalizations)? get message => _message;
   bool get isBusy => _stage != TaskMutationStage.idle;
 
   Future<void> load() async {
@@ -61,7 +62,7 @@ class TaskDetailController extends ChangeNotifier {
       _status = TaskDetailStatus.ready;
     } catch (error) {
       _status = TaskDetailStatus.failure;
-      _message = _messageFor(error, 'Unable to load this task.');
+      _message = _messageFor(error, (l10n) => l10n.unableToLoadTask);
     }
     notifyListeners();
   }
@@ -78,7 +79,7 @@ class TaskDetailController extends ChangeNotifier {
       }
       _message = null;
     } catch (error) {
-      _message = _messageFor(error, 'Unable to prepare that evidence photo.');
+      _message = _messageFor(error, (l10n) => l10n.errEvidencePrepare);
     }
     _setStage(TaskMutationStage.idle);
   }
@@ -96,10 +97,10 @@ class TaskDetailController extends ChangeNotifier {
     _setStage(TaskMutationStage.starting);
     try {
       await _repository.start(taskId, note: note);
-      await _afterMutation('Task started.');
+      await _afterMutation((l10n) => l10n.msgTaskStarted);
       return true;
     } catch (error) {
-      _message = _messageFor(error, 'The task could not be started.');
+      _message = _messageFor(error, (l10n) => l10n.errTaskStart);
       _setStage(TaskMutationStage.idle);
       return false;
     }
@@ -110,10 +111,10 @@ class TaskDetailController extends ChangeNotifier {
     _setStage(TaskMutationStage.assigning);
     try {
       await _repository.setAssignments(taskId, profileIds);
-      await _afterMutation('Assignments updated.');
+      await _afterMutation((l10n) => l10n.msgAssignmentsUpdated);
       return true;
     } catch (error) {
-      _message = _messageFor(error, 'Assignments could not be updated.');
+      _message = _messageFor(error, (l10n) => l10n.errAssignmentsUpdate);
       _setStage(TaskMutationStage.idle);
       return false;
     }
@@ -129,13 +130,10 @@ class TaskDetailController extends ChangeNotifier {
       _evidence = null;
       _uploadedPath = null;
       _evidenceRegistered = false;
-      await _afterMutation('Task evidence saved.');
+      await _afterMutation((l10n) => l10n.msgTaskEvidenceSaved);
       return true;
     } catch (error) {
-      _message = _messageFor(
-        error,
-        'Evidence registration was not confirmed. You can safely retry.',
-      );
+      _message = _messageFor(error, (l10n) => l10n.errEvidenceRegister);
       _setStage(TaskMutationStage.idle);
       return false;
     }
@@ -164,21 +162,22 @@ class TaskDetailController extends ChangeNotifier {
       _evidence = null;
       _uploadedPath = null;
       _evidenceRegistered = false;
-      final fallbackMessage = requiresEngineerReview
-          ? 'Task completed and sent for engineer review.'
-          : 'Task completed.';
+      final String Function(AppLocalizations) fallbackMessage =
+          requiresEngineerReview
+              ? (l10n) => l10n.msgTaskCompletedReview
+              : (l10n) => l10n.msgTaskCompleted;
       await _afterMutation(
         fallbackMessage,
         resolveMessage: (details) =>
             details?.task.status == TaskStatus.needsEngineerReview
-                ? 'Task completed and sent for engineer review.'
+                ? (l10n) => l10n.msgTaskCompletedReview
                 : fallbackMessage,
       );
       return true;
     } catch (error) {
       _message = _evidenceRegistered
-          ? 'Evidence is saved, but task completion was not confirmed. Retry completion without uploading again.'
-          : _messageFor(error, 'The task could not be completed.');
+          ? ((l10n) => l10n.errCompletionUnconfirmed)
+          : _messageFor(error, (l10n) => l10n.errTaskComplete);
       _setStage(TaskMutationStage.idle);
       return false;
     }
@@ -229,8 +228,8 @@ class TaskDetailController extends ChangeNotifier {
   }
 
   Future<void> _afterMutation(
-    String message, {
-    String Function(TaskDetails?)? resolveMessage,
+    String Function(AppLocalizations) message, {
+    String Function(AppLocalizations) Function(TaskDetails?)? resolveMessage,
   }) async {
     try {
       _details = await _repository.loadDetails(taskId);
@@ -254,8 +253,11 @@ class TaskDetailController extends ChangeNotifier {
   }
 }
 
-String _messageFor(Object error, String fallback) =>
-    error is OperationFailure ? error.message : fallback;
+String Function(AppLocalizations) _messageFor(
+  Object error,
+  String Function(AppLocalizations) fallback,
+) =>
+    error is OperationFailure ? ((_) => error.message) : fallback;
 
 String? _optionalText(String? value) {
   final trimmed = value?.trim();

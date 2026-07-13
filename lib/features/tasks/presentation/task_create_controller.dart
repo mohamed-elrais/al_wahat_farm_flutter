@@ -1,4 +1,5 @@
 import 'package:al_wahat_farm_flutter/core/errors/operation_failure.dart';
+import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/data/task_repository.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/task_draft.dart';
 import 'package:flutter/foundation.dart';
@@ -16,11 +17,11 @@ class TaskCreateController extends ChangeNotifier {
 
   TaskCreateStatus _status = TaskCreateStatus.idle;
   String? _taskId;
-  String? _message;
+  String Function(AppLocalizations)? _message;
 
   TaskCreateStatus get status => _status;
   String? get taskId => _taskId;
-  String? get message => _message;
+  String Function(AppLocalizations)? get message => _message;
   bool get isSubmitting => _status == TaskCreateStatus.submitting;
 
   Future<String?> submit(TaskDraft draft) async {
@@ -28,7 +29,7 @@ class TaskCreateController extends ChangeNotifier {
     final validation = draft.validate();
     if (validation != null) {
       _status = TaskCreateStatus.failure;
-      _message = validation;
+      _message = (_) => validation;
       notifyListeners();
       return null;
     }
@@ -44,14 +45,14 @@ class TaskCreateController extends ChangeNotifier {
         // creation failed.
       }
       _status = TaskCreateStatus.success;
-      _message = 'Task created and saved to the farm workflow.';
+      _message = (l10n) => l10n.msgTaskCreated;
       notifyListeners();
       return _taskId;
     } catch (error) {
       _status = TaskCreateStatus.failure;
       _message = error is OperationFailure
-          ? error.message
-          : 'The task could not be created. Check your connection.';
+          ? ((_) => error.message)
+          : ((l10n) => l10n.errTaskCreate);
       notifyListeners();
       return null;
     }

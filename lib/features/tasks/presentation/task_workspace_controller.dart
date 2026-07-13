@@ -1,4 +1,5 @@
 import 'package:al_wahat_farm_flutter/core/errors/operation_failure.dart';
+import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/data/task_repository.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/farm_task.dart';
 import 'package:flutter/widgets.dart';
@@ -189,9 +190,10 @@ class _TaskWorkspaceProviderState extends State<TaskWorkspaceProvider> {
       );
 }
 
-String taskFailureMessage(Object? error) => switch (error) {
+String taskFailureMessage(AppLocalizations l10n, Object? error) =>
+    switch (error) {
       OperationFailure(:final message) => message,
-      _ => 'Unable to load farm tasks. Check your connection and try again.',
+      _ => l10n.tasksFailureDefault,
     };
 
 bool _sameDay(DateTime left, DateTime right) =>

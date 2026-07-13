@@ -1,4 +1,6 @@
 import 'package:al_wahat_farm_flutter/core/errors/operation_failure.dart';
+import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
+import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/features/reviews/data/engineer_review_repository.dart';
 import 'package:al_wahat_farm_flutter/features/reviews/domain/engineer_review.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/data/task_repository.dart';
@@ -43,14 +45,14 @@ class ReviewController extends ChangeNotifier {
   List<EngineerReview> _reviews = const <EngineerReview>[];
   PreparedTaskEvidence? _photo;
   String? _uploadedPath;
-  String? _message;
+  String Function(AppLocalizations)? _message;
 
   ReviewStatus get status => _status;
   ReviewStage get stage => _stage;
   TaskDetails? get details => _details;
   List<EngineerReview> get reviews => _reviews;
   PreparedTaskEvidence? get photo => _photo;
-  String? get message => _message;
+  String Function(AppLocalizations)? get message => _message;
   bool get isBusy => _stage != ReviewStage.idle;
 
   /// Whether the current task status accepts a review decision. The backend
@@ -73,7 +75,7 @@ class ReviewController extends ChangeNotifier {
       _status = ReviewStatus.ready;
     } catch (error) {
       _status = ReviewStatus.failure;
-      _message = _messageFor(error, 'Unable to load this review.');
+      _message = _messageFor(error, (l10n) => l10n.unableToLoadReview);
     }
     notifyListeners();
   }
@@ -89,7 +91,7 @@ class ReviewController extends ChangeNotifier {
       }
       _message = null;
     } catch (error) {
-      _message = _messageFor(error, 'Unable to prepare that review photo.');
+      _message = _messageFor(error, (l10n) => l10n.errReviewPhotoPrepare);
     }
     _setStage(ReviewStage.idle);
   }
@@ -120,13 +122,14 @@ class ReviewController extends ChangeNotifier {
       );
       _photo = null;
       _uploadedPath = null;
-      await _afterReview('Review recorded: ${decision.label}.');
+      await _afterReview(
+        (l10n) => l10n.msgReviewRecorded(decision.localizedLabel(l10n)),
+      );
       return true;
     } catch (error) {
       _message = _uploadedPath != null
-          ? 'The review photo is uploaded, but the decision was not confirmed. '
-              'Retry without uploading again.'
-          : _messageFor(error, 'The review decision could not be recorded.');
+          ? ((l10n) => l10n.errReviewPhotoUnconfirmed)
+          : _messageFor(error, (l10n) => l10n.errReviewRecord);
       _setStage(ReviewStage.idle);
       return false;
     }
@@ -149,7 +152,7 @@ class ReviewController extends ChangeNotifier {
     return path;
   }
 
-  Future<void> _afterReview(String message) async {
+  Future<void> _afterReview(String Function(AppLocalizations) message) async {
     try {
       _details = await _taskRepository.loadDetails(taskId);
       _reviews =
@@ -176,8 +179,11 @@ class ReviewController extends ChangeNotifier {
   }
 }
 
-String _messageFor(Object error, String fallback) =>
-    error is OperationFailure ? error.message : fallback;
+String Function(AppLocalizations) _messageFor(
+  Object error,
+  String Function(AppLocalizations) fallback,
+) =>
+    error is OperationFailure ? ((_) => error.message) : fallback;
 
 String? _optionalText(String? value) {
   final trimmed = value?.trim();

@@ -1,4 +1,6 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
+import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
+import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
 import 'package:al_wahat_farm_flutter/features/auth/presentation/authenticated_gate.dart';
@@ -126,13 +128,13 @@ class _TaskCreateScreenState extends State<TaskCreateScreen> {
     final hierarchy = _hierarchy;
     final controller = _controller;
     if (role?.canManageTasks != true) {
-      return const _CreateUnavailable(
-        message: 'Your farm role cannot create or assign tasks.',
+      return _CreateUnavailable(
+        message: context.l10n.createUnavailableRole,
       );
     }
     if (hierarchy == null || controller == null || _farmId == null) {
-      return const _CreateUnavailable(
-        message: 'The farm task workspace is not ready.',
+      return _CreateUnavailable(
+        message: context.l10n.createUnavailableWorkspace,
       );
     }
 
@@ -175,7 +177,7 @@ class _TaskCreateScreenState extends State<TaskCreateScreen> {
           Row(
             children: <Widget>[
               IconButton(
-                tooltip: 'Back to tasks',
+                tooltip: context.l10n.backToTasks,
                 onPressed: () => context.go('/tasks'),
                 icon: const Icon(Icons.arrow_back),
               ),
@@ -184,9 +186,9 @@ class _TaskCreateScreenState extends State<TaskCreateScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    const Eyebrow('Plan field work'),
+                    Eyebrow(context.l10n.createEyebrow),
                     Text(
-                      'Create task',
+                      context.l10n.createTitle,
                       style: Theme.of(context).textTheme.headlineLarge,
                     ),
                   ],
@@ -203,9 +205,10 @@ class _TaskCreateScreenState extends State<TaskCreateScreen> {
                   key: const Key('task-title-field'),
                   controller: _titleController,
                   textInputAction: TextInputAction.next,
-                  decoration: const InputDecoration(labelText: 'Task title *'),
+                  decoration:
+                      InputDecoration(labelText: context.l10n.taskTitleField),
                   validator: (value) => value == null || value.trim().isEmpty
-                      ? 'Enter a task title'
+                      ? context.l10n.enterTaskTitle
                       : null,
                 ),
                 const SizedBox(height: 12),
@@ -213,12 +216,13 @@ class _TaskCreateScreenState extends State<TaskCreateScreen> {
                   key: const Key('task-type-field'),
                   value: _type,
                   isExpanded: true,
-                  decoration: const InputDecoration(labelText: 'Task type'),
+                  decoration:
+                      InputDecoration(labelText: context.l10n.taskTypeField),
                   items: TaskType.values
                       .map(
                         (type) => DropdownMenuItem<TaskType>(
                           value: type,
-                          child: Text(type.label),
+                          child: Text(type.localizedLabel(context.l10n)),
                         ),
                       )
                       .toList(growable: false),
@@ -231,15 +235,16 @@ class _TaskCreateScreenState extends State<TaskCreateScreen> {
                   controller: _descriptionController,
                   minLines: 2,
                   maxLines: 4,
-                  decoration: const InputDecoration(labelText: 'Description'),
+                  decoration:
+                      InputDecoration(labelText: context.l10n.descriptionField),
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _instructionsController,
                   minLines: 2,
                   maxLines: 4,
-                  decoration: const InputDecoration(
-                    labelText: 'Worker instructions',
+                  decoration: InputDecoration(
+                    labelText: context.l10n.workerInstructionsField,
                   ),
                 ),
               ],
@@ -250,28 +255,30 @@ class _TaskCreateScreenState extends State<TaskCreateScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                Text('Target', style: Theme.of(context).textTheme.titleLarge),
+                Text(context.l10n.targetTitle,
+                    style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<_TaskScope>(
                   key: const Key('task-scope-field'),
                   value: _scope,
-                  decoration: const InputDecoration(labelText: 'Scope'),
-                  items: const <DropdownMenuItem<_TaskScope>>[
+                  decoration:
+                      InputDecoration(labelText: context.l10n.scopeField),
+                  items: <DropdownMenuItem<_TaskScope>>[
                     DropdownMenuItem(
                       value: _TaskScope.farm,
-                      child: Text('Whole farm'),
+                      child: Text(context.l10n.scopeWholeFarm),
                     ),
                     DropdownMenuItem(
                       value: _TaskScope.section,
-                      child: Text('Section'),
+                      child: Text(context.l10n.scopeSection),
                     ),
                     DropdownMenuItem(
                       value: _TaskScope.zone,
-                      child: Text('Irrigation zone'),
+                      child: Text(context.l10n.scopeZone),
                     ),
                     DropdownMenuItem(
                       value: _TaskScope.tree,
-                      child: Text('Tree'),
+                      child: Text(context.l10n.scopeTree),
                     ),
                   ],
                   onChanged: controller.isSubmitting
@@ -299,7 +306,8 @@ class _TaskCreateScreenState extends State<TaskCreateScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                Text('Schedule', style: Theme.of(context).textTheme.titleLarge),
+                Text(context.l10n.scheduleTitle,
+                    style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: 10),
                 Wrap(
                   spacing: 10,
@@ -312,7 +320,7 @@ class _TaskCreateScreenState extends State<TaskCreateScreen> {
                           : () => _pickDate(isDue: false),
                       icon: const Icon(Icons.calendar_today_outlined),
                       label: Text(_scheduledFor == null
-                          ? 'Scheduled date'
+                          ? context.l10n.scheduledDate
                           : _formatDate(_scheduledFor!)),
                     ),
                     OutlinedButton.icon(
@@ -321,7 +329,7 @@ class _TaskCreateScreenState extends State<TaskCreateScreen> {
                           : () => _pickTime(isDue: false),
                       icon: const Icon(Icons.schedule_outlined),
                       label: Text(_plannedStart == null
-                          ? 'Start time'
+                          ? context.l10n.startTimeLabel
                           : _plannedStart!.format(context)),
                     ),
                     OutlinedButton.icon(
@@ -330,7 +338,7 @@ class _TaskCreateScreenState extends State<TaskCreateScreen> {
                           : () => _pickDate(isDue: true),
                       icon: const Icon(Icons.event_available_outlined),
                       label: Text(_dueDate == null
-                          ? 'Due date'
+                          ? context.l10n.dueDateLabel
                           : _formatDate(_dueDate!)),
                     ),
                     if (_dueDate != null)
@@ -340,7 +348,7 @@ class _TaskCreateScreenState extends State<TaskCreateScreen> {
                             : () => _pickTime(isDue: true),
                         icon: const Icon(Icons.timer_outlined),
                         label: Text(_dueTime == null
-                            ? 'Due time'
+                            ? context.l10n.dueTimeLabel
                             : _dueTime!.format(context)),
                       ),
                   ],
@@ -350,26 +358,27 @@ class _TaskCreateScreenState extends State<TaskCreateScreen> {
                   key: const Key('task-duration-field'),
                   controller: _durationController,
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Planned duration (minutes)',
+                  decoration: InputDecoration(
+                    labelText: context.l10n.plannedDurationField,
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) return null;
                     final minutes = int.tryParse(value.trim());
                     return minutes == null || minutes <= 0
-                        ? 'Enter a positive number of minutes'
+                        ? context.l10n.enterPositiveMinutes
                         : null;
                   },
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<TaskPriority>(
                   value: _priority,
-                  decoration: const InputDecoration(labelText: 'Priority'),
+                  decoration:
+                      InputDecoration(labelText: context.l10n.priorityField),
                   items: TaskPriority.values
                       .map(
                         (priority) => DropdownMenuItem<TaskPriority>(
                           value: priority,
-                          child: Text(priority.label),
+                          child: Text(priority.localizedLabel(context.l10n)),
                         ),
                       )
                       .toList(growable: false),
@@ -380,7 +389,7 @@ class _TaskCreateScreenState extends State<TaskCreateScreen> {
                 ),
                 SwitchListTile.adaptive(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('Require engineer review'),
+                  title: Text(context.l10n.requireEngineerReview),
                   value: _requiresReview,
                   onChanged: controller.isSubmitting
                       ? null
@@ -394,7 +403,7 @@ class _TaskCreateScreenState extends State<TaskCreateScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                Text('Assignments',
+                Text(context.l10n.assignmentsTitle,
                     style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: 6),
                 if (membersLoading)
@@ -402,17 +411,17 @@ class _TaskCreateScreenState extends State<TaskCreateScreen> {
                 else if (membersError != null)
                   Row(
                     children: <Widget>[
-                      const Expanded(
-                        child: Text('Assignable farm members could not load.'),
+                      Expanded(
+                        child: Text(context.l10n.membersLoadFailed),
                       ),
                       TextButton(
                         onPressed: _workspace?.loadAssignableMembers,
-                        child: const Text('Retry'),
+                        child: Text(context.l10n.commonRetry),
                       ),
                     ],
                   )
                 else if (members.isEmpty)
-                  const Text('No active operational members are available.')
+                  Text(context.l10n.noOperationalMembers)
                 else
                   Wrap(
                     spacing: 8,
@@ -442,7 +451,7 @@ class _TaskCreateScreenState extends State<TaskCreateScreen> {
           if (controller.message != null) ...<Widget>[
             const SizedBox(height: 12),
             Text(
-              controller.message!,
+              controller.message!.call(context.l10n),
               key: const Key('task-create-message'),
               style: TextStyle(
                 color: controller.status == TaskCreateStatus.failure
@@ -462,7 +471,9 @@ class _TaskCreateScreenState extends State<TaskCreateScreen> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Icon(Icons.task_alt),
-            label: Text(controller.isSubmitting ? 'Creating…' : 'Create task'),
+            label: Text(controller.isSubmitting
+                ? context.l10n.creatingTask
+                : context.l10n.createTaskButton),
           ),
         ],
       ),
@@ -473,7 +484,7 @@ class _TaskCreateScreenState extends State<TaskCreateScreen> {
     if (!_formKey.currentState!.validate()) return;
     if (_scope != _TaskScope.farm && _targetId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Choose a target for this task.')),
+        SnackBar(content: Text(context.l10n.chooseTargetSnack)),
       );
       return;
     }
@@ -582,7 +593,7 @@ class _TargetField extends StatelessWidget {
       key: const Key('task-target-field'),
       value: value,
       isExpanded: true,
-      decoration: InputDecoration(labelText: _scopeLabel(scope)),
+      decoration: InputDecoration(labelText: _scopeLabel(context.l10n, scope)),
       items: items
           .map(
             (entry) => DropdownMenuItem<String>(
@@ -592,7 +603,8 @@ class _TargetField extends StatelessWidget {
           )
           .toList(growable: false),
       onChanged: enabled ? onChanged : null,
-      validator: (selected) => selected == null ? 'Choose a target' : null,
+      validator: (selected) =>
+          selected == null ? context.l10n.chooseTargetValidator : null,
     );
   }
 }
@@ -616,7 +628,7 @@ class _CreateUnavailable extends StatelessWidget {
                   const SizedBox(height: 14),
                   OutlinedButton(
                     onPressed: () => context.go('/tasks'),
-                    child: const Text('Back to tasks'),
+                    child: Text(context.l10n.backToTasks),
                   ),
                 ],
               ),
@@ -626,11 +638,11 @@ class _CreateUnavailable extends StatelessWidget {
       );
 }
 
-String _scopeLabel(_TaskScope scope) => switch (scope) {
-      _TaskScope.farm => 'Whole farm',
-      _TaskScope.section => 'Section',
-      _TaskScope.zone => 'Irrigation zone',
-      _TaskScope.tree => 'Tree',
+String _scopeLabel(AppLocalizations l10n, _TaskScope scope) => switch (scope) {
+      _TaskScope.farm => l10n.scopeWholeFarm,
+      _TaskScope.section => l10n.scopeSection,
+      _TaskScope.zone => l10n.scopeZone,
+      _TaskScope.tree => l10n.scopeTree,
     };
 
 String _formatDate(DateTime value) => '${value.day.toString().padLeft(2, '0')}/'

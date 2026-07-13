@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:al_wahat_farm_flutter/l10n/gen/app_localizations_en.dart';
 
 import 'package:al_wahat_farm_flutter/core/errors/operation_failure.dart';
 import 'package:al_wahat_farm_flutter/features/issues/domain/issue_photo.dart';
@@ -7,6 +8,8 @@ import 'package:al_wahat_farm_flutter/features/issues/presentation/issue_report_
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../support/phase4_fakes.dart';
+
+final _enMessages = AppLocalizationsEn();
 
 void main() {
   group('IssueReportController', () {
@@ -104,7 +107,8 @@ void main() {
       expect(saved, isFalse);
       expect(controller.result?.issueId, 'issue-id');
       expect(controller.stage, IssueSubmissionStage.partialSuccess);
-      expect(controller.message, contains('issue and review task were saved'));
+      expect(controller.message?.call(_enMessages),
+          contains('issue and review task were saved'));
       expect(
           events, <String>['pick-photo', 'report', 'refresh', 'upload-photo']);
     });
@@ -161,7 +165,8 @@ void main() {
       expect(saved, isFalse);
       expect(controller.stage, IssueSubmissionStage.failure);
       expect(controller.result, isNull);
-      expect(controller.message, 'Not authorized for this farm.');
+      expect(controller.message?.call(_enMessages),
+          'Not authorized for this farm.');
     });
 
     test('rejects a missing tree identity before repository access', () async {
@@ -181,7 +186,7 @@ void main() {
       );
 
       expect(saved, isFalse);
-      expect(invalid.message, 'Tree identity is required');
+      expect(invalid.message?.call(_enMessages), 'Tree identity is required');
       expect(events, isEmpty);
     });
   });

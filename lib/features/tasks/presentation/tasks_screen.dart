@@ -1,4 +1,6 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
+import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
+import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
 import 'package:al_wahat_farm_flutter/features/auth/presentation/authenticated_gate.dart';
@@ -53,7 +55,7 @@ class _TasksScreenState extends State<TasksScreen> {
       child: Material(
         type: MaterialType.transparency,
         child: controller == null || role == null
-            ? const Center(child: Text('Task workspace is unavailable.'))
+            ? Center(child: Text(context.l10n.taskWorkspaceUnavailable))
             : ListenableBuilder(
                 listenable: controller,
                 builder: (context, _) => _buildList(
@@ -92,10 +94,10 @@ class _TasksScreenState extends State<TasksScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    const Eyebrow('Field operations'),
+                    Eyebrow(context.l10n.tasksEyebrow),
                     const SizedBox(height: 6),
                     Text(
-                      'Farm tasks',
+                      context.l10n.tasksTitle,
                       style: Theme.of(context).textTheme.headlineLarge,
                     ),
                   ],
@@ -107,7 +109,7 @@ class _TasksScreenState extends State<TasksScreen> {
                   onPressed:
                       widget.onCreateTask ?? () => context.go('/tasks/create'),
                   icon: const Icon(Icons.add),
-                  label: const Text('Create'),
+                  label: Text(context.l10n.tasksCreate),
                 ),
             ],
           ),
@@ -117,13 +119,13 @@ class _TasksScreenState extends State<TasksScreen> {
             children: <Widget>[
               ChoiceChip(
                 key: const Key('tasks-today-filter'),
-                label: const Text('Today'),
+                label: Text(context.l10n.tasksFilterToday),
                 selected: _view == TaskListView.today,
                 onSelected: (_) => setState(() => _view = TaskListView.today),
               ),
               ChoiceChip(
                 key: const Key('tasks-all-filter'),
-                label: Text('All (${snapshot.tasks.length})'),
+                label: Text(context.l10n.tasksFilterAll(snapshot.tasks.length)),
                 selected: _view == TaskListView.all,
                 onSelected: (_) => setState(() => _view = TaskListView.all),
               ),
@@ -146,21 +148,21 @@ class _TasksScreenState extends State<TasksScreen> {
           const SizedBox(height: 14),
           if (snapshot.status == TaskWorkspaceStatus.loading &&
               snapshot.tasks.isEmpty)
-            const _TaskMessage(
+            _TaskMessage(
               icon: Icons.cloud_sync_outlined,
-              title: 'Loading farm tasks',
-              message: 'Checking your role-filtered task queue…',
+              title: context.l10n.tasksLoadingTitle,
+              message: context.l10n.tasksLoadingMessage,
               progress: true,
             )
           else if (snapshot.status == TaskWorkspaceStatus.failure &&
               snapshot.tasks.isEmpty)
             _TaskMessage(
               icon: Icons.sync_problem_outlined,
-              title: 'Tasks could not be loaded',
-              message: taskFailureMessage(snapshot.error),
+              title: context.l10n.tasksLoadFailedTitle,
+              message: taskFailureMessage(context.l10n, snapshot.error),
               action: OutlinedButton(
                 onPressed: controller.refresh,
-                child: const Text('Retry'),
+                child: Text(context.l10n.commonRetry),
               ),
             )
           else ...<Widget>[
@@ -168,11 +170,12 @@ class _TasksScreenState extends State<TasksScreen> {
               Padding(
                 padding: const EdgeInsets.only(bottom: 10),
                 child: MaterialBanner(
-                  content: Text(taskFailureMessage(snapshot.error)),
+                  content:
+                      Text(taskFailureMessage(context.l10n, snapshot.error)),
                   actions: <Widget>[
                     TextButton(
                       onPressed: controller.refresh,
-                      child: const Text('Retry'),
+                      child: Text(context.l10n.commonRetry),
                     ),
                   ],
                 ),
@@ -181,11 +184,11 @@ class _TasksScreenState extends State<TasksScreen> {
               _TaskMessage(
                 icon: Icons.task_alt_outlined,
                 title: _view == TaskListView.today
-                    ? 'No tasks scheduled today'
-                    : 'No visible tasks',
+                    ? context.l10n.tasksEmptyTodayTitle
+                    : context.l10n.tasksEmptyAllTitle,
                 message: role.canManageTasks
-                    ? 'Create a task or switch the date and assignment in Supabase.'
-                    : 'Only active tasks assigned to you appear here.',
+                    ? context.l10n.tasksEmptyManager
+                    : context.l10n.tasksEmptyWorker,
               )
             else
               for (final task in tasks) ...<Widget>[
@@ -248,7 +251,8 @@ class _TaskTile extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${taskTargetLabel(task, hierarchy)} · ${taskScheduleLabel(task)}',
+                        '${taskTargetLabel(context.l10n, task, hierarchy)} · '
+                        '${taskScheduleLabel(context.l10n, task)}',
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                       const SizedBox(height: 8),
@@ -259,7 +263,7 @@ class _TaskTile extends StatelessWidget {
                         children: <Widget>[
                           TaskStatusBadge(task.status),
                           Text(
-                            task.priority.label,
+                            task.priority.localizedLabel(context.l10n),
                             style: TextStyle(
                               color: task.priority == TaskPriority.urgent
                                   ? AppColors.issue
@@ -309,13 +313,13 @@ class _ReviewQueueEntry extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Text(
-                        'Review queue',
+                        context.l10n.reviewQueueEntryTitle,
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                       Text(
                         count == 0
-                            ? 'No tasks awaiting review'
-                            : '$count task${count == 1 ? '' : 's'} awaiting review',
+                            ? context.l10n.reviewQueueEntryNone
+                            : context.l10n.reviewQueueEntryCount(count),
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                     ],

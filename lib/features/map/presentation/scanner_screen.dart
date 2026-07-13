@@ -1,5 +1,6 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
 import 'package:al_wahat_farm_flutter/core/errors/operation_failure.dart';
+import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/features/trees/data/tree_qr_repository.dart';
 import 'package:al_wahat_farm_flutter/features/trees/domain/scanned_tree.dart';
 import 'package:flutter/material.dart';
@@ -65,7 +66,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
         }
       } else {
         setState(
-          () => _error = 'This QR code is not active or visible to your farm.',
+          () => _error = context.l10n.scanQrInactive,
         );
       }
     } on OperationFailure catch (error) {
@@ -73,8 +74,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
     } catch (_) {
       if (mounted) {
         setState(
-          () => _error =
-              'Unable to scan while offline. Try again when connected.',
+          () => _error = context.l10n.scanOffline,
         );
       }
     } finally {
@@ -124,8 +124,8 @@ class _ScannerScreenState extends State<ScannerScreen> {
                   child: Text(
                     _error ??
                         (_handling
-                            ? 'Looking up tree…'
-                            : 'Point the camera at a tree QR label.'),
+                            ? context.l10n.scanLookingUp
+                            : context.l10n.scanPointCamera),
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: AppColors.ink,
@@ -155,8 +155,8 @@ class _CameraFailure extends StatelessWidget {
             padding: const EdgeInsets.all(32),
             child: Text(
               error.errorCode == MobileScannerErrorCode.permissionDenied
-                  ? 'Camera access is off. Enable it in Settings to scan tree labels.'
-                  : 'The camera is unavailable. You can try again after checking permissions.',
+                  ? context.l10n.scanCameraOff
+                  : context.l10n.scanCameraUnavailable,
               key: const Key('scanner-camera-error'),
               textAlign: TextAlign.center,
               style: const TextStyle(color: Colors.white),

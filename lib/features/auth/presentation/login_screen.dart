@@ -1,5 +1,6 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
 import 'package:al_wahat_farm_flutter/core/config/app_config.dart';
+import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/core/supabase/auth_repository.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
@@ -45,7 +46,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (mounted) setState(() => _error = error.message);
     } catch (_) {
       if (mounted) {
-        setState(() => _error = 'Unable to sign in. Check your connection.');
+        setState(() => _error = context.l10n.loginFailed);
       }
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -72,10 +73,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      const Center(child: Eyebrow('Farm operations')),
+                      Center(child: Eyebrow(context.l10n.loginEyebrow)),
                       const SizedBox(height: 8),
                       Text(
-                        'Welcome to\nAl Wahat.',
+                        context.l10n.loginWelcomeTitle,
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.displayMedium,
                       ),
@@ -88,12 +89,12 @@ class _LoginScreenState extends State<LoginScreen> {
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: <Widget>[
                               Text(
-                                'Sign in',
+                                context.l10n.loginSignInTitle,
                                 style:
                                     Theme.of(context).textTheme.headlineMedium,
                               ),
                               const SizedBox(height: 6),
-                              const Text('Use your farm operations account.'),
+                              Text(context.l10n.loginSignInSubtitle),
                               const SizedBox(height: 20),
                               TextFormField(
                                 key: const Key('login-email'),
@@ -102,12 +103,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                 autofillHints: const <String>[
                                   AutofillHints.email
                                 ],
-                                decoration: const InputDecoration(
-                                  labelText: 'Email',
+                                decoration: InputDecoration(
+                                  labelText: context.l10n.loginEmailLabel,
                                 ),
                                 validator: (value) =>
                                     value == null || !value.contains('@')
-                                        ? 'Enter a valid email address'
+                                        ? context.l10n.loginInvalidEmail
                                         : null,
                               ),
                               const SizedBox(height: 12),
@@ -118,12 +119,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                 autofillHints: const <String>[
                                   AutofillHints.password,
                                 ],
-                                decoration: const InputDecoration(
-                                  labelText: 'Password',
+                                decoration: InputDecoration(
+                                  labelText: context.l10n.loginPasswordLabel,
                                 ),
                                 validator: (value) =>
                                     value == null || value.isEmpty
-                                        ? 'Password is required'
+                                        ? context.l10n.loginInvalidPassword
                                         : null,
                                 onFieldSubmitted: (_) => _submit(),
                               ),
@@ -137,10 +138,10 @@ class _LoginScreenState extends State<LoginScreen> {
                               ],
                               if (!widget.config.isConfigured) ...<Widget>[
                                 const SizedBox(height: 12),
-                                const Text(
-                                  'Supabase is not configured. Run with '
-                                  '--dart-define-from-file=config.json.',
-                                  style: TextStyle(color: AppColors.issue),
+                                Text(
+                                  context.l10n.loginNotConfigured,
+                                  style:
+                                      const TextStyle(color: AppColors.issue),
                                 ),
                               ],
                               const SizedBox(height: 18),
@@ -163,7 +164,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                           strokeWidth: 2,
                                         ),
                                       )
-                                    : const Text('Sign in'),
+                                    : Text(context.l10n.loginSignInButton),
                               ),
                             ],
                           ),

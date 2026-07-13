@@ -1,4 +1,5 @@
 import 'package:al_wahat_farm_flutter/core/errors/operation_failure.dart';
+import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/features/issues/data/tree_issue_repository.dart';
 import 'package:al_wahat_farm_flutter/features/issues/domain/issue_photo.dart';
 import 'package:al_wahat_farm_flutter/features/issues/domain/tree_issue_draft.dart';
@@ -40,12 +41,12 @@ class IssueReportController extends ChangeNotifier {
   PreparedIssuePhoto? _photo;
   ReportedTreeIssue? _result;
   String? _uploadedPhotoPath;
-  String? _message;
+  String Function(AppLocalizations)? _message;
 
   IssueSubmissionStage get stage => _stage;
   PreparedIssuePhoto? get photo => _photo;
   ReportedTreeIssue? get result => _result;
-  String? get message => _message;
+  String Function(AppLocalizations)? get message => _message;
   bool get isBusy => switch (_stage) {
         IssueSubmissionStage.pickingPhoto ||
         IssueSubmissionStage.reporting ||
@@ -65,7 +66,10 @@ class IssueReportController extends ChangeNotifier {
       _message = null;
       _setStage(IssueSubmissionStage.idle);
     } catch (error) {
-      _message = _messageFor(error, fallback: 'Unable to prepare that photo.');
+      _message = _messageFor(
+        error,
+        fallback: (l10n) => l10n.issueErrPhotoPrepare,
+      );
       _setStage(IssueSubmissionStage.failure);
     }
   }
@@ -102,7 +106,7 @@ class IssueReportController extends ChangeNotifier {
       _result = await _repository.report(draft);
       await _refreshSilently();
       if (_photo == null) {
-        _message = 'Issue reported and engineer review task created.';
+        _message = (l10n) => l10n.issueMsgReported;
         _setStage(IssueSubmissionStage.success);
         return true;
       }
@@ -110,7 +114,7 @@ class IssueReportController extends ChangeNotifier {
     } catch (error) {
       _message = _messageFor(
         error,
-        fallback: 'The issue could not be reported. Check your connection.',
+        fallback: (l10n) => l10n.issueErrReport,
       );
       _setStage(IssueSubmissionStage.failure);
       return false;
@@ -144,13 +148,15 @@ class IssueReportController extends ChangeNotifier {
         storagePath: path,
       );
       await _refreshSilently();
-      _message = 'Issue, review task, and photo evidence saved.';
+      _message = (l10n) => l10n.issueMsgReportedWithPhoto;
       _setStage(IssueSubmissionStage.success);
       return true;
     } catch (error) {
-      _message = 'The issue and review task were saved, but photo registration '
-          'was not confirmed. '
-          '${_messageFor(error, fallback: 'You can safely retry the photo.')}';
+      final detail = _messageFor(
+        error,
+        fallback: (l10n) => l10n.issueMsgRetryPhoto,
+      );
+      _message = (l10n) => '${l10n.issueErrPartialPrefix}${detail(l10n)}';
       _setStage(IssueSubmissionStage.partialSuccess);
       return false;
     }
@@ -175,5 +181,8 @@ String? _optionalText(String? value) {
   return trimmed == null || trimmed.isEmpty ? null : trimmed;
 }
 
-String _messageFor(Object error, {required String fallback}) =>
-    error is OperationFailure ? error.message : fallback;
+String Function(AppLocalizations) _messageFor(
+  Object error, {
+  required String Function(AppLocalizations) fallback,
+}) =>
+    error is OperationFailure ? ((_) => error.message) : fallback;

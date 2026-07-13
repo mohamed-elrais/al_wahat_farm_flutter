@@ -1,6 +1,9 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
 import 'package:al_wahat_farm_flutter/core/app_services.dart';
 import 'package:al_wahat_farm_flutter/core/connectivity/connectivity_service.dart';
+import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
+import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
+import 'package:al_wahat_farm_flutter/core/l10n/locale_controller.dart';
 import 'package:al_wahat_farm_flutter/core/supabase/auth_repository.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
@@ -13,23 +16,25 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final operational = OperationalContextScope.maybeOf(context);
     final membership = operational?.selectedMembership;
-    final name = operational?.profile.fullName ?? 'Farm member';
+    final name = operational?.profile.fullName ?? l10n.moreFarmMember;
     final services = AppServicesScope.maybeOf(context);
     return PaperBackground(
       child: ListView(
         padding: const EdgeInsets.fromLTRB(16, 24, 16, 110),
         children: <Widget>[
-          const Eyebrow('Account and sync'),
+          Eyebrow(l10n.moreEyebrow),
           const SizedBox(height: 6),
-          Text('More', style: Theme.of(context).textTheme.headlineLarge),
+          Text(l10n.moreTitle,
+              style: Theme.of(context).textTheme.headlineLarge),
           const SizedBox(height: 18),
           WahatCard(
             child: Column(
               children: <Widget>[
                 Semantics(
-                  label: 'Signed in as $name',
+                  label: l10n.moreSignedInAs(name),
                   child: CircleAvatar(
                     radius: 34,
                     backgroundColor: AppColors.green,
@@ -44,10 +49,14 @@ class ProfileScreen extends StatelessWidget {
                 Text(name, style: Theme.of(context).textTheme.titleLarge),
                 Text(
                   membership == null
-                      ? 'Role resolves from active farm membership'
-                      : '${membership.role.label} · ${membership.farm.name}',
+                      ? l10n.moreRoleResolves
+                      : '${membership.role.localizedLabel(l10n)} · ${membership.farm.name}',
                 ),
                 const Divider(height: 32),
+                if (services != null) ...<Widget>[
+                  _LanguageSelector(controller: services.locale),
+                  const Divider(height: 32),
+                ],
                 _SyncStatusTile(connectivity: services?.connectivity),
                 const SizedBox(height: 8),
                 OutlinedButton.icon(
@@ -57,7 +66,7 @@ class ProfileScreen extends StatelessWidget {
                     onSignOut: services?.clearPrivateData,
                   ).signOut(),
                   icon: const Icon(Icons.logout),
-                  label: const Text('Log out'),
+                  label: Text(l10n.logout),
                 ),
               ],
             ),
@@ -66,6 +75,77 @@ class ProfileScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+class _LanguageSelector extends StatelessWidget {
+  const _LanguageSelector({required this.controller});
+
+  final LocaleController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final current = controller.locale?.languageCode;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Row(
+          children: <Widget>[
+            const Icon(Icons.translate, color: AppColors.green),
+            const SizedBox(width: 12),
+            Text(l10n.languageLabel,
+                style: Theme.of(context).textTheme.titleMedium),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 8,
+          children: <Widget>[
+            _LanguageChip(
+              keyValue: 'language-system',
+              label: l10n.languageSystem,
+              selected: current == null,
+              onSelected: () => controller.setLocale(null),
+            ),
+            _LanguageChip(
+              keyValue: 'language-en',
+              label: l10n.languageEnglish,
+              selected: current == 'en',
+              onSelected: () => controller.setLocale(const Locale('en')),
+            ),
+            _LanguageChip(
+              keyValue: 'language-ar',
+              label: l10n.languageArabic,
+              selected: current == 'ar',
+              onSelected: () => controller.setLocale(const Locale('ar')),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _LanguageChip extends StatelessWidget {
+  const _LanguageChip({
+    required this.keyValue,
+    required this.label,
+    required this.selected,
+    required this.onSelected,
+  });
+
+  final String keyValue;
+  final String label;
+  final bool selected;
+  final VoidCallback onSelected;
+
+  @override
+  Widget build(BuildContext context) => ChoiceChip(
+        key: Key(keyValue),
+        label: Text(label),
+        selected: selected,
+        onSelected: (_) => onSelected(),
+      );
 }
 
 class _SyncStatusTile extends StatelessWidget {
@@ -77,9 +157,9 @@ class _SyncStatusTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = connectivity;
     if (controller == null) {
-      return const _SyncStatusRow(
+      return _SyncStatusRow(
         online: true,
-        subtitle: 'Operational reads refresh from Supabase',
+        subtitle: context.l10n.syncDefaultSubtitle,
       );
     }
     return ListenableBuilder(
@@ -87,8 +167,8 @@ class _SyncStatusTile extends StatelessWidget {
       builder: (context, _) => _SyncStatusRow(
         online: controller.isOnline,
         subtitle: controller.isOnline
-            ? 'Online · operational reads refresh from Supabase'
-            : 'Offline · showing cached farm and task data',
+            ? context.l10n.syncOnlineSubtitle
+            : context.l10n.syncOfflineSubtitle,
       ),
     );
   }
@@ -101,17 +181,22 @@ class _SyncStatusRow extends StatelessWidget {
   final String subtitle;
 
   @override
-  Widget build(BuildContext context) => Semantics(
-        label: online ? 'Sync status online' : 'Sync status offline',
-        child: ListTile(
-          key: const Key('sync-status-tile'),
-          contentPadding: EdgeInsets.zero,
-          leading: Icon(
-            online ? Icons.cloud_done_outlined : Icons.cloud_off_outlined,
-            color: online ? AppColors.green : AppColors.issue,
-          ),
-          title: Text(online ? 'Online' : 'Offline'),
-          subtitle: Text(subtitle),
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return Semantics(
+      label: online
+          ? l10n.syncStatusOnlineSemantics
+          : l10n.syncStatusOfflineSemantics,
+      child: ListTile(
+        key: const Key('sync-status-tile'),
+        contentPadding: EdgeInsets.zero,
+        leading: Icon(
+          online ? Icons.cloud_done_outlined : Icons.cloud_off_outlined,
+          color: online ? AppColors.green : AppColors.issue,
         ),
-      );
+        title: Text(online ? l10n.syncOnline : l10n.syncOffline),
+        subtitle: Text(subtitle),
+      ),
+    );
+  }
 }

@@ -3,6 +3,7 @@ import 'package:al_wahat_farm_flutter/core/app_services.dart';
 import 'package:al_wahat_farm_flutter/core/cache/local_cache_store.dart';
 import 'package:al_wahat_farm_flutter/core/connectivity/connectivity_service.dart';
 import 'package:al_wahat_farm_flutter/core/config/app_config.dart';
+import 'package:al_wahat_farm_flutter/core/l10n/locale_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -27,5 +28,11 @@ Future<AppServices> _bootstrapServices() async {
   }
   final connectivity = ConnectivityController(PlatformConnectivityService());
   await connectivity.start();
-  return AppServices(cacheStore: store, connectivity: connectivity);
+  final locale = LocaleController(store);
+  await locale.load();
+  return AppServices(
+    cacheStore: store,
+    connectivity: connectivity,
+    locale: locale,
+  );
 }

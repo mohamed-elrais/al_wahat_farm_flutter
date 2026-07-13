@@ -1,4 +1,6 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
+import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
+import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
 import 'package:al_wahat_farm_flutter/features/farm/presentation/farm_hierarchy_gate.dart';
@@ -61,10 +63,10 @@ class _Intro extends StatelessWidget {
   Widget build(BuildContext context) => Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          const Eyebrow('Sunday · 12 July'),
+          Eyebrow(context.l10n.homeDateEyebrow),
           const SizedBox(height: 7),
           Text(
-            'Your farm.\nTree by tree.',
+            context.l10n.homeHeroTitle,
             style: Theme.of(context).textTheme.displayMedium,
           ),
           const SizedBox(height: 14),
@@ -72,12 +74,10 @@ class _Intro extends StatelessWidget {
             width: 65,
             height: 3,
             color: AppColors.orange,
-            alignment: Alignment.centerLeft,
+            alignment: AlignmentDirectional.centerStart,
           ),
           const SizedBox(height: 16),
-          const Text(
-            'Field operations grounded in every mapped tree and irrigation zone.',
-          ),
+          Text(context.l10n.homeHeroLede),
           const SizedBox(height: 18),
           DecoratedBox(
             decoration: BoxDecoration(
@@ -96,25 +96,25 @@ class _Intro extends StatelessWidget {
             child: InkWell(
               onTap: onScan,
               borderRadius: BorderRadius.circular(18),
-              child: const SizedBox(
+              child: SizedBox(
                 height: 70,
                 child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Row(
                     children: <Widget>[
-                      Icon(Icons.qr_code_scanner,
+                      const Icon(Icons.qr_code_scanner,
                           color: Colors.white, size: 30),
-                      SizedBox(width: 14),
+                      const SizedBox(width: 14),
                       Expanded(
                         child: Text(
-                          'Scan Tree QR',
-                          style: TextStyle(
+                          context.l10n.homeScanTreeQr,
+                          style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
                       ),
-                      Icon(Icons.arrow_forward, color: Colors.white),
+                      const Icon(Icons.arrow_forward, color: Colors.white),
                     ],
                   ),
                 ),
@@ -133,30 +133,30 @@ class _FarmOverview extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            const Eyebrow('Live map data'),
+            Eyebrow(context.l10n.homeLiveMapData),
             const SizedBox(height: 8),
             Text(
-              'Al Wahat farm overview',
+              context.l10n.homeFarmOverview,
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             const SizedBox(height: 16),
-            const Wrap(
+            Wrap(
               spacing: 10,
               runSpacing: 10,
               children: <Widget>[
                 _Metric(
                   value: '1,567',
-                  label: 'Mapped trees',
+                  label: context.l10n.homeMappedTrees,
                   icon: Icons.park_outlined,
                 ),
                 _Metric(
                   value: '12',
-                  label: 'Sections',
+                  label: context.l10n.homeSections,
                   icon: Icons.grid_view_outlined,
                 ),
                 _Metric(
                   value: '122',
-                  label: 'Irrigation zones',
+                  label: context.l10n.homeIrrigationZones,
                   icon: Icons.water_drop_outlined,
                 ),
               ],
@@ -165,7 +165,7 @@ class _FarmOverview extends StatelessWidget {
             FilledButton.icon(
               onPressed: () => context.go('/map'),
               icon: const Icon(Icons.map_outlined),
-              label: const Text('Open coordinate map'),
+              label: Text(context.l10n.homeOpenMap),
             ),
           ],
         ),
@@ -210,10 +210,11 @@ class _OperationsPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          Text('Today’s tasks', style: Theme.of(context).textTheme.titleLarge),
+          Text(context.l10n.homeTodaysTasks,
+              style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 6),
           if (controller == null)
-            const Text('Task workspace is unavailable.')
+            Text(context.l10n.homeWorkspaceUnavailable)
           else
             ListenableBuilder(
               listenable: controller,
@@ -230,9 +231,9 @@ class _OperationsPanel extends StatelessWidget {
                   );
                 }
                 if (tasks.isEmpty) {
-                  return const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 14),
-                    child: Text('No tasks are scheduled for today.'),
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    child: Text(context.l10n.homeNoTasksToday),
                   );
                 }
                 return Column(
@@ -240,7 +241,8 @@ class _OperationsPanel extends StatelessWidget {
                       .map(
                         (task) => _TaskPreview(
                           task: task,
-                          target: taskTargetLabel(task, hierarchy),
+                          target:
+                              taskTargetLabel(context.l10n, task, hierarchy),
                         ),
                       )
                       .toList(growable: false),
@@ -250,7 +252,7 @@ class _OperationsPanel extends StatelessWidget {
           const SizedBox(height: 12),
           OutlinedButton(
             onPressed: () => context.go('/tasks'),
-            child: const Text('View all tasks'),
+            child: Text(context.l10n.homeViewAllTasks),
           ),
         ],
       ),
@@ -272,7 +274,7 @@ class _TaskPreview extends StatelessWidget {
           child: Icon(Icons.water_drop_outlined),
         ),
         title: Text(task.title),
-        subtitle: Text('$target · ${task.status.label}'),
+        subtitle: Text('$target · ${task.status.localizedLabel(context.l10n)}'),
         trailing: const Icon(Icons.chevron_right),
         onTap: () => context.go('/tasks/${task.id}'),
       );

@@ -1,4 +1,5 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
+import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
 import 'package:al_wahat_farm_flutter/features/auth/presentation/authenticated_gate.dart';
@@ -52,19 +53,18 @@ class ReviewQueueScreen extends StatelessWidget {
     FarmHierarchy? hierarchy,
   ) {
     if (role == null || controller == null) {
-      return const _QueueMessage(
+      return _QueueMessage(
         icon: Icons.sync_problem_outlined,
-        title: 'Review workspace is unavailable',
-        message: 'Reopen the app to restore your farm review queue.',
+        title: context.l10n.reviewQueueUnavailableTitle,
+        message: context.l10n.reviewQueueUnavailableMessage,
       );
     }
     if (!role.canReview) {
-      return const _QueueMessage(
-        key: Key('review-queue-denied'),
+      return _QueueMessage(
+        key: const Key('review-queue-denied'),
         icon: Icons.lock_outline,
-        title: 'Reviews are restricted',
-        message:
-            'Only the owner or agricultural engineer can review completed work.',
+        title: context.l10n.reviewDeniedTitle,
+        message: context.l10n.reviewDeniedMessage,
       );
     }
     return ListenableBuilder(
@@ -92,7 +92,7 @@ class ReviewQueueScreen extends StatelessWidget {
           Row(
             children: <Widget>[
               IconButton(
-                tooltip: 'Back to tasks',
+                tooltip: context.l10n.backToTasks,
                 onPressed: () => context.go('/tasks'),
                 icon: const Icon(Icons.arrow_back),
               ),
@@ -101,9 +101,9 @@ class ReviewQueueScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    const Eyebrow('Engineer review'),
+                    Eyebrow(context.l10n.reviewQueueEyebrow),
                     Text(
-                      'Review queue',
+                      context.l10n.reviewQueueTitle,
                       style: Theme.of(context).textTheme.headlineLarge,
                     ),
                   ],
@@ -113,8 +113,7 @@ class ReviewQueueScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            '${pending.length} task${pending.length == 1 ? '' : 's'} '
-            'awaiting a decision.',
+            context.l10n.reviewQueuePending(pending.length),
             style: Theme.of(context).textTheme.bodySmall,
           ),
           if (snapshot.isRefreshing) ...<Widget>[
@@ -124,28 +123,28 @@ class ReviewQueueScreen extends StatelessWidget {
           const SizedBox(height: 14),
           if (snapshot.status == TaskWorkspaceStatus.loading &&
               snapshot.tasks.isEmpty)
-            const _QueueMessage(
+            _QueueMessage(
               icon: Icons.cloud_sync_outlined,
-              title: 'Loading review queue',
-              message: 'Checking tasks flagged for engineer review…',
+              title: context.l10n.reviewQueueLoadingTitle,
+              message: context.l10n.reviewQueueLoadingMessage,
               progress: true,
             )
           else if (snapshot.status == TaskWorkspaceStatus.failure &&
               snapshot.tasks.isEmpty)
             _QueueMessage(
               icon: Icons.sync_problem_outlined,
-              title: 'Queue could not be loaded',
-              message: taskFailureMessage(snapshot.error),
+              title: context.l10n.reviewQueueFailedTitle,
+              message: taskFailureMessage(context.l10n, snapshot.error),
               action: OutlinedButton(
                 onPressed: controller.refresh,
-                child: const Text('Retry'),
+                child: Text(context.l10n.commonRetry),
               ),
             )
           else if (pending.isEmpty)
-            const _QueueMessage(
+            _QueueMessage(
               icon: Icons.verified_outlined,
-              title: 'No tasks are waiting',
-              message: 'Completed work sent for review will appear here.',
+              title: context.l10n.reviewQueueEmptyTitle,
+              message: context.l10n.reviewQueueEmptyMessage,
             )
           else
             for (final task in pending) ...<Widget>[
@@ -207,7 +206,7 @@ class _ReviewTile extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        taskTargetLabel(task, hierarchy),
+                        taskTargetLabel(context.l10n, task, hierarchy),
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                       const SizedBox(height: 8),

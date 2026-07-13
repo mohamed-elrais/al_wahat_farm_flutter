@@ -1,4 +1,5 @@
 import 'package:al_wahat_farm_flutter/core/errors/operation_failure.dart';
+import 'package:al_wahat_farm_flutter/l10n/gen/app_localizations_en.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/farm_task.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/task_draft.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/task_evidence.dart';
@@ -8,6 +9,8 @@ import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_workspace
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../support/task_fakes.dart';
+
+final _enMessages = AppLocalizationsEn();
 
 void main() {
   test('workspace exposes only worker assignments and filters today', () async {
@@ -59,7 +62,7 @@ void main() {
       ),
     );
     expect(invalid, isNull);
-    expect(controller.message, 'Task title is required');
+    expect(controller.message?.call(_enMessages), 'Task title is required');
 
     const draft = TaskDraft(
       farmId: 'farm-id',
@@ -104,7 +107,7 @@ void main() {
     expect(storage.uploadCount, 1);
     expect(repository.uploadRegistrations, 1);
     expect(store.photos[taskId], hasLength(1));
-    expect(controller.message, 'Task evidence saved.');
+    expect(controller.message?.call(_enMessages), 'Task evidence saved.');
   });
 
   test('manager assignment edit replaces active assignees and logs activity',
@@ -165,7 +168,8 @@ void main() {
       ),
       isFalse,
     );
-    expect(controller.message, contains('Evidence is saved'));
+    expect(
+        controller.message?.call(_enMessages), contains('Evidence is saved'));
     expect(
       await controller.complete(
         note: 'Done',
@@ -197,7 +201,7 @@ void main() {
 
     expect(await controller.start(), isTrue);
     expect(store.tasks[taskId]!.status, TaskStatus.inProgress);
-    expect(controller.message, 'Task started.');
+    expect(controller.message?.call(_enMessages), 'Task started.');
   });
 }
 

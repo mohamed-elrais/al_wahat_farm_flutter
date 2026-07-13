@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:al_wahat_farm_flutter/core/config/app_config.dart';
+import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/features/auth/presentation/authenticated_gate.dart';
 import 'package:al_wahat_farm_flutter/features/auth/presentation/login_screen.dart';
 import 'package:al_wahat_farm_flutter/features/home/presentation/home_screen.dart';
@@ -126,8 +127,10 @@ GoRouter createRouter(AppConfig config) {
         ],
       ),
     ],
-    errorBuilder: (_, state) => Scaffold(
-      body: Center(child: Text('Route unavailable: ${state.uri.path}')),
+    errorBuilder: (context, state) => Scaffold(
+      body: Center(
+        child: Text(context.l10n.routeUnavailable(state.uri.path)),
+      ),
     ),
   );
 }

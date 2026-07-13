@@ -1,4 +1,6 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
+import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
+import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
 import 'package:al_wahat_farm_flutter/features/auth/presentation/authenticated_gate.dart';
@@ -105,9 +107,9 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
   Widget build(BuildContext context) {
     final controller = _controller;
     if (controller == null || _role == null) {
-      return const Scaffold(
+      return Scaffold(
         body: PaperBackground(
-          child: Center(child: Text('Task workspace is unavailable.')),
+          child: Center(child: Text(context.l10n.taskWorkspaceUnavailable)),
         ),
       );
     }
@@ -135,7 +137,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     final details = controller.details;
     if (controller.status == TaskDetailStatus.failure || details == null) {
       return _DetailFailure(
-        message: controller.message ?? 'Unable to load this task.',
+        message: controller.message?.call(context.l10n) ??
+            context.l10n.unableToLoadTask,
         onRetry: controller.load,
       );
     }
@@ -148,7 +151,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
         Row(
           children: <Widget>[
             IconButton(
-              tooltip: 'Back to tasks',
+              tooltip: context.l10n.backToTasks,
               onPressed: () => context.go('/tasks'),
               icon: const Icon(Icons.arrow_back),
             ),
@@ -157,7 +160,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  const Eyebrow('Task detail'),
+                  Eyebrow(context.l10n.taskDetailEyebrow),
                   Text(
                     task.title,
                     style: Theme.of(context).textTheme.headlineLarge,
@@ -172,12 +175,12 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
           const SizedBox(height: 12),
           const LinearProgressIndicator(),
           const SizedBox(height: 6),
-          Text(_stageLabel(controller.stage)),
+          Text(_stageLabel(context.l10n, controller.stage)),
         ],
         if (controller.message != null) ...<Widget>[
           const SizedBox(height: 12),
           Text(
-            controller.message!,
+            controller.message!.call(context.l10n),
             key: const Key('task-detail-message'),
             style: const TextStyle(
               color: AppColors.green,
@@ -192,41 +195,43 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
             children: <Widget>[
               _DetailRow(
                 icon: Icons.category_outlined,
-                label: 'Type',
-                value: task.type.label,
+                label: context.l10n.detailType,
+                value: task.type.localizedLabel(context.l10n),
               ),
               _DetailRow(
                 icon: Icons.place_outlined,
-                label: 'Target',
-                value: taskTargetLabel(task, _hierarchy),
+                label: context.l10n.detailTarget,
+                value: taskTargetLabel(context.l10n, task, _hierarchy),
               ),
               _DetailRow(
                 icon: Icons.event_outlined,
-                label: 'Schedule',
-                value: taskScheduleLabel(task),
+                label: context.l10n.detailSchedule,
+                value: taskScheduleLabel(context.l10n, task),
               ),
               _DetailRow(
                 icon: Icons.priority_high,
-                label: 'Priority',
-                value: task.priority.label,
+                label: context.l10n.detailPriority,
+                value: task.priority.localizedLabel(context.l10n),
               ),
               if (task.plannedDurationMinutes != null)
                 _DetailRow(
                   icon: Icons.timer_outlined,
-                  label: 'Planned duration',
-                  value: '${task.plannedDurationMinutes} minutes',
+                  label: context.l10n.detailPlannedDuration,
+                  value: context.l10n.durationMinutes(
+                    task.plannedDurationMinutes!,
+                  ),
                 ),
               if (task.description != null &&
                   task.description!.isNotEmpty) ...<Widget>[
                 const Divider(height: 24),
-                Text('Description',
+                Text(context.l10n.detailDescription,
                     style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 5),
                 Text(task.description!),
               ],
               if (task.instructions.isNotEmpty) ...<Widget>[
                 const Divider(height: 24),
-                Text('Instructions',
+                Text(context.l10n.detailInstructions,
                     style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 5),
                 Text(_instructionsText(task.instructions)),
@@ -249,7 +254,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              Text('Actions', style: Theme.of(context).textTheme.titleLarge),
+              Text(context.l10n.actionsTitle,
+                  style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 10),
               Wrap(
                 spacing: 10,
@@ -261,7 +267,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                       onPressed:
                           controller.isBusy ? null : () => controller.start(),
                       icon: const Icon(Icons.play_arrow),
-                      label: const Text('Start task'),
+                      label: Text(context.l10n.startTask),
                     ),
                   if (task.status.canComplete)
                     FilledButton.icon(
@@ -270,7 +276,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                           ? null
                           : () => _showCompleteSheet(controller),
                       icon: const Icon(Icons.check_circle_outline),
-                      label: const Text('Complete'),
+                      label: Text(context.l10n.completeAction),
                     ),
                   if (!task.status.isClosed)
                     OutlinedButton.icon(
@@ -279,7 +285,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                           ? null
                           : () => _showEvidenceSheet(controller),
                       icon: const Icon(Icons.add_a_photo_outlined),
-                      label: const Text('Add evidence'),
+                      label: Text(context.l10n.addEvidence),
                     ),
                 ],
               ),
@@ -323,11 +329,11 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                Text('Edit assignments',
+                Text(context.l10n.editAssignments,
                     style: Theme.of(context).textTheme.headlineSmall),
                 const SizedBox(height: 12),
                 if (members.isEmpty)
-                  const Text('No active operational members are available.')
+                  Text(context.l10n.noOperationalMembers)
                 else
                   Wrap(
                     spacing: 8,
@@ -351,7 +357,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                 const SizedBox(height: 18),
                 FilledButton(
                   onPressed: () => Navigator.of(context).pop(selected),
-                  child: const Text('Save assignments'),
+                  child: Text(context.l10n.saveAssignments),
                 ),
               ],
             ),
@@ -408,7 +414,7 @@ class _AssignmentsCard extends StatelessWidget {
           Row(
             children: <Widget>[
               Expanded(
-                child: Text('Assignments',
+                child: Text(context.l10n.assignmentsTitle,
                     style: Theme.of(context).textTheme.titleLarge),
               ),
               if (canEdit)
@@ -416,21 +422,22 @@ class _AssignmentsCard extends StatelessWidget {
                   key: const Key('task-edit-assignments-button'),
                   onPressed: isLoading ? null : onEdit,
                   icon: const Icon(Icons.group_outlined),
-                  label: const Text('Edit'),
+                  label: Text(context.l10n.editAction),
                 ),
             ],
           ),
           if (active.isEmpty)
-            const Text('No active assignees.')
+            Text(context.l10n.noActiveAssignees)
           else
             for (final assignment in active)
               ListTile(
                 dense: true,
                 contentPadding: EdgeInsets.zero,
                 leading: const Icon(Icons.person_outline),
-                title: Text(_memberName(members, assignment.assigneeProfileId)),
-                subtitle: Text(
-                    'Assigned ${taskDateTimeLabel(assignment.assignedAt)}'),
+                title: Text(_memberName(
+                    context.l10n, members, assignment.assigneeProfileId)),
+                subtitle: Text(context.l10n
+                    .assignedAt(taskDateTimeLabel(assignment.assignedAt))),
               ),
         ],
       ),
@@ -448,11 +455,11 @@ class _EvidenceCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            Text('Evidence (${photos.length})',
+            Text(context.l10n.evidenceCount(photos.length),
                 style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 8),
             if (photos.isEmpty)
-              const Text('No task evidence has been registered.')
+              Text(context.l10n.noEvidence)
             else
               for (final photo in photos)
                 ListTile(
@@ -461,9 +468,10 @@ class _EvidenceCard extends StatelessWidget {
                     backgroundColor: AppColors.softGreen,
                     child: Icon(Icons.photo_outlined),
                   ),
-                  title: Text(photo.caption ?? photo.photoType.label),
+                  title: Text(photo.caption ??
+                      photo.photoType.localizedLabel(context.l10n)),
                   subtitle: Text(
-                    '${photo.photoType.label} · ${taskDateTimeLabel(photo.createdAt)}',
+                    '${photo.photoType.localizedLabel(context.l10n)} · ${taskDateTimeLabel(photo.createdAt)}',
                   ),
                 ),
           ],
@@ -481,16 +489,17 @@ class _ActivityCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            Text('Activity', style: Theme.of(context).textTheme.titleLarge),
+            Text(context.l10n.activityTitle,
+                style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 8),
             if (activity.isEmpty)
-              const Text('No task activity is visible.')
+              Text(context.l10n.noActivity)
             else
               for (final item in activity)
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.history),
-                  title: Text(item.action.label),
+                  title: Text(item.action.localizedLabel(context.l10n)),
                   subtitle: Text(
                     item.note == null || item.note!.isEmpty
                         ? taskDateTimeLabel(item.createdAt)
@@ -538,7 +547,7 @@ class _CompleteTaskSheetState extends State<_CompleteTaskSheet> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                Text('Complete task',
+                Text(context.l10n.completeTaskTitle,
                     style: Theme.of(context).textTheme.headlineSmall),
                 const SizedBox(height: 12),
                 TextField(
@@ -546,18 +555,18 @@ class _CompleteTaskSheetState extends State<_CompleteTaskSheet> {
                   minLines: 2,
                   maxLines: 4,
                   decoration:
-                      const InputDecoration(labelText: 'Completion note'),
+                      InputDecoration(labelText: context.l10n.completionNote),
                 ),
                 SwitchListTile.adaptive(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('Send for engineer review'),
+                  title: Text(context.l10n.sendForReview),
                   value: _requiresReview,
                   onChanged: widget.controller.isBusy
                       ? null
                       : (value) => setState(() => _requiresReview = value),
                 ),
                 const Divider(),
-                Text('Optional completion evidence',
+                Text(context.l10n.optionalCompletionEvidence,
                     style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 8),
                 Wrap(
@@ -569,7 +578,7 @@ class _CompleteTaskSheetState extends State<_CompleteTaskSheet> {
                           : () => widget.controller
                               .pickEvidence(TaskEvidenceSource.camera),
                       icon: const Icon(Icons.camera_alt_outlined),
-                      label: const Text('Camera'),
+                      label: Text(context.l10n.commonCamera),
                     ),
                     OutlinedButton.icon(
                       onPressed: widget.controller.isBusy
@@ -577,23 +586,24 @@ class _CompleteTaskSheetState extends State<_CompleteTaskSheet> {
                           : () => widget.controller
                               .pickEvidence(TaskEvidenceSource.gallery),
                       icon: const Icon(Icons.photo_library_outlined),
-                      label: const Text('Gallery'),
+                      label: Text(context.l10n.commonGallery),
                     ),
                   ],
                 ),
                 if (widget.controller.evidence != null) ...<Widget>[
                   const SizedBox(height: 8),
-                  Text('Selected: ${widget.controller.evidence!.filename}'),
+                  Text(context.l10n
+                      .selectedFile(widget.controller.evidence!.filename)),
                   const SizedBox(height: 8),
                   DropdownButtonFormField<TaskPhotoType>(
                     value: _type,
-                    decoration:
-                        const InputDecoration(labelText: 'Evidence type'),
+                    decoration: InputDecoration(
+                        labelText: context.l10n.evidenceTypeLabel),
                     items: TaskPhotoType.values
                         .map(
                           (type) => DropdownMenuItem<TaskPhotoType>(
                             value: type,
-                            child: Text(type.label),
+                            child: Text(type.localizedLabel(context.l10n)),
                           ),
                         )
                         .toList(growable: false),
@@ -604,13 +614,13 @@ class _CompleteTaskSheetState extends State<_CompleteTaskSheet> {
                   const SizedBox(height: 8),
                   TextField(
                     controller: _captionController,
-                    decoration:
-                        const InputDecoration(labelText: 'Evidence caption'),
+                    decoration: InputDecoration(
+                        labelText: context.l10n.evidenceCaptionLabel),
                   ),
                 ],
                 if (widget.controller.message != null) ...<Widget>[
                   const SizedBox(height: 10),
-                  Text(widget.controller.message!),
+                  Text(widget.controller.message!.call(context.l10n)),
                 ],
                 const SizedBox(height: 16),
                 FilledButton.icon(
@@ -618,8 +628,8 @@ class _CompleteTaskSheetState extends State<_CompleteTaskSheet> {
                   onPressed: widget.controller.isBusy ? null : _complete,
                   icon: const Icon(Icons.check),
                   label: Text(widget.controller.isBusy
-                      ? _stageLabel(widget.controller.stage)
-                      : 'Confirm completion'),
+                      ? _stageLabel(context.l10n, widget.controller.stage)
+                      : context.l10n.confirmCompletion),
                 ),
               ],
             ),
@@ -671,7 +681,7 @@ class _AddEvidenceSheetState extends State<_AddEvidenceSheet> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                Text('Add task evidence',
+                Text(context.l10n.addTaskEvidenceTitle,
                     style: Theme.of(context).textTheme.headlineSmall),
                 const SizedBox(height: 12),
                 Wrap(
@@ -683,7 +693,7 @@ class _AddEvidenceSheetState extends State<_AddEvidenceSheet> {
                           : () => widget.controller
                               .pickEvidence(TaskEvidenceSource.camera),
                       icon: const Icon(Icons.camera_alt_outlined),
-                      label: const Text('Camera'),
+                      label: Text(context.l10n.commonCamera),
                     ),
                     OutlinedButton.icon(
                       onPressed: widget.controller.isBusy
@@ -691,23 +701,25 @@ class _AddEvidenceSheetState extends State<_AddEvidenceSheet> {
                           : () => widget.controller
                               .pickEvidence(TaskEvidenceSource.gallery),
                       icon: const Icon(Icons.photo_library_outlined),
-                      label: const Text('Gallery'),
+                      label: Text(context.l10n.commonGallery),
                     ),
                   ],
                 ),
                 const SizedBox(height: 10),
                 Text(widget.controller.evidence == null
-                    ? 'Choose a photo to continue.'
-                    : 'Selected: ${widget.controller.evidence!.filename}'),
+                    ? context.l10n.choosePhotoToContinue
+                    : context.l10n
+                        .selectedFile(widget.controller.evidence!.filename)),
                 const SizedBox(height: 10),
                 DropdownButtonFormField<TaskPhotoType>(
                   value: _type,
-                  decoration: const InputDecoration(labelText: 'Evidence type'),
+                  decoration: InputDecoration(
+                      labelText: context.l10n.evidenceTypeLabel),
                   items: TaskPhotoType.values
                       .map(
                         (type) => DropdownMenuItem<TaskPhotoType>(
                           value: type,
-                          child: Text(type.label),
+                          child: Text(type.localizedLabel(context.l10n)),
                         ),
                       )
                       .toList(growable: false),
@@ -718,11 +730,12 @@ class _AddEvidenceSheetState extends State<_AddEvidenceSheet> {
                 const SizedBox(height: 10),
                 TextField(
                   controller: _captionController,
-                  decoration: const InputDecoration(labelText: 'Caption'),
+                  decoration:
+                      InputDecoration(labelText: context.l10n.captionLabel),
                 ),
                 if (widget.controller.message != null) ...<Widget>[
                   const SizedBox(height: 10),
-                  Text(widget.controller.message!),
+                  Text(widget.controller.message!.call(context.l10n)),
                 ],
                 const SizedBox(height: 16),
                 FilledButton.icon(
@@ -733,8 +746,8 @@ class _AddEvidenceSheetState extends State<_AddEvidenceSheet> {
                       : _save,
                   icon: const Icon(Icons.cloud_upload_outlined),
                   label: Text(widget.controller.isBusy
-                      ? _stageLabel(widget.controller.stage)
-                      : 'Save evidence'),
+                      ? _stageLabel(context.l10n, widget.controller.stage)
+                      : context.l10n.saveEvidence),
                 ),
               ],
             ),
@@ -798,7 +811,8 @@ class _DetailFailure extends StatelessWidget {
                 const SizedBox(height: 10),
                 Text(message, textAlign: TextAlign.center),
                 const SizedBox(height: 14),
-                OutlinedButton(onPressed: onRetry, child: const Text('Retry')),
+                OutlinedButton(
+                    onPressed: onRetry, child: Text(context.l10n.commonRetry)),
               ],
             ),
           ),
@@ -806,11 +820,12 @@ class _DetailFailure extends StatelessWidget {
       );
 }
 
-String _memberName(List<TaskAssignee> members, String id) {
+String _memberName(
+    AppLocalizations l10n, List<TaskAssignee> members, String id) {
   for (final member in members) {
     if (member.profileId == id) return member.fullName;
   }
-  return 'Assigned farm member';
+  return l10n.assignedFarmMember;
 }
 
 String _instructionsText(Map<String, Object?> instructions) {
@@ -821,12 +836,13 @@ String _instructionsText(Map<String, Object?> instructions) {
       .join('\n');
 }
 
-String _stageLabel(TaskMutationStage stage) => switch (stage) {
-      TaskMutationStage.idle => 'Ready',
-      TaskMutationStage.starting => 'Starting task…',
-      TaskMutationStage.assigning => 'Saving assignments…',
-      TaskMutationStage.pickingEvidence => 'Preparing evidence…',
-      TaskMutationStage.uploadingEvidence => 'Uploading private evidence…',
-      TaskMutationStage.registeringEvidence => 'Registering evidence…',
-      TaskMutationStage.completing => 'Completing task…',
+String _stageLabel(AppLocalizations l10n, TaskMutationStage stage) =>
+    switch (stage) {
+      TaskMutationStage.idle => l10n.stageReady,
+      TaskMutationStage.starting => l10n.stageStarting,
+      TaskMutationStage.assigning => l10n.stageAssigning,
+      TaskMutationStage.pickingEvidence => l10n.stagePickingEvidence,
+      TaskMutationStage.uploadingEvidence => l10n.stageUploadingEvidence,
+      TaskMutationStage.registeringEvidence => l10n.stageRegisteringEvidence,
+      TaskMutationStage.completing => l10n.stageCompleting,
     };

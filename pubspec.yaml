@@ -11,8 +11,11 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_image_compress: ^2.3.0
+  flutter_localizations:
+    sdk: flutter
   go_router: ^13.2.0
   image_picker: ^1.0.8
+  intl: 0.18.1
   mobile_scanner: ^4.0.1
   shared_preferences: ^2.2.3
   supabase_flutter: ^2.8.4
@@ -26,6 +29,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  generate: true
   assets:
     - assets/data/al_wahat_map_data.json
   fonts:

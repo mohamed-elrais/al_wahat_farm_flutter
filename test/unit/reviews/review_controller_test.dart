@@ -1,4 +1,5 @@
 import 'package:al_wahat_farm_flutter/features/reviews/domain/engineer_review.dart';
+import 'package:al_wahat_farm_flutter/l10n/gen/app_localizations_en.dart';
 import 'package:al_wahat_farm_flutter/features/reviews/presentation/review_controller.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/farm_task.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/task_draft.dart';
@@ -6,6 +7,8 @@ import 'package:al_wahat_farm_flutter/features/tasks/domain/task_evidence.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../support/task_fakes.dart';
+
+final _enMessages = AppLocalizationsEn();
 
 void main() {
   group('ReviewController', () {
@@ -121,7 +124,8 @@ void main() {
       expect(ok, isFalse);
       expect(reviewRepo.reviewCalls, 0);
       expect(store.tasks[taskId]!.status, TaskStatus.needsEngineerReview);
-      expect(controller.message, contains('owner or agricultural engineer'));
+      expect(controller.message?.call(_enMessages),
+          contains('owner or agricultural engineer'));
     });
 
     test('review photo uploads once and retries without re-uploading',
@@ -144,7 +148,8 @@ void main() {
         decision: EngineerReviewDecision.approved,
       );
       expect(first, isFalse);
-      expect(controller.message, contains('photo is uploaded'));
+      expect(
+          controller.message?.call(_enMessages), contains('photo is uploaded'));
 
       final second = await controller.submit(
         decision: EngineerReviewDecision.approved,

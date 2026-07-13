@@ -1,3 +1,5 @@
+import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
+import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
 import 'package:al_wahat_farm_flutter/features/farm/presentation/farm_hierarchy_gate.dart';
@@ -87,14 +89,14 @@ class _IssueReportScreenState extends State<IssueReportScreen> {
             Row(
               children: <Widget>[
                 IconButton(
-                  tooltip: 'Back',
+                  tooltip: context.l10n.commonBack,
                   onPressed: controller.isBusy ? null : context.pop,
                   icon: const Icon(Icons.arrow_back),
                 ),
                 const SizedBox(width: 4),
                 Expanded(
                   child: Text(
-                    'Report tree issue',
+                    context.l10n.reportIssueTitle,
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
                 ),
@@ -116,8 +118,11 @@ class _IssueReportScreenState extends State<IssueReportScreen> {
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
                         Text(
-                          'Section ${tree.sectionCode} · '
-                          'Row ${tree.rowNumber ?? '—'} / Tree ${tree.treeNumber ?? '—'}',
+                          context.l10n.issueSectionRow(
+                            tree.sectionCode,
+                            tree.rowNumber?.toString() ?? '—',
+                            tree.treeNumber?.toString() ?? '—',
+                          ),
                         ),
                       ],
                     ),
@@ -134,12 +139,14 @@ class _IssueReportScreenState extends State<IssueReportScreen> {
                     key: const Key('issue-type'),
                     value: _type,
                     isExpanded: true,
-                    decoration: const InputDecoration(labelText: 'Issue type'),
+                    decoration: InputDecoration(
+                      labelText: context.l10n.issueTypeLabel,
+                    ),
                     items: TreeIssueType.values
                         .map(
                           (value) => DropdownMenuItem<TreeIssueType>(
                             value: value,
-                            child: Text(value.label),
+                            child: Text(value.localizedLabel(context.l10n)),
                           ),
                         )
                         .toList(growable: false),
@@ -152,12 +159,14 @@ class _IssueReportScreenState extends State<IssueReportScreen> {
                     key: const Key('issue-severity'),
                     value: _severity,
                     isExpanded: true,
-                    decoration: const InputDecoration(labelText: 'Severity'),
+                    decoration: InputDecoration(
+                      labelText: context.l10n.issueSeverityLabel,
+                    ),
                     items: IssueSeverity.values
                         .map(
                           (value) => DropdownMenuItem<IssueSeverity>(
                             value: value,
-                            child: Text(value.label),
+                            child: Text(value.localizedLabel(context.l10n)),
                           ),
                         )
                         .toList(growable: false),
@@ -174,8 +183,8 @@ class _IssueReportScreenState extends State<IssueReportScreen> {
                     minLines: 3,
                     maxLines: 6,
                     maxLength: 2000,
-                    decoration: const InputDecoration(
-                      labelText: 'Observation (optional)',
+                    decoration: InputDecoration(
+                      labelText: context.l10n.issueObservationLabel,
                       alignLabelWithHint: true,
                     ),
                   ),
@@ -188,10 +197,13 @@ class _IssueReportScreenState extends State<IssueReportScreen> {
               const SizedBox(height: 14),
               LinearProgressIndicator(
                 key: const Key('issue-submit-progress'),
-                semanticsLabel: controller.stage.label,
+                semanticsLabel: _stageLabel(context, controller.stage),
               ),
               const SizedBox(height: 6),
-              Text(controller.stage.label, textAlign: TextAlign.center),
+              Text(
+                _stageLabel(context, controller.stage),
+                textAlign: TextAlign.center,
+              ),
             ],
             if (controller.message != null) ...<Widget>[
               const SizedBox(height: 12),
@@ -209,7 +221,9 @@ class _IssueReportScreenState extends State<IssueReportScreen> {
                       ),
               icon: const Icon(Icons.send_outlined),
               label: Text(
-                controller.result == null ? 'Report issue' : 'Issue reported',
+                controller.result == null
+                    ? context.l10n.reportIssueButton
+                    : context.l10n.issueReportedButton,
               ),
             ),
           ],
@@ -233,9 +247,11 @@ class _PhotoSelector extends StatelessWidget {
         contentPadding: EdgeInsets.zero,
         leading: const Icon(Icons.image_outlined),
         title: Text(photo.filename),
-        subtitle: Text('${(photo.bytes.length / 1024).ceil()} KiB prepared'),
+        subtitle: Text(
+          context.l10n.issueKibPrepared((photo.bytes.length / 1024).ceil()),
+        ),
         trailing: IconButton(
-          tooltip: 'Remove photo',
+          tooltip: context.l10n.issueRemovePhoto,
           onPressed: controller.canSubmit ? controller.removePhoto : null,
           icon: const Icon(Icons.close),
         ),
@@ -251,7 +267,7 @@ class _PhotoSelector extends StatelessWidget {
               ? () => controller.pickPhoto(IssuePhotoSource.camera)
               : null,
           icon: const Icon(Icons.photo_camera_outlined),
-          label: const Text('Camera'),
+          label: Text(context.l10n.commonCamera),
         ),
         OutlinedButton.icon(
           key: const Key('issue-photo-gallery'),
@@ -259,7 +275,7 @@ class _PhotoSelector extends StatelessWidget {
               ? () => controller.pickPhoto(IssuePhotoSource.gallery)
               : null,
           icon: const Icon(Icons.photo_library_outlined),
-          label: const Text('Gallery'),
+          label: Text(context.l10n.commonGallery),
         ),
       ],
     );
@@ -284,7 +300,7 @@ class _SubmissionMessage extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            controller.message!,
+            controller.message!.call(context.l10n),
             key: const Key('issue-submit-message'),
             textAlign: TextAlign.center,
           ),
@@ -293,7 +309,7 @@ class _SubmissionMessage extends StatelessWidget {
             OutlinedButton(
               key: const Key('issue-photo-retry'),
               onPressed: controller.retryPhoto,
-              child: const Text('Retry photo'),
+              child: Text(context.l10n.issueRetryPhoto),
             ),
           ],
         ],
@@ -306,11 +322,11 @@ class _IssueUnavailable extends StatelessWidget {
   const _IssueUnavailable();
 
   @override
-  Widget build(BuildContext context) => const PaperBackground(
+  Widget build(BuildContext context) => PaperBackground(
         child: Center(
           child: WahatCard(
             child: Text(
-              'This tree is not available for issue reporting.',
+              context.l10n.issueUnavailable,
               textAlign: TextAlign.center,
             ),
           ),
@@ -318,12 +334,14 @@ class _IssueUnavailable extends StatelessWidget {
       );
 }
 
-extension on IssueSubmissionStage {
-  String get label => switch (this) {
-        IssueSubmissionStage.pickingPhoto => 'Preparing photo…',
-        IssueSubmissionStage.reporting => 'Creating issue and review task…',
-        IssueSubmissionStage.uploadingPhoto => 'Uploading private evidence…',
-        IssueSubmissionStage.registeringPhoto => 'Registering evidence…',
-        _ => '',
-      };
-}
+String _stageLabel(BuildContext context, IssueSubmissionStage stage) =>
+    switch (stage) {
+      IssueSubmissionStage.pickingPhoto =>
+        context.l10n.issueStagePreparingPhoto,
+      IssueSubmissionStage.reporting => context.l10n.issueStageReporting,
+      IssueSubmissionStage.uploadingPhoto =>
+        context.l10n.issueStageUploadingPhoto,
+      IssueSubmissionStage.registeringPhoto =>
+        context.l10n.issueStageRegisteringPhoto,
+      _ => '',
+    };

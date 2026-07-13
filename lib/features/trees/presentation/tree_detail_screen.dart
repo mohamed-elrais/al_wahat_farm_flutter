@@ -1,3 +1,4 @@
+import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
 import 'package:al_wahat_farm_flutter/features/auth/presentation/authenticated_gate.dart';
@@ -31,10 +32,10 @@ class TreeDetailScreen extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 110),
         children: <Widget>[
           Align(
-            alignment: Alignment.centerLeft,
+            alignment: AlignmentDirectional.centerStart,
             child: IconButton(
               key: const Key('tree-detail-back'),
-              tooltip: 'Back',
+              tooltip: context.l10n.commonBack,
               onPressed: context.pop,
               icon: const Icon(Icons.arrow_back),
             ),
@@ -46,7 +47,7 @@ class TreeDetailScreen extends StatelessWidget {
               key: const Key('tree-detail-attach-task'),
               onPressed: () => context.go('/tasks/create?treeId=${tree.id}'),
               icon: const Icon(Icons.assignment_add),
-              label: const Text('Attach a task'),
+              label: Text(context.l10n.attachTask),
             ),
           OutlinedButton.icon(
             key: const Key('tree-detail-report-issue'),
@@ -54,7 +55,7 @@ class TreeDetailScreen extends StatelessWidget {
               '/map/tree/${tree.id}/report-issue',
             ),
             icon: const Icon(Icons.report_outlined),
-            label: const Text('Report an issue'),
+            label: Text(context.l10n.reportAnIssue),
           ),
         ],
       ),
@@ -75,18 +76,18 @@ class _TreeUnavailableScreen extends StatelessWidget {
                 const Icon(Icons.qr_code_2, size: 42),
                 const SizedBox(height: 12),
                 Text(
-                  'Tree unavailable',
+                  context.l10n.treeUnavailableTitle,
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'This tree is inactive or no longer visible to your farm.',
+                Text(
+                  context.l10n.treeUnavailableMessage,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
                 OutlinedButton(
                   onPressed: context.pop,
-                  child: const Text('Go back'),
+                  child: Text(context.l10n.goBack),
                 ),
               ],
             ),

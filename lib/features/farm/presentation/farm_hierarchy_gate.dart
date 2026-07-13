@@ -1,4 +1,5 @@
 import 'package:al_wahat_farm_flutter/core/app_services.dart';
+import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
 import 'package:al_wahat_farm_flutter/features/farm/data/farm_hierarchy_repository.dart';
@@ -116,16 +117,19 @@ class _HierarchyFailure extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
                   Text(
-                    'Unable to load farm data',
+                    context.l10n.hierarchyFailedTitle,
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    'Check your connection and farm access, then try again.',
+                  Text(
+                    context.l10n.hierarchyFailedMessage,
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 16),
-                  FilledButton(onPressed: onRetry, child: const Text('Retry')),
+                  FilledButton(
+                    onPressed: onRetry,
+                    child: Text(context.l10n.commonRetry),
+                  ),
                 ],
               ),
             ),

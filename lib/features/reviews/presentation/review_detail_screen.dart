@@ -1,4 +1,6 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
+import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
+import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
 import 'package:al_wahat_farm_flutter/features/auth/presentation/authenticated_gate.dart';
@@ -98,7 +100,7 @@ class _ReviewDetailScreenState extends State<ReviewDetailScreen> {
     final controller = _controller;
     if (controller == null || role == null) {
       return _shell(
-        const Center(child: Text('Review workspace is unavailable.')),
+        Center(child: Text(context.l10n.reviewWorkspaceUnavailable)),
       );
     }
     return _shell(
@@ -120,7 +122,8 @@ class _ReviewDetailScreenState extends State<ReviewDetailScreen> {
     final details = controller.details;
     if (controller.status == ReviewStatus.failure || details == null) {
       return _FailureCard(
-        message: controller.message ?? 'Unable to load this review.',
+        message: controller.message?.call(context.l10n) ??
+            context.l10n.unableToLoadReview,
         onRetry: controller.load,
       );
     }
@@ -132,7 +135,7 @@ class _ReviewDetailScreenState extends State<ReviewDetailScreen> {
         Row(
           children: <Widget>[
             IconButton(
-              tooltip: 'Back to review queue',
+              tooltip: context.l10n.backToReviewQueue,
               onPressed: () => context.go('/tasks/reviews'),
               icon: const Icon(Icons.arrow_back),
             ),
@@ -141,7 +144,7 @@ class _ReviewDetailScreenState extends State<ReviewDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  const Eyebrow('Review task'),
+                  Eyebrow(context.l10n.reviewTaskEyebrow),
                   Text(
                     task.title,
                     style: Theme.of(context).textTheme.headlineLarge,
@@ -156,12 +159,12 @@ class _ReviewDetailScreenState extends State<ReviewDetailScreen> {
           const SizedBox(height: 12),
           const LinearProgressIndicator(),
           const SizedBox(height: 6),
-          Text(_stageLabel(controller.stage)),
+          Text(_stageLabel(context.l10n, controller.stage)),
         ],
         if (controller.message != null) ...<Widget>[
           const SizedBox(height: 12),
           Text(
-            controller.message!,
+            controller.message!.call(context.l10n),
             key: const Key('review-detail-message'),
             style: const TextStyle(
               color: AppColors.green,
@@ -176,23 +179,23 @@ class _ReviewDetailScreenState extends State<ReviewDetailScreen> {
             children: <Widget>[
               _SummaryRow(
                 icon: Icons.place_outlined,
-                label: 'Target',
-                value: taskTargetLabel(task, _hierarchy),
+                label: context.l10n.detailTarget,
+                value: taskTargetLabel(context.l10n, task, _hierarchy),
               ),
               _SummaryRow(
                 icon: Icons.event_outlined,
-                label: 'Schedule',
-                value: taskScheduleLabel(task),
+                label: context.l10n.detailSchedule,
+                value: taskScheduleLabel(context.l10n, task),
               ),
               _SummaryRow(
                 icon: Icons.priority_high,
-                label: 'Priority',
-                value: task.priority.label,
+                label: context.l10n.detailPriority,
+                value: task.priority.localizedLabel(context.l10n),
               ),
               if (task.completedAt != null)
                 _SummaryRow(
                   icon: Icons.done_all_outlined,
-                  label: 'Completed',
+                  label: context.l10n.reviewCompleted,
                   value: taskDateTimeLabel(task.completedAt!),
                 ),
               if (task.relatedTreeIssueId != null) ...<Widget>[
@@ -204,7 +207,7 @@ class _ReviewDetailScreenState extends State<ReviewDetailScreen> {
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'Linked to a reported tree issue.',
+                        context.l10n.reviewLinkedIssue,
                         key: const Key('review-linked-issue'),
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
@@ -258,12 +261,11 @@ class _DeniedReview extends StatelessWidget {
                 const Icon(Icons.lock_outline,
                     size: 38, color: AppColors.green),
                 const SizedBox(height: 12),
-                Text('Reviews are restricted',
+                Text(context.l10n.reviewDeniedTitle,
                     style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: 6),
-                const Text(
-                  'Only the owner or agricultural engineer can review '
-                  'completed work.',
+                Text(
+                  context.l10n.reviewDeniedMessage,
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -286,14 +288,15 @@ class _DecisionCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          Text('Decision', style: Theme.of(context).textTheme.titleLarge),
+          Text(context.l10n.decisionTitle,
+              style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 6),
           if (!controller.canDecide)
-            const Text(
-              'This task is not awaiting a review decision.',
+            Text(
+              context.l10n.decisionNotAwaiting,
             )
           else ...<Widget>[
-            const Text('Record the engineer review outcome for this work.'),
+            Text(context.l10n.decisionPrompt),
             const SizedBox(height: 12),
             FilledButton.icon(
               key: const Key('review-approve-button'),
@@ -301,7 +304,8 @@ class _DecisionCard extends StatelessWidget {
                   ? () => onDecide(EngineerReviewDecision.approved)
                   : null,
               icon: const Icon(Icons.check_circle_outline),
-              label: Text(EngineerReviewDecision.approved.actionLabel),
+              label: Text(EngineerReviewDecision.approved
+                  .localizedActionLabel(context.l10n)),
             ),
             const SizedBox(height: 10),
             OutlinedButton.icon(
@@ -310,8 +314,8 @@ class _DecisionCard extends StatelessWidget {
                   ? () => onDecide(EngineerReviewDecision.returnedForCorrection)
                   : null,
               icon: const Icon(Icons.undo_outlined),
-              label: Text(
-                  EngineerReviewDecision.returnedForCorrection.actionLabel),
+              label: Text(EngineerReviewDecision.returnedForCorrection
+                  .localizedActionLabel(context.l10n)),
             ),
             const SizedBox(height: 10),
             OutlinedButton.icon(
@@ -320,7 +324,8 @@ class _DecisionCard extends StatelessWidget {
                   ? () => onDecide(EngineerReviewDecision.followUpRequired)
                   : null,
               icon: const Icon(Icons.flag_outlined),
-              label: Text(EngineerReviewDecision.followUpRequired.actionLabel),
+              label: Text(EngineerReviewDecision.followUpRequired
+                  .localizedActionLabel(context.l10n)),
             ),
           ],
         ],
@@ -362,20 +367,20 @@ class _DecisionSheetState extends State<_DecisionSheet> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                Text(widget.decision.actionLabel,
+                Text(widget.decision.localizedActionLabel(context.l10n),
                     style: Theme.of(context).textTheme.headlineSmall),
                 const SizedBox(height: 12),
                 TextField(
                   controller: _notesController,
                   minLines: 2,
                   maxLines: 5,
-                  decoration: const InputDecoration(
-                    labelText: 'Review notes',
-                    hintText: 'Explain the decision for the assignee.',
+                  decoration: InputDecoration(
+                    labelText: context.l10n.reviewNotesLabel,
+                    hintText: context.l10n.reviewNotesHint,
                   ),
                 ),
                 const Divider(height: 28),
-                Text('Optional review photo',
+                Text(context.l10n.optionalReviewPhoto,
                     style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 8),
                 Wrap(
@@ -387,7 +392,7 @@ class _DecisionSheetState extends State<_DecisionSheet> {
                           : () => widget.controller
                               .pickPhoto(TaskEvidenceSource.camera),
                       icon: const Icon(Icons.camera_alt_outlined),
-                      label: const Text('Camera'),
+                      label: Text(context.l10n.commonCamera),
                     ),
                     OutlinedButton.icon(
                       onPressed: widget.controller.isBusy
@@ -395,7 +400,7 @@ class _DecisionSheetState extends State<_DecisionSheet> {
                           : () => widget.controller
                               .pickPhoto(TaskEvidenceSource.gallery),
                       icon: const Icon(Icons.photo_library_outlined),
-                      label: const Text('Gallery'),
+                      label: Text(context.l10n.commonGallery),
                     ),
                   ],
                 ),
@@ -404,21 +409,21 @@ class _DecisionSheetState extends State<_DecisionSheet> {
                   Row(
                     children: <Widget>[
                       Expanded(
-                        child: Text(
-                            'Selected: ${widget.controller.photo!.filename}'),
+                        child: Text(context.l10n
+                            .selectedFile(widget.controller.photo!.filename)),
                       ),
                       TextButton(
                         onPressed: widget.controller.isBusy
                             ? null
                             : widget.controller.removePhoto,
-                        child: const Text('Remove'),
+                        child: Text(context.l10n.commonRemove),
                       ),
                     ],
                   ),
                 ],
                 if (widget.controller.message != null) ...<Widget>[
                   const SizedBox(height: 10),
-                  Text(widget.controller.message!),
+                  Text(widget.controller.message!.call(context.l10n)),
                 ],
                 const SizedBox(height: 16),
                 FilledButton.icon(
@@ -426,8 +431,9 @@ class _DecisionSheetState extends State<_DecisionSheet> {
                   onPressed: widget.controller.isBusy ? null : _submit,
                   icon: const Icon(Icons.check),
                   label: Text(widget.controller.isBusy
-                      ? _stageLabel(widget.controller.stage)
-                      : 'Confirm ${widget.decision.actionLabel.toLowerCase()}'),
+                      ? _stageLabel(context.l10n, widget.controller.stage)
+                      : context.l10n.confirmDecision(
+                          widget.decision.localizedActionLabel(context.l10n))),
                 ),
               ],
             ),
@@ -454,17 +460,17 @@ class _ReviewHistoryCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            Text('Review history (${reviews.length})',
+            Text(context.l10n.reviewHistory(reviews.length),
                 style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 8),
             if (reviews.isEmpty)
-              const Text('No review decisions have been recorded yet.')
+              Text(context.l10n.noReviews)
             else
               for (final review in reviews)
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: Icon(_decisionIcon(review.decision)),
-                  title: Text(review.decision.label),
+                  title: Text(review.decision.localizedLabel(context.l10n)),
                   subtitle: Text(
                     review.notes == null || review.notes!.isEmpty
                         ? taskDateTimeLabel(review.reviewedAt)
@@ -486,11 +492,11 @@ class _EvidenceCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            Text('Evidence (${photos.length})',
+            Text(context.l10n.evidenceCount(photos.length),
                 style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 8),
             if (photos.isEmpty)
-              const Text('No task evidence has been registered.')
+              Text(context.l10n.noEvidence)
             else
               for (final photo in photos)
                 ListTile(
@@ -499,9 +505,10 @@ class _EvidenceCard extends StatelessWidget {
                     backgroundColor: AppColors.softGreen,
                     child: Icon(Icons.photo_outlined),
                   ),
-                  title: Text(photo.caption ?? photo.photoType.label),
+                  title: Text(photo.caption ??
+                      photo.photoType.localizedLabel(context.l10n)),
                   subtitle: Text(
-                    '${photo.photoType.label} · ${taskDateTimeLabel(photo.createdAt)}',
+                    '${photo.photoType.localizedLabel(context.l10n)} · ${taskDateTimeLabel(photo.createdAt)}',
                   ),
                 ),
           ],
@@ -519,16 +526,17 @@ class _ActivityCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            Text('Activity', style: Theme.of(context).textTheme.titleLarge),
+            Text(context.l10n.activityTitle,
+                style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 8),
             if (activity.isEmpty)
-              const Text('No task activity is visible.')
+              Text(context.l10n.noActivity)
             else
               for (final item in activity)
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.history),
-                  title: Text(item.action.label),
+                  title: Text(item.action.localizedLabel(context.l10n)),
                   subtitle: Text(
                     item.note == null || item.note!.isEmpty
                         ? taskDateTimeLabel(item.createdAt)
@@ -587,7 +595,8 @@ class _FailureCard extends StatelessWidget {
                 const SizedBox(height: 10),
                 Text(message, textAlign: TextAlign.center),
                 const SizedBox(height: 14),
-                OutlinedButton(onPressed: onRetry, child: const Text('Retry')),
+                OutlinedButton(
+                    onPressed: onRetry, child: Text(context.l10n.commonRetry)),
               ],
             ),
           ),
@@ -601,9 +610,9 @@ IconData _decisionIcon(EngineerReviewDecision decision) => switch (decision) {
       EngineerReviewDecision.followUpRequired => Icons.flag_outlined,
     };
 
-String _stageLabel(ReviewStage stage) => switch (stage) {
-      ReviewStage.idle => 'Ready',
-      ReviewStage.pickingPhoto => 'Preparing photo…',
-      ReviewStage.uploadingPhoto => 'Uploading private photo…',
-      ReviewStage.submitting => 'Recording decision…',
+String _stageLabel(AppLocalizations l10n, ReviewStage stage) => switch (stage) {
+      ReviewStage.idle => l10n.stageReady,
+      ReviewStage.pickingPhoto => l10n.reviewStagePickingPhoto,
+      ReviewStage.uploadingPhoto => l10n.reviewStageUploadingPhoto,
+      ReviewStage.submitting => l10n.reviewStageSubmitting,
     };

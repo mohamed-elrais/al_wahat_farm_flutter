@@ -1,6 +1,17 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 
+/// Platform Arabic-capable fonts to fall back to for glyphs the bundled Latin
+/// fonts (Inter / Libre Baskerville) do not cover. Flutter resolves these
+/// against the device's installed fonts, so Arabic renders natively on iOS and
+/// Android without bundling or downloading a font.
+const List<String> _arabicFallback = <String>[
+  'Geeza Pro',
+  'Noto Sans Arabic',
+  'Noto Kufi Arabic',
+  'Arial',
+];
+
 abstract final class AppTheme {
   static ThemeData get light {
     const colorScheme = ColorScheme.light(
@@ -29,24 +40,30 @@ abstract final class AppTheme {
         bodyLarge: const TextStyle(
           color: AppColors.ink,
           fontFamily: 'Inter',
+          fontFamilyFallback: _arabicFallback,
           fontSize: 16,
           height: 1.55,
         ),
         bodyMedium: const TextStyle(
           color: AppColors.muted,
           fontFamily: 'Inter',
+          fontFamilyFallback: _arabicFallback,
           fontSize: 14,
           height: 1.5,
         ),
         labelLarge: const TextStyle(
           fontFamily: 'Inter',
+          fontFamilyFallback: _arabicFallback,
           fontWeight: FontWeight.w800,
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.card,
-        labelStyle: const TextStyle(fontFamily: 'Inter'),
+        labelStyle: const TextStyle(
+          fontFamily: 'Inter',
+          fontFamilyFallback: _arabicFallback,
+        ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 14,
           vertical: 14,
@@ -87,7 +104,11 @@ abstract final class AppTheme {
       TextStyle(
         color: AppColors.ink,
         fontFamily: 'LibreBaskerville',
-        fontFamilyFallback: const <String>['Georgia', 'serif'],
+        fontFamilyFallback: const <String>[
+          'Georgia',
+          ..._arabicFallback,
+          'serif',
+        ],
         fontSize: size,
         fontWeight: weight,
         height: height,
