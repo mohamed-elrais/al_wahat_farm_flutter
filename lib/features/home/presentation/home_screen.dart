@@ -151,7 +151,7 @@ class _FarmOverview extends StatelessWidget {
                   icon: Icons.grid_view_outlined,
                 ),
                 _Metric(
-                  value: '120',
+                  value: '122',
                   label: 'Irrigation zones',
                   icon: Icons.water_drop_outlined,
                 ),

@@ -98,18 +98,21 @@ not evidence.
 - [x] Role capability tests pass.
 - [x] RPC payload contract tests pass.
 - [x] Login/session routing widget tests pass.
-- [ ] Section filtering and tree-sheet widget tests pass. Section filtering passes;
-  tree-sheet coverage remains.
+- [x] Section filtering and role-aware tree-sheet widget tests pass.
 - [ ] Task form validation/submission tests pass.
-- [ ] Issue form and photo-failure tests pass.
+- [x] Issue form and photo-failure tests pass.
 - [ ] Task transition tests pass.
 - [ ] Core-screen goldens pass. Phase 1 login/shell/top-bar goldens pass; remaining
   core screens are not yet covered.
 - [ ] Fake-backed login → map → tree → create-task integration flow passes.
-- [ ] Fake-backed worker login → scan → report-issue flow passes.
-- [ ] Opt-in live Supabase integration suite is documented.
+- [x] Fake-backed worker scan → report-issue flow passes. Authentication/bootstrap is
+  covered separately by the login and farm-gate suites.
+- [x] Opt-in live Supabase integration suite is documented. The authenticated check
+  verifies RLS, the authoritative 12-section/122-zone/1,567-tree counts, and a real
+  active QR token without logging it.
 - [x] `dart format --set-exit-if-changed .` passes.
 - [x] `flutter analyze` passes with no suppressed product diagnostics.
-- [x] `flutter test` passes (49 unit/widget/golden tests).
+- [x] `flutter test` passes (65 tests; 3 explicitly configured live tests skip by
+  default).
 - [ ] Screenshots inspected at 390×844, 430×932, a common Android size, and 1024×1366.
 - [ ] `FIDELITY_REPORT.md` records comparisons, adaptations, and remaining mismatches.

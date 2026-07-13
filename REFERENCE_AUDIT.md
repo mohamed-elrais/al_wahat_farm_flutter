@@ -3,7 +3,7 @@
 Audit date: 2026-07-12  
 Phase: 0 — reference audit and baseline  
 Reference web source: `reference_web_app/`  
-Database source: all seven SQL files in `supabase/migrations/`
+Database source: all eight SQL files in `supabase/migrations/`
 
 ## Gate result
 
@@ -160,10 +160,13 @@ and brown shadows. The background is a 28 px square green grid at 3.5% opacity.
 | Planted sections | 6 |
 | Trees | 1,567 |
 | Distinct irrigation-zone UUIDs referenced by tree rows | 56 |
+| Live active irrigation zones | 122 |
 
-The asset has no standalone irrigation-zone collection. Therefore the product's stated
-120-zone total cannot be derived or validated from `map-data.json`; it must come from
-the live `irrigation_zones` table. The reference UI currently hardcodes `120`.
+The asset has no standalone irrigation-zone collection. Therefore the irrigation-zone
+total cannot be derived or validated from `map-data.json`; it must come from the live
+`irrigation_zones` table. The reference UI hardcodes the stale value `120`. An
+authenticated RLS-scoped query on 2026-07-13 returned 122 active zones, and the farm
+operator subsequently confirmed 122 as the authoritative product count.
 
 | Section | Trees | Planted | Area (m²) | Polygon points |
 |---|---:|:---:|---:|---:|
@@ -265,6 +268,8 @@ report_tree_issue(p_tree_id uuid, p_issue_type tree_issue_type,
   p_photo_storage_path text) -> (tree_issue_id uuid, task_id uuid)
 add_task_photo(p_task_id uuid, p_storage_path text,
   p_photo_type task_photo_type, p_caption text) -> uuid
+add_tree_issue_photo(p_tree_issue_id uuid, p_storage_path text,
+  p_caption text) -> uuid
 review_task(p_task_id uuid, p_decision engineer_review_decision,
   p_notes text, p_photo_storage_path text) -> uuid
 get_operation_plan_calendar(p_farm_id uuid, p_start_date date,
@@ -297,7 +302,7 @@ The client must use these final parameter names. Earlier palm-named RPCs are dro
 - Users upload/delete within their own top-level folder; authorized viewers read
   registered task-photo paths through RLS.
 
-### Verified backend workflow gap
+### Verified backend workflow gap and external resolution
 
 The optional issue-photo flow is not currently satisfiable in one call for a worker:
 
@@ -309,9 +314,17 @@ The optional issue-photo flow is not currently satisfiable in one call for a wor
    worker workaround because the generated review task has no active worker assignment,
    while `add_task_photo` requires `private.can_operate_task`.
 
-Phase 4 must either add a new migration that provides an idempotent two-step issue
-evidence contract or explicitly leave worker issue photos unavailable. The client must
-not fabricate a task ID or weaken path validation.
+The separate, authoritative Supabase repository implements this as
+`20260713080541_add_tree_issue_photo_rpc.sql`: an authenticated,
+reporter-or-manager-only, idempotent second step after the issue RPC returns its task
+ID. Its reported verification is a clean database reset, 13 passing pgTAP assertions,
+a matching local migration listing, no advisor findings, and no schema lint errors.
+The client reports first without a photo path, uploads to the exact user/farm/task
+path, and then registers the uploaded object. An ambiguous registration retry reuses
+that same path so the idempotent RPC can safely return the existing UUID. It never
+fabricates a task ID or weakens path validation. The copied `supabase/` directory in
+this Flutter repository remains read-only reference material; the migration has not
+been deployed from here.
 
 ## Baseline verification
 
@@ -351,9 +364,9 @@ Results using the resulting declared Flutter 3.13-compatible dependency versions
 
 ```text
 flutter pub get                          PASS
-dart format --set-exit-if-changed .     PASS (65 files, 0 changed)
+dart format --set-exit-if-changed .     PASS (84 files, 0 changed)
 flutter analyze                         PASS (no issues)
-flutter test --reporter expanded        PASS (49 tests)
+flutter test --reporter compact         PASS (65 passed, 3 live-only skipped)
 flutter run -d chrome                    PASS (debug service connected)
 flutter build ios --simulator            PASS (Runner.app produced)
 iPhone 14 Pro Max simulator launch       PASS (sign-in screen rendered)
@@ -368,12 +381,24 @@ project's iOS 11.0 target, and the transitive `SDWebImage` pod is locked to 5.19
 because later 5.21 releases use Apple SDK APIs unavailable in Xcode 14.2. CocoaPods
 installed 27 pods and repaired stale Xcode UUID references during normal integration.
 
-No Android emulator or physical camera was available. Live Supabase
-authentication/RLS/storage RPCs, real QR scanning, and end-to-end integration flows
-remain unverified. The passing suite genuinely covers unit, widget, and Flutter
-3.13-regenerated golden tests; the iOS simulator build and configured rendered launch
-were also verified with the public project configuration but no authenticated user
-session.
+No Android emulator or physical camera was available. Storage RPCs, real QR scanning,
+and full authenticated UI integration flows remain unverified. The passing suite
+genuinely covers unit, widget, and Flutter 3.13-regenerated golden tests; the iOS
+simulator build and configured rendered launch were also verified.
+
+An opt-in live data check was subsequently run with a disposable operational account
+through the public client configuration and its authenticated user session. It passed
+profile and membership RLS, resolved the `owner` role, and returned 12 active sections,
+1,567 active trees, and 122 active irrigation zones. The zone counts by section were
+`A:12, B:12, C:10, D:12, E:7, F:12, G:12, L:14, M:12, N:5, O:6, Q:8`. No service-role
+credential was used, no credential or token was logged, and no backend row was changed.
+The farm operator confirmed the coherent 122-zone distribution as authoritative, so
+the earlier 120-zone statement and reference UI metric are treated as stale.
+
+The same owner-scoped live suite reads one active QR label through its existing RLS
+policy and verifies that `scan_tree_by_qr` returns the exact linked live tree. The token
+is kept only in test memory and is never logged. Camera capture, issue creation, storage
+upload, and the new issue-photo RPC are not mutated against the live project.
 
 The map profile integration target is committed and records a timeline when run in
 profile mode on hardware. It cannot genuinely run in profile mode on the available iOS
@@ -393,5 +418,6 @@ available for profile capture.
 - Keep weather isolated and visibly mocked until a provider is configured.
 - Do not queue non-idempotent RPC mutations offline. Cache reads first; require
   connectivity for unsafe writes.
-- Treat 120 zones as a backend gate, not an asset assertion, because only 56 zone IDs
-  are referenced by planted-tree asset rows.
+- Treat the authoritative 122 zones as a backend gate, not an asset assertion, because
+  only 56 zone IDs are referenced by planted-tree asset rows. The original reference
+  UI's hardcoded 120 is a documented fidelity correction, not the operational truth.

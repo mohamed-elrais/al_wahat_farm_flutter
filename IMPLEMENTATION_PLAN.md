@@ -44,8 +44,9 @@ and related unit/widget tests. These do not complete Phases 2–4 by themselves.
 
 Gate evidence (2026-07-12): after the authorized Flutter 3.13 compatibility pass,
 dependency resolution passes on Flutter 3.13.9 / Dart 3.1.5;
-`dart format --set-exit-if-changed .` reports 65 files and 0 changes;
-`flutter analyze` reports no issues; all 49 unit/widget/golden tests pass; and a
+`dart format --set-exit-if-changed .` reports 84 files and 0 changes;
+`flutter analyze` reports no issues; all 65 default unit/widget/golden/fake-integration
+tests pass; and a
 Chrome debug launch connects successfully. The Xcode 14.2 iOS simulator build also
 passes and the app renders on an iPhone 14 Pro Max simulator. Phase 1 is complete.
 
@@ -64,17 +65,22 @@ passes and the app renders on an iPhone 14 Pro Max simulator. Phase 1 is complet
 - [x] Keep public project configuration optional and canonical fixtures isolated under
   `test/`; no fake operational rows are wired into production providers.
 
-Gate: authenticated context resolves role/farm and 12/120/1,567 against live backend,
-or 12/1,567 with the isolated fixture while the unverified live 120-zone gate remains
-clearly reported.
+Gate: authenticated context resolves role/farm and 12/122/1,567 against the live
+backend, or 12/1,567 with the isolated fixture while any live zone-count discrepancy
+remains clearly reported.
 
 Evidence (2026-07-13): authenticated routes resolve the active profile/memberships and
 then load the selected farm's active sections, zones, and trees before showing the app
 shell. Tree reads page in 1,000-row chunks so 1,567 rows cannot be silently truncated.
 The isolated canonical fixture passes 12 sections and 1,567 UUID trees and reports the
-known asset-only 56-zone-ID discrepancy; authenticated live verification of all 120
-database zones remains pending. Full suite: 49 tests; formatter: 65 files, 0 changed;
-analyzer: no issues. Phase 2 is complete under the explicit fixture alternative.
+known asset-only 56-zone-ID discrepancy. A disposable authenticated owner account also
+passed the live RLS gate and returned 12 active sections, 1,567 active trees, and 122
+active irrigation zones. The farm operator confirmed that 122 is the authoritative
+count, superseding the earlier 120-zone requirement; no live rows required changes.
+Default suite: 65 passed and 3 opt-in live tests skipped; formatter: 84 files, 0
+changed; analyzer: no issues. The explicitly configured live suite verifies the
+RLS/12-section/122-zone/1,567-tree gate and a real active QR token. Phase 2 is complete
+under both the isolated fixture alternative and authenticated live verification.
 
 ## Phase 3 — Coordinate map
 
@@ -104,16 +110,36 @@ physical-device-only iOS AOT boundary, so Phase 3 remains in progress for that e
 
 ## Phase 4 — Tree selection, QR, and issues
 
-- [ ] Implement draggable tree sheet and routed detail.
-- [ ] Integrate camera permissions and `mobile_scanner` with `scan_tree_by_qr`.
-- [ ] Implement enum-backed issue form and image preparation/upload progress.
-- [ ] Resolve the audited issue-photo RPC sequencing defect with a new migration only
-  if backend change is authorized by the verified defect.
-- [ ] Implement `report_tree_issue` and refresh issue/task/review providers.
-- [ ] Add happy, validation, permission, offline, authorization, and upload-failure tests.
+- [x] Implement reusable draggable tree sheet and routed live-tree detail, including
+  manager-only task action and issue reporting for operational users.
+- [x] Integrate existing camera permissions and `mobile_scanner` with a typed
+  `scan_tree_by_qr` repository. A read-only live test resolves a real active token to
+  the same live tree without logging the token.
+- [x] Implement enum-backed issue form, JPEG preparation, private scoped upload stages,
+  honest partial-success state, cleanup attempt, and safe photo retry.
+- [x] Resolve the audited issue-photo RPC sequencing defect in the separate Supabase
+  repository. This Flutter repository treats its copied `supabase/` directory as
+  read-only schema reference material. The scoped, authenticated, idempotent
+  `add_tree_issue_photo` RPC is implemented and locally verified in the owning
+  repository; remote deployment remains separately controlled there.
+- [ ] Implement `report_tree_issue` and refresh issue/task/review providers. The RPC,
+  exact result parsing, post-commit invalidation hook, and fake persistence flow are
+  implemented; concrete task/review providers arrive in Phases 5–6.
+- [x] Add happy, validation, role/authorization, offline, upload-failure, duplicate-
+  submission, tree-sheet, scanner, and fake-backed worker-flow tests.
 
 Gate: real test token opens the correct tree; issue creates persisted issue and task;
 optional evidence works through a safe verified contract.
+
+Evidence (2026-07-13): 16 new Phase 4 tests pass within the 65-test default suite, and
+the 3-test authenticated live suite passes hierarchy, authoritative counts, and a real
+QR lookup. The worker scan → report flow is deterministic and fake-backed so it does
+not create operational records. The authoritative Supabase repository reports a clean
+reset, 13 passing pgTAP assertions, migration listing, database advisors, and database
+lint for `20260713080541_add_tree_issue_photo_rpc.sql`; the copied SQL here is read-only
+evidence. It has not been remotely deployed. Real camera/gallery capture is also
+hardware-only evidence. Phase 4 remains in progress for live deployment/integration,
+real-device capture, and the provider work explicitly deferred to Phases 5–6.
 
 ## Phase 5 — Tasks
 

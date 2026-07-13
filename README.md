@@ -29,5 +29,20 @@ flutter analyze
 flutter test
 ```
 
+The ignored `config.json` may also contain disposable owner/engineer `TEST_EMAIL` and
+`TEST_PASSWORD` values for the opt-in, read-only live hierarchy and QR gate. Run it
+explicitly; it signs in through the public client, exercises the same RLS-scoped
+repositories as the app, signs out, and never requires a service-role key:
+
+```sh
+flutter test test/integration/live_supabase_hierarchy_test.dart \
+  --dart-define-from-file=config.json
+```
+
+The live gate intentionally enforces the declared 12 sections, 122 irrigation zones,
+and 1,567 trees, then resolves one active real QR token without printing it. A failure
+is a backend/product-data discrepancy, not permission to delete or deactivate rows
+automatically.
+
 See `REFERENCE_AUDIT.md`, `IMPLEMENTATION_PLAN.md`, and `FIDELITY_CHECKLIST.md` for
 verified reference facts, phase gates, and known blockers.

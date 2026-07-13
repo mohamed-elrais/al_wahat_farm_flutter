@@ -21,9 +21,12 @@ class WahatCard extends StatelessWidget {
             ),
           ],
         ),
-        child: Padding(
-          padding: padding ?? const EdgeInsets.all(AppSpacing.md),
-          child: child,
+        child: Material(
+          type: MaterialType.transparency,
+          child: Padding(
+            padding: padding ?? const EdgeInsets.all(AppSpacing.md),
+            child: child,
+          ),
         ),
       );
 }

@@ -4,10 +4,12 @@ import 'package:al_wahat_farm_flutter/core/config/app_config.dart';
 import 'package:al_wahat_farm_flutter/features/auth/presentation/authenticated_gate.dart';
 import 'package:al_wahat_farm_flutter/features/auth/presentation/login_screen.dart';
 import 'package:al_wahat_farm_flutter/features/home/presentation/home_screen.dart';
+import 'package:al_wahat_farm_flutter/features/issues/presentation/issue_report_screen.dart';
 import 'package:al_wahat_farm_flutter/features/map/presentation/farm_map_screen.dart';
 import 'package:al_wahat_farm_flutter/features/map/presentation/scanner_screen.dart';
 import 'package:al_wahat_farm_flutter/features/profile/presentation/profile_screen.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/presentation/tasks_screen.dart';
+import 'package:al_wahat_farm_flutter/features/trees/presentation/tree_detail_screen.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/app_shell.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -51,7 +53,26 @@ GoRouter createRouter(AppConfig config) {
           ),
           StatefulShellBranch(
             routes: <RouteBase>[
-              GoRoute(path: '/map', builder: (_, __) => const FarmMapScreen()),
+              GoRoute(
+                path: '/map',
+                builder: (_, __) => const FarmMapScreen(),
+                routes: <RouteBase>[
+                  GoRoute(
+                    path: 'tree/:treeId',
+                    builder: (_, state) => TreeDetailScreen(
+                      treeId: state.pathParameters['treeId']!,
+                    ),
+                    routes: <RouteBase>[
+                      GoRoute(
+                        path: 'report-issue',
+                        builder: (_, state) => IssueReportScreen(
+                          treeId: state.pathParameters['treeId']!,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ],
           ),
           StatefulShellBranch(
@@ -61,7 +82,12 @@ GoRouter createRouter(AppConfig config) {
           ),
           StatefulShellBranch(
             routes: <RouteBase>[
-              GoRoute(path: '/tasks', builder: (_, __) => const TasksScreen()),
+              GoRoute(
+                path: '/tasks',
+                builder: (_, state) => TasksScreen(
+                  initialTreeId: state.uri.queryParameters['treeId'],
+                ),
+              ),
             ],
           ),
           StatefulShellBranch(

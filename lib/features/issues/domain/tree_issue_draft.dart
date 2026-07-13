@@ -27,6 +27,16 @@ enum TreeIssueType {
         'other' => other,
         _ => throw FormatException('Unknown tree issue type: $value'),
       };
+
+  String get label => switch (this) {
+        insufficientIrrigation => 'Insufficient irrigation',
+        cloggedDripper => 'Clogged dripper',
+        leakOrDripperDamage => 'Leak or dripper damage',
+        harmfulWeed => 'Harmful weed',
+        pestOrDisease => 'Pest or disease',
+        treeDamage => 'Tree damage',
+        other => 'Other',
+      };
 }
 
 enum IssueSeverity {
@@ -41,6 +51,13 @@ enum IssueSeverity {
         'high' => high,
         'urgent' => urgent,
         _ => throw FormatException('Unknown issue severity: $value'),
+      };
+
+  String get label => switch (this) {
+        low => 'Low',
+        medium => 'Medium',
+        high => 'High',
+        urgent => 'Urgent',
       };
 }
 
@@ -58,6 +75,14 @@ class TreeIssueDraft {
   final IssueSeverity severity;
   final String? description;
   final String? photoStoragePath;
+
+  String? validate() {
+    if (treeId.trim().isEmpty) return 'Tree identity is required';
+    if (description != null && description!.trim().length > 2000) {
+      return 'Observation must be 2,000 characters or fewer';
+    }
+    return null;
+  }
 
   Map<String, Object?> toRpcParameters() => <String, Object?>{
         'p_tree_id': treeId,

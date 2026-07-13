@@ -1,47 +1,74 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
+import 'package:al_wahat_farm_flutter/core/errors/operation_failure.dart';
+import 'package:al_wahat_farm_flutter/features/trees/data/tree_qr_repository.dart';
+import 'package:al_wahat_farm_flutter/features/trees/domain/scanned_tree.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+typedef ScannerViewBuilder = Widget Function(
+  BuildContext context,
+  Future<void> Function(String token) onToken,
+);
+
 class ScannerScreen extends StatefulWidget {
-  const ScannerScreen({super.key});
+  const ScannerScreen({
+    this.repository,
+    this.scannerBuilder,
+    this.onTreeFound,
+    super.key,
+  });
+
+  final TreeQrRepository? repository;
+  final ScannerViewBuilder? scannerBuilder;
+  final ValueChanged<ScannedTree>? onTreeFound;
 
   @override
   State<ScannerScreen> createState() => _ScannerScreenState();
 }
 
 class _ScannerScreenState extends State<ScannerScreen> {
+  late final TreeQrRepository _repository;
   bool _handling = false;
   String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _repository =
+        widget.repository ?? SupabaseTreeQrRepository(Supabase.instance.client);
+  }
 
   Future<void> _scan(BarcodeCapture capture) async {
     if (_handling) return;
     final raw = capture.barcodes.firstOrNull?.rawValue;
     if (raw == null || raw.isEmpty) return;
+    await _scanToken(raw);
+  }
+
+  Future<void> _scanToken(String raw) async {
+    if (_handling) return;
     setState(() {
       _handling = true;
       _error = null;
     });
     try {
-      final Object? result = await Supabase.instance.client.rpc(
-        'scan_tree_by_qr',
-        params: <String, Object?>{'p_qr_token': raw},
-      );
+      final tree = await _repository.scan(raw);
       if (!mounted) return;
-      if (result is List && result.isNotEmpty) {
-        context.go('/map');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Tree found. Select it on the farm map.'),
-          ),
-        );
+      if (tree != null) {
+        final onTreeFound = widget.onTreeFound;
+        if (onTreeFound != null) {
+          onTreeFound(tree);
+        } else {
+          context.go('/map/tree/${tree.id}');
+        }
       } else {
         setState(
           () => _error = 'This QR code is not active or visible to your farm.',
         );
       }
-    } on PostgrestException catch (error) {
+    } on OperationFailure catch (error) {
       if (mounted) setState(() => _error = error.message);
     } catch (_) {
       if (mounted) {
@@ -56,13 +83,22 @@ class _ScannerScreenState extends State<ScannerScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => ColoredBox(
-        color: AppColors.ink,
-        child: Stack(
-          fit: StackFit.expand,
-          children: <Widget>[
-            MobileScanner(onDetect: _scan),
-            Center(
+  Widget build(BuildContext context) {
+    final scannerBuilder = widget.scannerBuilder;
+    return ColoredBox(
+      color: AppColors.ink,
+      child: Stack(
+        fit: StackFit.expand,
+        children: <Widget>[
+          if (scannerBuilder != null)
+            scannerBuilder(context, _scanToken)
+          else
+            MobileScanner(
+              onDetect: _scan,
+              errorBuilder: (_, error, __) => _CameraFailure(error: error),
+            ),
+          IgnorePointer(
+            child: Center(
               child: Container(
                 width: 250,
                 height: 250,
@@ -72,10 +108,12 @@ class _ScannerScreenState extends State<ScannerScreen> {
                 ),
               ),
             ),
-            Positioned(
-              left: 24,
-              right: 24,
-              bottom: 112,
+          ),
+          Positioned(
+            left: 24,
+            right: 24,
+            bottom: 112,
+            child: IgnorePointer(
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   color: AppColors.card.withOpacity(0.94),
@@ -97,7 +135,33 @@ class _ScannerScreenState extends State<ScannerScreen> {
                 ),
               ),
             ),
-          ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CameraFailure extends StatelessWidget {
+  const _CameraFailure({required this.error});
+
+  final MobileScannerException error;
+
+  @override
+  Widget build(BuildContext context) => ColoredBox(
+        color: AppColors.ink,
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Text(
+              error.errorCode == MobileScannerErrorCode.permissionDenied
+                  ? 'Camera access is off. Enable it in Settings to scan tree labels.'
+                  : 'The camera is unavailable. You can try again after checking permissions.',
+              key: const Key('scanner-camera-error'),
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.white),
+            ),
+          ),
         ),
       );
 }

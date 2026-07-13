@@ -10,7 +10,10 @@ import 'package:al_wahat_farm_flutter/features/map/domain/map_projection.dart';
 import 'package:al_wahat_farm_flutter/features/map/domain/projected_map.dart';
 import 'package:al_wahat_farm_flutter/features/map/domain/tree_reconciliation.dart';
 import 'package:al_wahat_farm_flutter/features/map/presentation/farm_map_painter.dart';
+import 'package:al_wahat_farm_flutter/features/trees/domain/tree_identity.dart';
+import 'package:al_wahat_farm_flutter/features/trees/presentation/tree_detail_sheet.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class FarmMapScreen extends StatefulWidget {
   const FarmMapScreen({this.mapFuture, super.key});
@@ -193,11 +196,44 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
       _selectedTree = tree;
       _section = tree.section;
     });
+    final hierarchy = FarmHierarchyScope.maybeOf(context)?.hierarchy;
+    final operational = OperationalContextScope.maybeOf(context);
+    final isLive = hierarchy?.trees.any((item) => item.id == tree.id) ?? false;
+    String? zoneLabel;
+    if (hierarchy != null) {
+      for (final zone in hierarchy.zones) {
+        if (zone.id == tree.zoneId) {
+          zoneLabel = zone.code;
+          break;
+        }
+      }
+    }
+    final identity = TreeIdentity.fromMapTree(
+      tree,
+      farmId: operational?.selectedMembership.farm.id,
+      zoneLabel: zoneLabel,
+    );
+    final canManageTasks =
+        operational?.selectedMembership.role.canManageTasks ?? false;
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => _TreeSheet(tree: tree),
+      builder: (sheetContext) => TreeDetailSheet(
+        tree: identity,
+        onAttachTask: isLive && canManageTasks
+            ? () {
+                Navigator.of(sheetContext).pop();
+                context.go('/tasks?treeId=${tree.id}');
+              }
+            : null,
+        onReportIssue: isLive
+            ? () {
+                Navigator.of(sheetContext).pop();
+                context.push('/map/tree/${tree.id}/report-issue');
+              }
+            : null,
+      ),
     );
   }
 
@@ -546,119 +582,9 @@ class _MapSummary extends StatelessWidget {
                   Text('${map.data.trees.length} tree points are available.'),
                 ],
               )
-            : _TreeDetails(tree: selected!),
-      );
-}
-
-class _TreeSheet extends StatelessWidget {
-  const _TreeSheet({required this.tree});
-  final FarmTree tree;
-
-  @override
-  Widget build(BuildContext context) => DraggableScrollableSheet(
-        initialChildSize: 0.48,
-        minChildSize: 0.28,
-        maxChildSize: 0.82,
-        expand: false,
-        builder: (_, controller) => DecoratedBox(
-          decoration: const BoxDecoration(
-            color: AppColors.card,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          child: ListView(
-            controller: controller,
-            padding: const EdgeInsets.fromLTRB(20, 10, 20, 30),
-            children: <Widget>[
-              Center(
-                  child:
-                      Container(width: 44, height: 4, color: AppColors.line)),
-              const SizedBox(height: 18),
-              _TreeDetails(tree: tree),
-              const SizedBox(height: 16),
-              FilledButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.assignment_add),
-                label: const Text('Attach a task'),
+            : TreeDetailContent(
+                tree: TreeIdentity.fromMapTree(selected!),
               ),
-              OutlinedButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.report_outlined),
-                label: const Text('Report an issue'),
-              ),
-            ],
-          ),
-        ),
-      );
-}
-
-class _TreeDetails extends StatelessWidget {
-  const _TreeDetails({required this.tree});
-  final FarmTree tree;
-
-  @override
-  Widget build(BuildContext context) => Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          const Eyebrow('Selected tree'),
-          Text(tree.code, style: Theme.of(context).textTheme.titleLarge),
-          const Divider(height: 24),
-          Wrap(
-            spacing: 18,
-            runSpacing: 12,
-            children: <Widget>[
-              _Detail(label: 'Section', value: tree.section),
-              _Detail(
-                  label: 'Row / tree', value: '${tree.row} / ${tree.number}'),
-              _Detail(label: 'Health', value: tree.health),
-              _Detail(label: 'Type', value: tree.type),
-              _Detail(label: 'Zone', value: tree.zoneId),
-            ],
-          ),
-          const SizedBox(height: 14),
-          DecoratedBox(
-            decoration: BoxDecoration(
-              color: const Color(0xFFF1EADC),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(10),
-              child: Text(
-                '${tree.latitude.toStringAsFixed(7)}, ${tree.longitude.toStringAsFixed(7)}',
-              ),
-            ),
-          ),
-        ],
-      );
-}
-
-class _Detail extends StatelessWidget {
-  const _Detail({required this.label, required this.value});
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) => SizedBox(
-        width: 110,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text(
-              label.toUpperCase(),
-              style: const TextStyle(
-                fontSize: 8,
-                letterSpacing: 0.8,
-                color: AppColors.muted,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              value,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontWeight: FontWeight.w700),
-            ),
-          ],
-        ),
       );
 }
 
