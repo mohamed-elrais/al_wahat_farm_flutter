@@ -22,6 +22,7 @@ class TasksScreen extends StatefulWidget {
     this.now,
     this.onOpenTask,
     this.onCreateTask,
+    this.onOpenReviews,
     super.key,
   });
 
@@ -31,6 +32,7 @@ class TasksScreen extends StatefulWidget {
   final DateTime Function()? now;
   final ValueChanged<String>? onOpenTask;
   final VoidCallback? onCreateTask;
+  final VoidCallback? onOpenReviews;
 
   @override
   State<TasksScreen> createState() => _TasksScreenState();
@@ -127,6 +129,16 @@ class _TasksScreenState extends State<TasksScreen> {
               ),
             ],
           ),
+          if (role.canReview) ...<Widget>[
+            const SizedBox(height: 10),
+            _ReviewQueueEntry(
+              count: snapshot.tasks
+                  .where(
+                      (task) => task.status == TaskStatus.needsEngineerReview)
+                  .length,
+              onTap: widget.onOpenReviews ?? () => context.go('/tasks/reviews'),
+            ),
+          ],
           if (snapshot.isRefreshing) ...<Widget>[
             const SizedBox(height: 12),
             const LinearProgressIndicator(),
@@ -261,6 +273,77 @@ class _TaskTile extends StatelessWidget {
                     ],
                   ),
                 ),
+                const Icon(Icons.chevron_right),
+              ],
+            ),
+          ),
+        ),
+      );
+}
+
+class _ReviewQueueEntry extends StatelessWidget {
+  const _ReviewQueueEntry({required this.count, required this.onTap});
+
+  final int count;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => WahatCard(
+        padding: EdgeInsets.zero,
+        child: InkWell(
+          key: const Key('open-review-queue-button'),
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(18),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Row(
+              children: <Widget>[
+                const CircleAvatar(
+                  backgroundColor: AppColors.softGreen,
+                  foregroundColor: AppColors.green,
+                  child: Icon(Icons.fact_check_outlined),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        'Review queue',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      Text(
+                        count == 0
+                            ? 'No tasks awaiting review'
+                            : '$count task${count == 1 ? '' : 's'} awaiting review',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
+                  ),
+                ),
+                if (count > 0)
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: AppColors.issue.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(99),
+                      border: Border.all(
+                        color: AppColors.issue.withOpacity(0.35),
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 9, vertical: 4),
+                      child: Text(
+                        '$count',
+                        style: const TextStyle(
+                          color: AppColors.issue,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ),
+                const SizedBox(width: 4),
                 const Icon(Icons.chevron_right),
               ],
             ),

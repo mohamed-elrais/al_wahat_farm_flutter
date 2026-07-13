@@ -176,12 +176,31 @@ copied schema file was changed. Phase 5 is complete.
 
 ## Phase 6 — Engineer/owner review
 
-- [ ] Implement role-gated queue and review detail with linked issue/evidence.
-- [ ] Call `review_task` for approve, return, and follow-up.
-- [ ] Refresh task, activity, review, and issue state after decisions.
-- [ ] Test capabilities and backend authorization translation, including worker denial.
+- [x] Implement role-gated queue and review detail with linked issue/evidence.
+- [x] Call `review_task` for approve, return, and follow-up.
+- [x] Refresh task, activity, review, and issue state after decisions.
+- [x] Test capabilities and backend authorization translation, including worker denial.
 
 Gate: manager decisions persist and worker cannot review at either UI or RPC boundary.
+
+Evidence (2026-07-13): the reviews feature adds a role-gated queue that lists only
+`needs_engineer_review` tasks, and a review detail that shows the task summary, a linked
+tree-issue indicator, registered evidence, prior review decisions, and the three review
+actions. The `ReviewController` records decisions through the `review_task` contract and
+reloads task detail plus the review list, then refreshes the shared workspace; the linked
+tree issue's status transition is performed server-side by the RPC. The client mirrors the
+authoritative SQL exactly: approved → `approved` (sets `approved_by/at`), returned →
+`returned`, follow-up → stays `needs_engineer_review`; activity logs `reviewed_approved`
+for approvals and `reviewed_returned` otherwise. Worker denial is proven at both boundaries:
+a capability widget test shows a worker the restricted card with no action buttons, and a
+repository unit test translates the RPC's `42501` into an authorization failure (the same
+denial a worker hits at the RLS boundary). The Flutter 3.13.9 default suite passes 99 tests
+with 6 opt-in live checks skipped; formatter reports 107 files and 0 changes; analyzer
+reports no issues. An opt-in `live_review_lifecycle_test.dart` (gated on
+`RUN_LIVE_REVIEW_MUTATION=true`) drives a persistent task through completion and approval
+against the deployed `review_task`; it is skipped by default and has not been executed here,
+so the live persistence gate remains opt-in like the Phase 4/5 live suites. The copied
+`review_task` SQL in `supabase/` is read-only reference material and was not changed.
 
 ## Phase 7 — Offline, accessibility, and production hardening
 

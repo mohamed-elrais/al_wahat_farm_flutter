@@ -15,6 +15,19 @@ enum EngineerReviewDecision {
         returnedForCorrection => 'returned_for_correction',
         followUpRequired => 'follow_up_required',
       };
+
+  String get label => switch (this) {
+        approved => 'Approved',
+        returnedForCorrection => 'Returned for correction',
+        followUpRequired => 'Follow-up required',
+      };
+
+  /// The action-button verb a reviewer taps to record this decision.
+  String get actionLabel => switch (this) {
+        approved => 'Approve',
+        returnedForCorrection => 'Return for correction',
+        followUpRequired => 'Request follow-up',
+      };
 }
 
 class ReviewTaskDraft {

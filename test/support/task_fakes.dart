@@ -1,6 +1,8 @@
 import 'dart:typed_data';
 
 import 'package:al_wahat_farm_flutter/core/errors/operation_failure.dart';
+import 'package:al_wahat_farm_flutter/features/reviews/data/engineer_review_repository.dart';
+import 'package:al_wahat_farm_flutter/features/reviews/domain/engineer_review.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/data/task_repository.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/farm_task.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/task_draft.dart';
@@ -28,6 +30,8 @@ class InMemoryTaskStore {
   final Map<String, List<TaskActivity>> activity =
       <String, List<TaskActivity>>{};
   final Map<String, List<TaskPhoto>> photos = <String, List<TaskPhoto>>{};
+  final Map<String, List<EngineerReview>> reviews =
+      <String, List<EngineerReview>>{};
   final List<TaskAssignee> members;
   int sequence = 0;
 
@@ -405,6 +409,9 @@ FarmTask _copyTask(
   required TaskStatus status,
   String? completedByProfileId,
   DateTime? completedAt,
+  String? approvedByProfileId,
+  DateTime? approvedAt,
+  DateTime? updatedAt,
 }) =>
     FarmTask(
       id: task.id,
@@ -427,11 +434,126 @@ FarmTask _copyTask(
       createdByProfileId: task.createdByProfileId,
       completedByProfileId: completedByProfileId ?? task.completedByProfileId,
       completedAt: completedAt ?? task.completedAt,
-      approvedByProfileId: task.approvedByProfileId,
-      approvedAt: task.approvedAt,
+      approvedByProfileId: approvedByProfileId ?? task.approvedByProfileId,
+      approvedAt: approvedAt ?? task.approvedAt,
       cancelledByProfileId: task.cancelledByProfileId,
       cancelledAt: task.cancelledAt,
       cancellationReason: task.cancellationReason,
       createdAt: task.createdAt,
-      updatedAt: completedAt ?? task.updatedAt,
+      updatedAt: updatedAt ?? completedAt ?? task.updatedAt,
     );
+
+/// Fake `review_task` backend mirroring the RPC's status transitions, activity
+/// logging, optional review photo, and manager-only authorization. Non-managers
+/// are rejected with an authorization failure, exactly like RLS `42501`.
+class FakeEngineerReviewRepository implements EngineerReviewRepository {
+  FakeEngineerReviewRepository({
+    required this.store,
+    required this.reviewerProfileId,
+    required this.canReview,
+  });
+
+  final InMemoryTaskStore store;
+  final String reviewerProfileId;
+  final bool canReview;
+  int reviewFailuresRemaining = 0;
+  int reviewCalls = 0;
+
+  @override
+  Future<List<EngineerReview>> listForTask(String taskId) async {
+    final recorded = store.reviews[taskId] ?? const <EngineerReview>[];
+    return List<EngineerReview>.of(recorded).reversed.toList(growable: false);
+  }
+
+  @override
+  Future<String> review(ReviewTaskDraft draft) async {
+    if (!canReview) {
+      throw const OperationFailure(
+        OperationFailureKind.authorization,
+        'Only the owner or agricultural engineer can review tasks.',
+      );
+    }
+    final task = store.tasks[draft.taskId];
+    if (task == null) {
+      throw const OperationFailure(
+        OperationFailureKind.notFound,
+        'The task to review could not be found.',
+      );
+    }
+    if (task.status != TaskStatus.completed &&
+        task.status != TaskStatus.needsEngineerReview) {
+      throw const OperationFailure(
+        OperationFailureKind.invalidInput,
+        'Only completed or review-needed tasks can be reviewed.',
+      );
+    }
+    if (reviewFailuresRemaining > 0) {
+      reviewFailuresRemaining--;
+      throw const OperationFailure(
+        OperationFailureKind.unexpected,
+        'Review decision response was not confirmed.',
+      );
+    }
+    reviewCalls++;
+    final reviewId = store.nextId('review');
+    final decision = draft.decision;
+    final approved = decision == EngineerReviewDecision.approved;
+    final newStatus = switch (decision) {
+      EngineerReviewDecision.approved => TaskStatus.approved,
+      EngineerReviewDecision.returnedForCorrection => TaskStatus.returned,
+      EngineerReviewDecision.followUpRequired => TaskStatus.needsEngineerReview,
+    };
+    (store.reviews[draft.taskId] ??= <EngineerReview>[]).add(
+      EngineerReview(
+        id: reviewId,
+        taskId: draft.taskId,
+        treeIssueId: task.relatedTreeIssueId,
+        reviewerProfileId: reviewerProfileId,
+        decision: decision,
+        notes: draft.notes,
+        reviewedAt: store.now,
+        createdAt: store.now,
+      ),
+    );
+    store.tasks[draft.taskId] = _copyTask(
+      task,
+      status: newStatus,
+      approvedByProfileId: approved ? reviewerProfileId : null,
+      approvedAt: approved ? store.now : null,
+      updatedAt: store.now,
+    );
+    if (draft.photoStoragePath != null) {
+      (store.photos[draft.taskId] ??= <TaskPhoto>[]).add(
+        TaskPhoto(
+          id: store.nextId('photo'),
+          taskId: draft.taskId,
+          engineerReviewId: reviewId,
+          storageBucketId: 'farm-evidence',
+          storagePath: draft.photoStoragePath!,
+          photoType: TaskPhotoType.review,
+          uploadedByProfileId: reviewerProfileId,
+          createdAt: store.now,
+        ),
+      );
+    }
+    (store.activity[draft.taskId] ??= <TaskActivity>[]).add(
+      TaskActivity(
+        id: store.nextId('activity'),
+        taskId: draft.taskId,
+        actorProfileId: reviewerProfileId,
+        action: approved
+            ? TaskActivityAction.reviewedApproved
+            : TaskActivityAction.reviewedReturned,
+        oldStatus: task.status,
+        newStatus: newStatus,
+        note: draft.notes,
+        metadata: <String, Object?>{
+          'engineer_review_id': reviewId,
+          'decision': decision.wireValue,
+        },
+        createdAt: store.now,
+      ),
+    );
+    return reviewId;
+  }
+}

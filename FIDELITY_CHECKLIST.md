@@ -71,8 +71,8 @@ not evidence.
 - [ ] Issue types exactly match the final `tree_issue_type` enum.
 - [ ] Issue reports surface both returned IDs and refresh the review queue.
 - [ ] Optional issue photo follows a verified backend-supported two-step contract.
-- [ ] Review supports approve, return for correction, and follow-up required.
-- [ ] Worker review attempts fail in capability tests and at the backend boundary.
+- [x] Review supports approve, return for correction, and follow-up required.
+- [x] Worker review attempts fail in capability tests and at the backend boundary.
 - [ ] Authorization and RLS errors are understandable and actionable.
 
 ## Async, offline, privacy, and accessibility
@@ -112,7 +112,7 @@ not evidence.
   active QR token without logging it.
 - [x] `dart format --set-exit-if-changed .` passes.
 - [x] `flutter analyze` passes with no suppressed product diagnostics.
-- [x] `flutter test` passes (65 tests; 3 explicitly configured live tests skip by
+- [x] `flutter test` passes (99 tests; 6 explicitly configured live tests skip by
   default).
 - [ ] Screenshots inspected at 390×844, 430×932, a common Android size, and 1024×1366.
 - [ ] `FIDELITY_REPORT.md` records comparisons, adaptations, and remaining mismatches.

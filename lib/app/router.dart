@@ -8,6 +8,8 @@ import 'package:al_wahat_farm_flutter/features/issues/presentation/issue_report_
 import 'package:al_wahat_farm_flutter/features/map/presentation/farm_map_screen.dart';
 import 'package:al_wahat_farm_flutter/features/map/presentation/scanner_screen.dart';
 import 'package:al_wahat_farm_flutter/features/profile/presentation/profile_screen.dart';
+import 'package:al_wahat_farm_flutter/features/reviews/presentation/review_detail_screen.dart';
+import 'package:al_wahat_farm_flutter/features/reviews/presentation/review_queue_screen.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/presentation/tasks_screen.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_create_screen.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_detail_screen.dart';
@@ -93,6 +95,18 @@ GoRouter createRouter(AppConfig config) {
                     builder: (_, state) => TaskCreateScreen(
                       initialTreeId: state.uri.queryParameters['treeId'],
                     ),
+                  ),
+                  GoRoute(
+                    path: 'reviews',
+                    builder: (_, __) => const ReviewQueueScreen(),
+                    routes: <RouteBase>[
+                      GoRoute(
+                        path: ':taskId',
+                        builder: (_, state) => ReviewDetailScreen(
+                          taskId: state.pathParameters['taskId']!,
+                        ),
+                      ),
+                    ],
                   ),
                   GoRoute(
                     path: ':taskId',
