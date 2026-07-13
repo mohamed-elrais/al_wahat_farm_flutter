@@ -61,6 +61,25 @@ abstract final class AppTheme {
         contentTextStyle: TextStyle(color: Colors.white, fontFamily: 'Inter'),
         behavior: SnackBarBehavior.floating,
       ),
+      chipTheme: ChipThemeData(
+        backgroundColor: AppColors.card,
+        selectedColor: AppColors.green,
+        checkmarkColor: Colors.white,
+        side: const BorderSide(color: AppColors.line),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(99),
+        ),
+        labelStyle: const TextStyle(
+          fontFamily: 'Inter',
+          fontWeight: FontWeight.w700,
+          color: AppColors.ink,
+        ),
+        secondaryLabelStyle: const TextStyle(
+          fontFamily: 'Inter',
+          fontWeight: FontWeight.w700,
+          color: Colors.white,
+        ),
+      ),
     );
   }
 

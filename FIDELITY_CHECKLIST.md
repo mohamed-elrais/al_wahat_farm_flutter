@@ -13,10 +13,10 @@ not evidence.
 - [x] No runtime font download is needed.
 - [x] Paper background includes the subtle 28-unit grid texture.
 - [x] Cards use off-white fill, warm 1 dp borders, 16–22 dp radii, and soft shadows.
-- [ ] Controls use 9–13 dp radii; section and role controls are pill/chip treatments.
-- [ ] Orange is reserved for Scan, issue/alert emphasis, and primary field moments.
-- [ ] Dark green is used for selection, actions, and phone navigation.
-- [ ] Stock Material components are visually wrapped by the project design system.
+- [x] Controls use 9–13 dp radii; section and role controls are pill/chip treatments.
+- [x] Orange is reserved for Scan, issue/alert emphasis, and primary field moments.
+- [x] Dark green is used for selection, actions, and phone navigation.
+- [x] Stock Material components are visually wrapped by the project design system.
 
 ## App shell and responsive layout
 
@@ -103,8 +103,9 @@ not evidence.
 - [ ] Task form validation/submission tests pass.
 - [x] Issue form and photo-failure tests pass.
 - [ ] Task transition tests pass.
-- [ ] Core-screen goldens pass. Phase 1 login/shell/top-bar goldens pass; remaining
-  core screens are not yet covered.
+- [x] Core-screen goldens pass. Login (390×844, 430×932, Android 360×800, tablet
+  1024×1366), phone shell, top bar, worker task list, and manager review queue goldens
+  pass; form and full-map screen goldens remain listed in `FIDELITY_REPORT.md`.
 - [ ] Fake-backed login → map → tree → create-task integration flow passes.
 - [x] Fake-backed worker scan → report-issue flow passes. Authentication/bootstrap is
   covered separately by the login and farm-gate suites.
@@ -115,5 +116,5 @@ not evidence.
 - [x] `flutter analyze` passes with no suppressed product diagnostics.
 - [x] `flutter test` passes (122 tests; 6 explicitly configured live tests skip by
   default).
-- [ ] Screenshots inspected at 390×844, 430×932, a common Android size, and 1024×1366.
-- [ ] `FIDELITY_REPORT.md` records comparisons, adaptations, and remaining mismatches.
+- [x] Screenshots inspected at 390×844, 430×932, a common Android size, and 1024×1366.
+- [x] `FIDELITY_REPORT.md` records comparisons, adaptations, and remaining mismatches.

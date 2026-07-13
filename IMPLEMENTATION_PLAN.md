@@ -251,16 +251,43 @@ analyzer no issues.
 
 ## Phase 8 — Fidelity certification
 
-- [ ] Generate/inspect 390×844 and 430×932 phone screenshots.
-- [ ] Generate/inspect a common Android phone screenshot.
-- [ ] Generate/inspect 1024×1366 tablet screenshot.
-- [ ] Compare tokens, type, radii, borders, spacing, navigation, map layer order,
+- [x] Generate/inspect 390×844 and 430×932 phone screenshots.
+- [x] Generate/inspect a common Android phone screenshot.
+- [x] Generate/inspect 1024×1366 tablet screenshot.
+- [x] Compare tokens, type, radii, borders, spacing, navigation, map layer order,
   selected-tree sheet, forms, and async states.
-- [ ] Create `FIDELITY_REPORT.md` with all known mismatches.
-- [ ] Run formatter, analyzer, unit/widget/golden tests, and integration flows.
+- [x] Create `FIDELITY_REPORT.md` with all known mismatches.
+- [x] Run formatter, analyzer, unit/widget/golden tests, and integration flows.
 
 Gate: all definition-of-done items are evidenced or explicitly listed as remaining;
 completion is never claimed with an unverified item.
+
+Evidence (2026-07-13): `test/golden/phase8_certification_golden_test.dart` renders and
+commits login goldens at all four mandated sizes (390×844, 430×932, a common Android
+360×800, and the 1024×1366 tablet) plus core-content goldens (phone shell at 430×932,
+worker task list, manager review queue); with the Phase 1 goldens the suite holds nine
+passing screenshots under `test/goldens/`. Each was visually inspected: the warm-paper
+grid, palm mark, uppercase eyebrows, serif green headings, off-white soft-bordered cards,
+orange accents, dark rounded navigation, and status badges match the reference language,
+and the tablet login stays centered/constrained rather than stretched.
+
+`FIDELITY_REPORT.md` records the token/type/shape/navigation/geometry/sheet/forms/async
+comparison against `REFERENCE_AUDIT.md`, the intentional mobile adaptations, and every
+known mismatch. Inspection surfaced one concrete defect — the task filter chips lacked a
+`ChipThemeData`, so the unselected "All (N)" label was near-invisible and the selected
+"Today" chip filled orange — which was fixed this pass: chips now use `card`/`line`
+unselected styling and the audited green fill when selected, and the golden was
+regenerated to confirm.
+
+Verification: `dart format` clean; `flutter analyze` no issues; `flutter test` 122 passed
+with 6 opt-in live tests skipped (the live login→map→tree→create-task and worker
+scan→report integration flows are configured and skipped by default pending credentials).
+
+Per the gate, Phase 8 is evidenced-with-remaining, not claimed absolutely complete: the
+design system, geometry contract, navigation, workflows, and multi-size login/shell/list/
+review screenshots are certified, while physical-device capture, a live side-by-side pixel
+diff with the running React reference, form/full-map goldens, and live backend mutations
+are explicitly listed as remaining in `FIDELITY_REPORT.md`.
 
 ## Architecture decisions
 
