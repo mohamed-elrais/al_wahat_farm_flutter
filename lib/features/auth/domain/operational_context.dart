@@ -22,6 +22,14 @@ class UserProfile {
         phoneNumber: json['phone_number'] as String?,
         avatarUrl: json['avatar_url'] as String?,
       );
+
+  Map<String, Object?> toJson() => <String, Object?>{
+        'id': id,
+        'full_name': fullName,
+        'is_active': isActive,
+        'phone_number': phoneNumber,
+        'avatar_url': avatarUrl,
+      };
 }
 
 class FarmSummary {
@@ -46,6 +54,14 @@ class FarmSummary {
         timezone: json['timezone']! as String,
         totalAreaM2: (json['total_area_m2'] as num?)?.toDouble(),
       );
+
+  Map<String, Object?> toJson() => <String, Object?>{
+        'id': id,
+        'name': name,
+        'code': code,
+        'timezone': timezone,
+        'total_area_m2': totalAreaM2,
+      };
 }
 
 class FarmMembership {
@@ -68,8 +84,18 @@ class FarmMembership {
         profileId: json['profile_id']! as String,
         role: FarmRole.fromJson(json['role']! as String),
         isActive: json['is_active']! as bool,
-        farm: FarmSummary.fromJson(json['farms']! as Map<String, Object?>),
+        farm: FarmSummary.fromJson(
+          Map<String, Object?>.from(json['farms']! as Map),
+        ),
       );
+
+  Map<String, Object?> toJson() => <String, Object?>{
+        'id': id,
+        'profile_id': profileId,
+        'role': role.wireValue,
+        'is_active': isActive,
+        'farms': farm.toJson(),
+      };
 }
 
 class OperationalContext {
@@ -94,6 +120,24 @@ class OperationalContext {
     }
     return null;
   }
+
+  Map<String, Object?> toCacheJson() => <String, Object?>{
+        'profile': profile.toJson(),
+        'memberships':
+            memberships.map((m) => m.toJson()).toList(growable: false),
+      };
+
+  factory OperationalContext.fromCacheJson(Map<String, Object?> json) =>
+      OperationalContext(
+        profile: UserProfile.fromJson(
+          Map<String, Object?>.from(json['profile']! as Map),
+        ),
+        memberships: (json['memberships']! as List<Object?>)
+            .map((row) => FarmMembership.fromJson(
+                  Map<String, Object?>.from(row! as Map),
+                ))
+            .toList(growable: false),
+      );
 }
 
 enum BootstrapBlockReason {

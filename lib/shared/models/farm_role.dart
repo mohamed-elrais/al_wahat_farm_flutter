@@ -12,6 +12,13 @@ enum FarmRole {
         _ => throw FormatException('Unknown farm role: $value'),
       };
 
+  String get wireValue => switch (this) {
+        owner => 'owner',
+        agriculturalEngineer => 'agricultural_engineer',
+        worker => 'worker',
+        accountant => 'accountant',
+      };
+
   bool get isOperational => this != accountant;
   bool get canManageTasks => this == owner || this == agriculturalEngineer;
   bool get canReview => canManageTasks;

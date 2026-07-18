@@ -208,9 +208,15 @@ upload to the private bucket at the exact `{uid}/{farm}/{task}/file` path, then 
 
 ## 13. Phased rollout (each phase gated, tests green before the next)
 
-- **O0 — Foundations**: add sqflite/path_provider; `LocalStore` schema + migrations;
-  `LocalCacheStore`→sqflite move for existing read caches; cache operational context.
-  Gate: app opens and browses fully offline from cache; existing 143 tests still pass.
+- **O0 — Foundations** ✅ (2026-07-18): added `sqflite`/`path_provider`/`path` (+ dev
+  `sqflite_common_ffi`), all resolving on Flutter 3.13.9 / Dart 3.1.5. `AppDatabase`
+  (sqflite, KV `cache_entries` table) backs a `SqfliteCacheStore` implementing the
+  existing `LocalCacheStore`, so every Phase 7 read cache now persists in the DB;
+  production wiring switched from shared-preferences to sqflite. Added operational-context
+  serialization + `CachingOperationalContextRepository` (write-through online, cache
+  fallback offline, never masks a blocked verdict) so `AuthenticatedGate` bootstraps
+  offline. Gate met: app opens and browses fully offline (context + hierarchy + tasks all
+  cached). `flutter analyze` clean; `flutter test` 150 passed, 6 skipped.
 - **O1 — Outbox + SyncEngine (idempotent transitions first)**: outbox tables; sync engine;
   wire the **naturally-safe** ops (start/complete/assign/photos) end-to-end with `op_id`.
   Gate: offline start→complete→photo replays exactly once; failed-op surfacing works.

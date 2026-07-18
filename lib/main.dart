@@ -1,11 +1,12 @@
 import 'package:al_wahat_farm_flutter/app/app.dart';
 import 'package:al_wahat_farm_flutter/core/app_services.dart';
 import 'package:al_wahat_farm_flutter/core/cache/local_cache_store.dart';
+import 'package:al_wahat_farm_flutter/core/cache/sqflite_cache_store.dart';
 import 'package:al_wahat_farm_flutter/core/connectivity/connectivity_service.dart';
 import 'package:al_wahat_farm_flutter/core/config/app_config.dart';
+import 'package:al_wahat_farm_flutter/core/database/app_database.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/locale_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> main() async {
@@ -21,7 +22,7 @@ Future<void> main() async {
 Future<AppServices> _bootstrapServices() async {
   LocalCacheStore store;
   try {
-    store = SharedPreferencesCacheStore(await SharedPreferences.getInstance());
+    store = SqfliteCacheStore(await AppDatabase.open());
   } catch (_) {
     // Fall back to memory so a storage failure never blocks app launch.
     store = InMemoryCacheStore();
