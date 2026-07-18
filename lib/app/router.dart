@@ -11,6 +11,7 @@ import 'package:al_wahat_farm_flutter/features/map/presentation/scanner_screen.d
 import 'package:al_wahat_farm_flutter/features/profile/presentation/profile_screen.dart';
 import 'package:al_wahat_farm_flutter/features/reviews/presentation/review_detail_screen.dart';
 import 'package:al_wahat_farm_flutter/features/reviews/presentation/review_queue_screen.dart';
+import 'package:al_wahat_farm_flutter/features/sync/presentation/failed_ops_screen.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/presentation/tasks_screen.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_create_screen.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_detail_screen.dart';
@@ -121,7 +122,16 @@ GoRouter createRouter(AppConfig config) {
           ),
           StatefulShellBranch(
             routes: <RouteBase>[
-              GoRoute(path: '/more', builder: (_, __) => const ProfileScreen()),
+              GoRoute(
+                path: '/more',
+                builder: (_, __) => const ProfileScreen(),
+                routes: <RouteBase>[
+                  GoRoute(
+                    path: 'failed-ops',
+                    builder: (_, __) => const FailedOpsScreen(),
+                  ),
+                ],
+              ),
             ],
           ),
         ],

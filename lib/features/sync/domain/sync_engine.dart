@@ -5,6 +5,7 @@ import 'package:al_wahat_farm_flutter/core/errors/operation_failure.dart';
 import 'package:al_wahat_farm_flutter/core/logging/safe_log.dart';
 import 'package:al_wahat_farm_flutter/features/sync/data/outbox_store.dart';
 import 'package:al_wahat_farm_flutter/features/sync/domain/mutation_executor.dart';
+import 'package:al_wahat_farm_flutter/features/sync/domain/pending_mutation.dart';
 import 'package:flutter/foundation.dart';
 
 enum SyncOutcome { offline, alreadyRunning, drained, hadFailures, deferred }
@@ -131,11 +132,30 @@ class SyncEngine extends ChangeNotifier {
     return SyncOutcome.drained;
   }
 
+  /// The operations that failed terminally (or exhausted retries), for the
+  /// failed-ops review screen.
+  Future<List<PendingMutation>> failedOps() => _outbox.failed();
+
   /// Requeue failed operations and try again.
   Future<SyncOutcome> retryFailed() async {
     await _outbox.retryFailed();
     notifyListeners();
     return sync();
+  }
+
+  /// Requeue a single failed operation and try again.
+  Future<SyncOutcome> retryOne(String opId) async {
+    await _outbox.retryOne(opId);
+    notifyListeners();
+    return sync();
+  }
+
+  /// Permanently drop a single queued operation the user chose not to keep.
+  /// (Any side effects that belong to it — a pending photo blob, a provisional
+  /// list row — are cleaned up by the caller before this.)
+  Future<void> discard(String opId) async {
+    await _outbox.discard(opId);
+    await refresh();
   }
 
   static bool _isTerminal(OperationFailureKind kind) => switch (kind) {

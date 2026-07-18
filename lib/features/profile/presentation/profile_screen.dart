@@ -9,6 +9,7 @@ import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
 import 'package:al_wahat_farm_flutter/features/auth/presentation/authenticated_gate.dart';
 import 'package:al_wahat_farm_flutter/features/sync/presentation/sync_scope.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -212,6 +213,13 @@ class _SyncCenter extends StatelessWidget {
                   onPressed: syncing ? null : () => engine.retryFailed(),
                   icon: const Icon(Icons.refresh, size: 18),
                   label: Text(l10n.syncRetryFailed),
+                ),
+              if (failed > 0)
+                OutlinedButton.icon(
+                  key: const Key('sync-review-failed-button'),
+                  onPressed: () => context.go('/more/failed-ops'),
+                  icon: const Icon(Icons.error_outline, size: 18),
+                  label: Text(l10n.syncReviewFailed),
                 ),
             ],
           ),

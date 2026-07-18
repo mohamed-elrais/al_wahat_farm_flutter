@@ -516,6 +516,120 @@ abstract class AppLocalizations {
   /// **'Pending sync'**
   String get syncPendingBadge;
 
+  /// No description provided for @syncReviewFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Review failed changes'**
+  String get syncReviewFailed;
+
+  /// No description provided for @failedOpsEyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync'**
+  String get failedOpsEyebrow;
+
+  /// No description provided for @failedOpsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed changes'**
+  String get failedOpsTitle;
+
+  /// No description provided for @failedOpsIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'These changes could not be synced to the farm. Retry them, or discard the ones you no longer need.'**
+  String get failedOpsIntro;
+
+  /// No description provided for @failedOpsUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync is not available right now.'**
+  String get failedOpsUnavailable;
+
+  /// No description provided for @failedOpsEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No failed changes'**
+  String get failedOpsEmptyTitle;
+
+  /// No description provided for @failedOpsEmptyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything has synced or is still waiting to sync.'**
+  String get failedOpsEmptyMessage;
+
+  /// No description provided for @failedOpsRetryAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry all'**
+  String get failedOpsRetryAll;
+
+  /// No description provided for @failedOpsRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get failedOpsRetry;
+
+  /// No description provided for @failedOpsDiscard.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard'**
+  String get failedOpsDiscard;
+
+  /// No description provided for @failedOpsDiscardConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard this change?'**
+  String get failedOpsDiscardConfirmTitle;
+
+  /// No description provided for @failedOpsDiscardConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This change will be removed and will not be sent to the farm. This cannot be undone.'**
+  String get failedOpsDiscardConfirmMessage;
+
+  /// No description provided for @failedOpsKindStartTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Start task'**
+  String get failedOpsKindStartTask;
+
+  /// No description provided for @failedOpsKindCompleteTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete task'**
+  String get failedOpsKindCompleteTask;
+
+  /// No description provided for @failedOpsKindSetAssignments.
+  ///
+  /// In en, this message translates to:
+  /// **'Update assignments'**
+  String get failedOpsKindSetAssignments;
+
+  /// No description provided for @failedOpsKindAddTaskPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Task evidence photo'**
+  String get failedOpsKindAddTaskPhoto;
+
+  /// No description provided for @failedOpsKindCreateTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Create task'**
+  String get failedOpsKindCreateTask;
+
+  /// No description provided for @failedOpsKindReportIssue.
+  ///
+  /// In en, this message translates to:
+  /// **'Report tree issue'**
+  String get failedOpsKindReportIssue;
+
+  /// No description provided for @failedOpsKindReviewTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Review decision'**
+  String get failedOpsKindReviewTask;
+
   /// No description provided for @gateAccessUnavailableTitle.
   ///
   /// In en, this message translates to:

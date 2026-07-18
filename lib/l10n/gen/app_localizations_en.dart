@@ -242,6 +242,66 @@ class AppLocalizationsEn extends AppLocalizations {
   String get syncPendingBadge => 'Pending sync';
 
   @override
+  String get syncReviewFailed => 'Review failed changes';
+
+  @override
+  String get failedOpsEyebrow => 'Sync';
+
+  @override
+  String get failedOpsTitle => 'Failed changes';
+
+  @override
+  String get failedOpsIntro =>
+      'These changes could not be synced to the farm. Retry them, or discard the ones you no longer need.';
+
+  @override
+  String get failedOpsUnavailable => 'Sync is not available right now.';
+
+  @override
+  String get failedOpsEmptyTitle => 'No failed changes';
+
+  @override
+  String get failedOpsEmptyMessage =>
+      'Everything has synced or is still waiting to sync.';
+
+  @override
+  String get failedOpsRetryAll => 'Retry all';
+
+  @override
+  String get failedOpsRetry => 'Retry';
+
+  @override
+  String get failedOpsDiscard => 'Discard';
+
+  @override
+  String get failedOpsDiscardConfirmTitle => 'Discard this change?';
+
+  @override
+  String get failedOpsDiscardConfirmMessage =>
+      'This change will be removed and will not be sent to the farm. This cannot be undone.';
+
+  @override
+  String get failedOpsKindStartTask => 'Start task';
+
+  @override
+  String get failedOpsKindCompleteTask => 'Complete task';
+
+  @override
+  String get failedOpsKindSetAssignments => 'Update assignments';
+
+  @override
+  String get failedOpsKindAddTaskPhoto => 'Task evidence photo';
+
+  @override
+  String get failedOpsKindCreateTask => 'Create task';
+
+  @override
+  String get failedOpsKindReportIssue => 'Report tree issue';
+
+  @override
+  String get failedOpsKindReviewTask => 'Review decision';
+
+  @override
   String get gateAccessUnavailableTitle => 'Farm access unavailable';
 
   @override

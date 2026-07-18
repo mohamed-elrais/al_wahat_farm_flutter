@@ -294,8 +294,17 @@ upload to the private bucket at the exact `{uid}/{farm}/{task}/file` path, then 
     `isSyncing` + last-synced (refreshed on enqueue and each sync); a `SyncScope`
     (`InheritedNotifier`) provides it to the shell; the More screen has a **sync center**
     (status line, **Sync now**, **Retry failed changes**) in en + ar. Logout already wipes
-    the outbox (O1). Remaining O4: per-task-item pending/failed badges, a dedicated
-    failed-ops review screen, and the Phase-8 a11y/fidelity certification of these.
+    the outbox (O1). Remaining O4: per-task-item pending/failed badges and the Phase-8
+    a11y/fidelity certification of these.
+  - Partial ✅ (2026-07-18) — **failed-ops review screen**: a `/more/failed-ops` screen
+    (linked from the sync center when any change failed) lists each terminally-failed op
+    with a localized action label + the backend error, and lets the user **retry** one /
+    **retry all** or **discard** one (with a confirm dialog). Discard also cleans up the
+    op's side effects — its captured photo blob and, for a task creation, the ghost
+    `local:` provisional row. New outbox `retryOne` / `discard`; `SyncEngine.failedOps` /
+    `retryOne` / `discard`; `FailedOpsController` + `FailedOpsScreen` (en + ar). This closes
+    the O3 conflict/terminal-failure gap (a review that lost the race now surfaces here to
+    retry or discard). `flutter test` 194 passed, 6 skipped.
 
 ---
 

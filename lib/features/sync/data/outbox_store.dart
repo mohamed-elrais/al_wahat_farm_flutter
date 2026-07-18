@@ -19,6 +19,13 @@ abstract interface class OutboxStore {
   /// Requeues all failed operations for another sync attempt.
   Future<void> retryFailed();
 
+  /// Requeues a single operation (by op id) for another sync attempt.
+  Future<void> retryOne(String opId);
+
+  /// Permanently removes a single operation (by op id) from the queue —
+  /// discarding a change the user has chosen not to keep.
+  Future<void> discard(String opId);
+
   /// Removes every queued operation (used on logout).
   Future<void> clear();
 }
@@ -131,6 +138,29 @@ class SqfliteOutboxStore implements OutboxStore {
   }
 
   @override
+  Future<void> retryOne(String opId) async {
+    await _db.update(
+      AppDatabase.outboxTable,
+      <String, Object?>{
+        'status': PendingMutationStatus.pending.wireValue,
+        'attempts': 0,
+        'last_error': null,
+      },
+      where: 'op_id = ?',
+      whereArgs: <Object?>[opId],
+    );
+  }
+
+  @override
+  Future<void> discard(String opId) async {
+    await _db.delete(
+      AppDatabase.outboxTable,
+      where: 'op_id = ?',
+      whereArgs: <Object?>[opId],
+    );
+  }
+
+  @override
   Future<void> clear() async {
     await _db.delete(AppDatabase.outboxTable);
   }
@@ -220,6 +250,24 @@ class InMemoryOutboxStore implements OutboxStore {
         );
       }
     }
+  }
+
+  @override
+  Future<void> retryOne(String opId) async {
+    final i = _indexOf(opId);
+    if (i < 0) return;
+    _entries[i] = _copy(
+      _entries[i],
+      status: PendingMutationStatus.pending,
+      attempts: 0,
+      lastError: null,
+      clearError: true,
+    );
+  }
+
+  @override
+  Future<void> discard(String opId) async {
+    _entries.removeWhere((e) => e.opId == opId);
   }
 
   @override

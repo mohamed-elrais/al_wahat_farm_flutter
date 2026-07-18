@@ -242,6 +242,66 @@ class AppLocalizationsAr extends AppLocalizations {
   String get syncPendingBadge => 'بانتظار المزامنة';
 
   @override
+  String get syncReviewFailed => 'مراجعة التغييرات الفاشلة';
+
+  @override
+  String get failedOpsEyebrow => 'المزامنة';
+
+  @override
+  String get failedOpsTitle => 'التغييرات الفاشلة';
+
+  @override
+  String get failedOpsIntro =>
+      'تعذّرت مزامنة هذه التغييرات مع المزرعة. أعد المحاولة، أو تجاهل ما لم تعد بحاجة إليه.';
+
+  @override
+  String get failedOpsUnavailable => 'المزامنة غير متاحة حالياً.';
+
+  @override
+  String get failedOpsEmptyTitle => 'لا توجد تغييرات فاشلة';
+
+  @override
+  String get failedOpsEmptyMessage =>
+      'تمت مزامنة كل شيء أو أنه لا يزال بانتظار المزامنة.';
+
+  @override
+  String get failedOpsRetryAll => 'إعادة محاولة الكل';
+
+  @override
+  String get failedOpsRetry => 'إعادة المحاولة';
+
+  @override
+  String get failedOpsDiscard => 'تجاهل';
+
+  @override
+  String get failedOpsDiscardConfirmTitle => 'تجاهل هذا التغيير؟';
+
+  @override
+  String get failedOpsDiscardConfirmMessage =>
+      'سيُحذف هذا التغيير ولن يُرسل إلى المزرعة. لا يمكن التراجع عن ذلك.';
+
+  @override
+  String get failedOpsKindStartTask => 'بدء المهمة';
+
+  @override
+  String get failedOpsKindCompleteTask => 'إكمال المهمة';
+
+  @override
+  String get failedOpsKindSetAssignments => 'تحديث الإسنادات';
+
+  @override
+  String get failedOpsKindAddTaskPhoto => 'صورة إثبات المهمة';
+
+  @override
+  String get failedOpsKindCreateTask => 'إنشاء مهمة';
+
+  @override
+  String get failedOpsKindReportIssue => 'الإبلاغ عن مشكلة شجرة';
+
+  @override
+  String get failedOpsKindReviewTask => 'قرار المراجعة';
+
+  @override
   String get gateAccessUnavailableTitle => 'الوصول إلى المزرعة غير متاح';
 
   @override
