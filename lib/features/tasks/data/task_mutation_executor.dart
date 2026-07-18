@@ -37,6 +37,7 @@ class TaskMutationExecutor implements MutationExecutor {
         await _repository.start(
           mutation.payload['taskId']! as String,
           note: mutation.payload['note'] as String?,
+          opId: mutation.opId,
         );
       case PendingMutationKind.completeTask:
         await _repository.complete(
@@ -44,11 +45,13 @@ class TaskMutationExecutor implements MutationExecutor {
           note: mutation.payload['note'] as String?,
           requiresEngineerReview:
               (mutation.payload['requiresEngineerReview'] as bool?) ?? false,
+          opId: mutation.opId,
         );
       case PendingMutationKind.setAssignments:
         await _repository.setAssignments(
           mutation.payload['taskId']! as String,
           (mutation.payload['profileIds']! as List<Object?>).cast<String>(),
+          opId: mutation.opId,
         );
       case PendingMutationKind.addTaskPhoto:
         await _executePhoto(mutation);

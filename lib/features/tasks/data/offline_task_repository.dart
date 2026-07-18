@@ -98,8 +98,11 @@ class OfflineTaskRepository implements TaskRepository {
   Future<String> addPhoto(TaskEvidenceRegistration registration) =>
       _inner.addPhoto(registration);
 
+  // The online path deliberately omits [opId] (direct calls stay
+  // deploy-independent); the outbox mints its own op id, which the executor
+  // sends as `p_op_id` on replay.
   @override
-  Future<void> start(String taskId, {String? note}) => _mutate(
+  Future<void> start(String taskId, {String? note, String? opId}) => _mutate(
         online: () => _inner.start(taskId, note: note),
         kind: PendingMutationKind.startTask,
         payload: <String, Object?>{'taskId': taskId, 'note': note},
@@ -112,6 +115,7 @@ class OfflineTaskRepository implements TaskRepository {
     String taskId, {
     String? note,
     bool requiresEngineerReview = false,
+    String? opId,
   }) =>
       _mutate(
         online: () => _inner.complete(
@@ -132,7 +136,11 @@ class OfflineTaskRepository implements TaskRepository {
       );
 
   @override
-  Future<void> setAssignments(String taskId, List<String> profileIds) =>
+  Future<void> setAssignments(
+    String taskId,
+    List<String> profileIds, {
+    String? opId,
+  }) =>
       _mutate(
         online: () => _inner.setAssignments(taskId, profileIds),
         kind: PendingMutationKind.setAssignments,

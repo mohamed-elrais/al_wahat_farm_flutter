@@ -112,6 +112,22 @@ void main() {
 
     expect(h.inner.store.tasks[taskId]!.status, TaskStatus.inProgress);
     expect(await h.outbox.pendingCount(), 0);
+    expect(h.inner.lastStartOpId, isNull); // online stays deploy-independent
+  });
+
+  test('replayed transitions send their op id as p_op_id for ledger dedup',
+      () async {
+    final h = await _harness(status: NetworkStatus.offline);
+    addTearDown(h.connectivity.dispose);
+    addTearDown(h.service.close);
+    final taskId = await _seedAssignedTask(h);
+    await h.offline.start(taskId);
+    final op = (await h.outbox.pending()).single;
+
+    await h.reconnectAndSync();
+
+    expect(h.inner.store.tasks[taskId]!.status, TaskStatus.inProgress);
+    expect(h.inner.lastStartOpId, op.opId);
   });
 
   test('offline start queues the op and patches the cached status', () async {

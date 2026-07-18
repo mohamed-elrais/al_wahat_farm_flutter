@@ -14,12 +14,21 @@ abstract interface class TaskRepository {
   /// from the offline outbox. Direct (online) calls omit it, so they keep
   /// working against a backend that predates the op-id migration.
   Future<String> create(TaskDraft draft, {String? opId});
-  Future<void> setAssignments(String taskId, List<String> profileIds);
-  Future<void> start(String taskId, {String? note});
+
+  // [opId] on the transitions is likewise sent as `p_op_id` only on outbox
+  // replays, so a lost response on replay is deduped by the backend ledger
+  // instead of double-applying or failing terminally. Online calls omit it.
+  Future<void> setAssignments(
+    String taskId,
+    List<String> profileIds, {
+    String? opId,
+  });
+  Future<void> start(String taskId, {String? note, String? opId});
   Future<void> complete(
     String taskId, {
     String? note,
     bool requiresEngineerReview = false,
+    String? opId,
   });
   Future<String> addPhoto(TaskEvidenceRegistration registration);
 }
@@ -146,25 +155,29 @@ class SupabaseTaskRepository implements TaskRepository {
   @override
   Future<void> setAssignments(
     String taskId,
-    List<String> profileIds,
-  ) =>
+    List<String> profileIds, {
+    String? opId,
+  }) =>
       _guard(() async {
         await _client.rpc<Object?>(
           assignmentsRpc,
           params: <String, Object?>{
             'p_task_id': taskId,
             'p_assignee_profile_ids': profileIds,
+            if (opId != null) 'p_op_id': opId,
           },
         );
       });
 
   @override
-  Future<void> start(String taskId, {String? note}) => _guard(() async {
+  Future<void> start(String taskId, {String? note, String? opId}) =>
+      _guard(() async {
         await _client.rpc<Object?>(
           startRpc,
           params: <String, Object?>{
             'p_task_id': taskId,
             'p_note': _optionalText(note),
+            if (opId != null) 'p_op_id': opId,
           },
         );
       });
@@ -174,6 +187,7 @@ class SupabaseTaskRepository implements TaskRepository {
     String taskId, {
     String? note,
     bool requiresEngineerReview = false,
+    String? opId,
   }) =>
       _guard(() async {
         await _client.rpc<Object?>(
@@ -182,6 +196,7 @@ class SupabaseTaskRepository implements TaskRepository {
             'p_task_id': taskId,
             'p_note': _optionalText(note),
             'p_requires_engineer_review': requiresEngineerReview,
+            if (opId != null) 'p_op_id': opId,
           },
         );
       });

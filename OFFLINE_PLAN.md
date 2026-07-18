@@ -242,6 +242,11 @@ upload to the private bucket at the exact `{uid}/{farm}/{task}/file` path, then 
   Photos deferred to a later slice (need the pending-photo blob store). Gate met for
   transitions: offline start/complete → replays exactly once; failed-op surfacing works.
   `flutter analyze` clean; `flutter test` 168 passed, 6 skipped.
+  - Hardened ✅ (2026-07-18, backend deployed): replayed transitions now send the outbox
+    op id as `p_op_id` (start/complete/set-assignments), so a lost response on replay is
+    deduped by the `private.applied_operations` ledger instead of double-applying or
+    failing terminally. Online (direct) calls still omit `p_op_id`, so they stay
+    deploy-independent.
 - **O2 — Optimistic creates + reconciliation**: temp ids, `depends_on`, temp→real rewrite;
   offline **create task** and **report issue** (with local photos). Depends on the backend
   idempotency migrations being deployed. Gate: full offline create→…→complete chain

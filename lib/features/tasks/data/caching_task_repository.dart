@@ -106,23 +106,29 @@ class CachingTaskRepository implements TaskRepository {
       _inner.create(draft, opId: opId);
 
   @override
-  Future<void> setAssignments(String taskId, List<String> profileIds) =>
-      _inner.setAssignments(taskId, profileIds);
+  Future<void> setAssignments(
+    String taskId,
+    List<String> profileIds, {
+    String? opId,
+  }) =>
+      _inner.setAssignments(taskId, profileIds, opId: opId);
 
   @override
-  Future<void> start(String taskId, {String? note}) =>
-      _inner.start(taskId, note: note);
+  Future<void> start(String taskId, {String? note, String? opId}) =>
+      _inner.start(taskId, note: note, opId: opId);
 
   @override
   Future<void> complete(
     String taskId, {
     String? note,
     bool requiresEngineerReview = false,
+    String? opId,
   }) =>
       _inner.complete(
         taskId,
         note: note,
         requiresEngineerReview: requiresEngineerReview,
+        opId: opId,
       );
 
   @override

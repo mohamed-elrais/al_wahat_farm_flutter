@@ -56,6 +56,9 @@ class FakeTaskRepository implements TaskRepository {
   int completeFailuresRemaining = 0;
   int createCalls = 0;
   String? lastCreateOpId;
+  String? lastStartOpId;
+  String? lastCompleteOpId;
+  String? lastSetAssignmentsOpId;
   int uploadRegistrations = 0;
 
   @override
@@ -156,7 +159,12 @@ class FakeTaskRepository implements TaskRepository {
   }
 
   @override
-  Future<void> setAssignments(String taskId, List<String> profileIds) async {
+  Future<void> setAssignments(
+    String taskId,
+    List<String> profileIds, {
+    String? opId,
+  }) async {
+    lastSetAssignmentsOpId = opId;
     _requireManager();
     final task = _task(taskId);
     if (task.status.isClosed) {
@@ -216,7 +224,8 @@ class FakeTaskRepository implements TaskRepository {
   }
 
   @override
-  Future<void> start(String taskId, {String? note}) async {
+  Future<void> start(String taskId, {String? note, String? opId}) async {
+    lastStartOpId = opId;
     final task = _task(taskId);
     _requireAccess(taskId);
     if (!task.status.canStart) {
@@ -242,7 +251,9 @@ class FakeTaskRepository implements TaskRepository {
     String taskId, {
     String? note,
     bool requiresEngineerReview = false,
+    String? opId,
   }) async {
+    lastCompleteOpId = opId;
     final task = _task(taskId);
     _requireAccess(taskId);
     if (!task.status.canComplete) {
