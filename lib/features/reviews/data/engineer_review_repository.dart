@@ -6,7 +6,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 abstract interface class EngineerReviewRepository {
   Future<List<EngineerReview>> listForTask(String taskId);
 
-  Future<String> review(ReviewTaskDraft draft);
+  /// Records a review decision. [opId] is sent as `p_op_id` for duplicate-safe
+  /// replay and is supplied only when the review is replayed from the offline
+  /// outbox; direct (online) calls omit it.
+  Future<String> review(ReviewTaskDraft draft, {String? opId});
 }
 
 class SupabaseEngineerReviewRepository implements EngineerReviewRepository {
@@ -30,11 +33,11 @@ class SupabaseEngineerReviewRepository implements EngineerReviewRepository {
       });
 
   @override
-  Future<String> review(ReviewTaskDraft draft) => _guard(() async {
-        final Object? result = await _client.rpc(
-          reviewRpc,
-          params: draft.toRpcParameters(),
-        );
+  Future<String> review(ReviewTaskDraft draft, {String? opId}) =>
+      _guard(() async {
+        final params = Map<String, Object?>.of(draft.toRpcParameters());
+        if (opId != null) params['p_op_id'] = opId;
+        final Object? result = await _client.rpc(reviewRpc, params: params);
         return result! as String;
       });
 }

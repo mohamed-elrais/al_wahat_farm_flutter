@@ -49,6 +49,30 @@ class ReviewTaskDraft {
         'p_notes': notes,
         'p_photo_storage_path': photoStoragePath,
       };
+
+  ReviewTaskDraft withPhotoStoragePath(String? path) => ReviewTaskDraft(
+        taskId: taskId,
+        decision: decision,
+        notes: notes,
+        photoStoragePath: path,
+      );
+
+  /// Round-trippable serialization for carrying a queued offline review in the
+  /// outbox payload. Kept in sync with [ReviewTaskDraft.fromJson].
+  Map<String, Object?> toJson() => <String, Object?>{
+        'task_id': taskId,
+        'decision': decision.wireValue,
+        'notes': notes,
+        'photo_storage_path': photoStoragePath,
+      };
+
+  factory ReviewTaskDraft.fromJson(Map<String, Object?> json) =>
+      ReviewTaskDraft(
+        taskId: json['task_id']! as String,
+        decision: EngineerReviewDecision.fromJson(json['decision']! as String),
+        notes: json['notes'] as String?,
+        photoStoragePath: json['photo_storage_path'] as String?,
+      );
 }
 
 class EngineerReview {

@@ -1,7 +1,9 @@
+import 'package:al_wahat_farm_flutter/core/connectivity/connectivity_service.dart';
 import 'package:al_wahat_farm_flutter/core/errors/operation_failure.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/features/reviews/data/engineer_review_repository.dart';
+import 'package:al_wahat_farm_flutter/features/reviews/data/offline_review_queue.dart';
 import 'package:al_wahat_farm_flutter/features/reviews/domain/engineer_review.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/data/task_repository.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/farm_task.dart';
@@ -25,6 +27,8 @@ class ReviewController extends ChangeNotifier {
     required this.farmId,
     required this.userId,
     this.onReviewed,
+    this.connectivity,
+    this.offlineQueue,
   })  : _taskRepository = taskRepository,
         _reviewRepository = reviewRepository,
         _evidencePicker = evidencePicker,
@@ -38,6 +42,12 @@ class ReviewController extends ChangeNotifier {
   final String farmId;
   final String userId;
   final AsyncCallback? onReviewed;
+
+  /// When offline (and [offlineQueue] is wired), a decision is queued for replay
+  /// instead of hitting the backend, with an optimistic cached-status patch so
+  /// the task leaves the review queue immediately.
+  final ConnectivityController? connectivity;
+  final OfflineReviewQueue? offlineQueue;
 
   ReviewStatus _status = ReviewStatus.idle;
   ReviewStage _stage = ReviewStage.idle;
@@ -110,6 +120,25 @@ class ReviewController extends ChangeNotifier {
   }) async {
     if (isBusy) return false;
     try {
+      // Offline: queue the decision (and any captured photo) as one op; the
+      // review and its photo are recorded together on reconnect.
+      if ((connectivity?.isOffline ?? false) && offlineQueue != null) {
+        _setStage(ReviewStage.submitting);
+        await offlineQueue!.queueReview(
+          draft: ReviewTaskDraft(
+            taskId: taskId,
+            decision: decision,
+            notes: _optionalText(notes),
+          ),
+          userId: userId,
+          farmId: farmId,
+          photo: _photo,
+        );
+        _photo = null;
+        _uploadedPath = null;
+        await _afterReview((l10n) => l10n.msgReviewRecordedOffline);
+        return true;
+      }
       final photoPath = await _preparePhotoPath();
       _setStage(ReviewStage.submitting);
       await _reviewRepository.review(

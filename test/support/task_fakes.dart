@@ -471,6 +471,7 @@ class FakeEngineerReviewRepository implements EngineerReviewRepository {
   final bool canReview;
   int reviewFailuresRemaining = 0;
   int reviewCalls = 0;
+  String? lastReviewOpId;
 
   @override
   Future<List<EngineerReview>> listForTask(String taskId) async {
@@ -479,7 +480,8 @@ class FakeEngineerReviewRepository implements EngineerReviewRepository {
   }
 
   @override
-  Future<String> review(ReviewTaskDraft draft) async {
+  Future<String> review(ReviewTaskDraft draft, {String? opId}) async {
+    lastReviewOpId = opId;
     if (!canReview) {
       throw const OperationFailure(
         OperationFailureKind.authorization,

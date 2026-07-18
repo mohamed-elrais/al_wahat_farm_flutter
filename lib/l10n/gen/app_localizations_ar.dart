@@ -923,6 +923,10 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String get msgReviewRecordedOffline =>
+      'تم حفظ المراجعة دون اتصال. سيتم تسجيلها في المزرعة عند عودة الاتصال بالإنترنت.';
+
+  @override
   String get errReviewPhotoUnconfirmed =>
       'تم رفع صورة المراجعة، لكن لم يتم تأكيد القرار. أعد المحاولة دون الرفع مرة أخرى.';
 

@@ -10,6 +10,8 @@ import 'package:al_wahat_farm_flutter/features/farm/presentation/farm_hierarchy_
 import 'package:al_wahat_farm_flutter/features/issues/data/issue_mutation_executor.dart';
 import 'package:al_wahat_farm_flutter/features/issues/data/issue_photo_service.dart';
 import 'package:al_wahat_farm_flutter/features/issues/data/tree_issue_repository.dart';
+import 'package:al_wahat_farm_flutter/features/reviews/data/engineer_review_repository.dart';
+import 'package:al_wahat_farm_flutter/features/reviews/data/review_mutation_executor.dart';
 import 'package:al_wahat_farm_flutter/features/sync/domain/composite_mutation_executor.dart';
 import 'package:al_wahat_farm_flutter/features/sync/domain/mutation_executor.dart';
 import 'package:al_wahat_farm_flutter/features/sync/domain/pending_mutation.dart';
@@ -78,6 +80,12 @@ class _AuthenticatedGateState extends State<AuthenticatedGate> {
         photoStorage: SupabaseIssuePhotoStorage(client),
         pendingPhotos: services.pendingPhotos,
       );
+      final reviewExecutor = ReviewMutationExecutor(
+        reviewRepository: SupabaseEngineerReviewRepository(client),
+        evidenceStorage: SupabaseTaskEvidenceStorage(client),
+        pendingPhotos: services.pendingPhotos,
+        taskRepository: caching,
+      );
       final syncEngine = SyncEngine(
         outbox: services.outbox,
         executor:
@@ -88,6 +96,7 @@ class _AuthenticatedGateState extends State<AuthenticatedGate> {
           PendingMutationKind.addTaskPhoto: taskExecutor,
           PendingMutationKind.createTask: taskExecutor,
           PendingMutationKind.reportIssue: issueExecutor,
+          PendingMutationKind.reviewTask: reviewExecutor,
         }),
         connectivity: services.connectivity,
       )..start();

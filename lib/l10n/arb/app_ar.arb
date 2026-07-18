@@ -321,6 +321,7 @@
   "reviewStageSubmitting": "جارٍ تسجيل القرار…",
   "msgReviewRecorded": "تم تسجيل المراجعة: {decision}.",
   "@msgReviewRecorded": { "placeholders": { "decision": { "type": "String" } } },
+  "msgReviewRecordedOffline": "تم حفظ المراجعة دون اتصال. سيتم تسجيلها في المزرعة عند عودة الاتصال بالإنترنت.",
   "errReviewPhotoUnconfirmed": "تم رفع صورة المراجعة، لكن لم يتم تأكيد القرار. أعد المحاولة دون الرفع مرة أخرى.",
   "errReviewRecord": "تعذّر تسجيل قرار المراجعة.",
   "errReviewPhotoPrepare": "تعذّر تجهيز صورة المراجعة تلك.",

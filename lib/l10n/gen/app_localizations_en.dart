@@ -930,6 +930,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get msgReviewRecordedOffline =>
+      'Review saved offline. It will be recorded on the farm when you\'re back online.';
+
+  @override
   String get errReviewPhotoUnconfirmed =>
       'The review photo is uploaded, but the decision was not confirmed. Retry without uploading again.';
 

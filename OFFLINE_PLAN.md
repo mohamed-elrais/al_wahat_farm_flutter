@@ -276,6 +276,18 @@ upload to the private bucket at the exact `{uid}/{farm}/{task}/file` path, then 
     passed, 6 skipped.
 - **O3 — Review offline + conflict handling**: `review_task` offline; conflict/terminal
   failure policy; server-wins reconciliation. Gate: worker/role and conflict tests pass.
+  - Partial ✅ (2026-07-18) — **offline review** (backend deployed): an owner/engineer can
+    approve / return / request-follow-up on a completed task with no connectivity. The
+    decision (and any review photo bytes) queue as one `review_task` op; the cached task
+    detail is patched optimistically to the decided status so the task leaves the review
+    queue immediately. On reconnect the `ReviewMutationExecutor` uploads the photo to the
+    task path, then calls `review_task` with that path and the op id as `p_op_id`
+    (idempotent on the ledger), and refreshes the cached detail. `EngineerReviewRepository
+    .review` gained an optional `opId` sent only on replays; online reviews omit it. The
+    review executor is registered in the gate's `CompositeMutationExecutor`. `flutter test`
+    189 passed, 6 skipped. Remaining O3: explicit conflict/terminal-failure policy surfaced
+    in the UI (belongs with the O4 failed-ops screen — a review that lost the race, e.g. the
+    task was already approved by someone else, currently just marks the op failed).
 - **O4 — Sync UX + hardening**: per-item badges, global sync center, Sync-now, failed-ops
   screen, l10n (en+ar), logout wipe, accessibility. Gate: fidelity + privacy + a11y checks.
   - Partial ✅ (2026-07-18): `SyncEngine` now exposes reactive pending/failed counts +

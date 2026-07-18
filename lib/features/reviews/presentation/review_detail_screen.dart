@@ -1,4 +1,5 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
+import 'package:al_wahat_farm_flutter/core/app_services.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
@@ -7,8 +8,10 @@ import 'package:al_wahat_farm_flutter/features/auth/presentation/authenticated_g
 import 'package:al_wahat_farm_flutter/features/farm/domain/farm_hierarchy.dart';
 import 'package:al_wahat_farm_flutter/features/farm/presentation/farm_hierarchy_gate.dart';
 import 'package:al_wahat_farm_flutter/features/reviews/data/engineer_review_repository.dart';
+import 'package:al_wahat_farm_flutter/features/reviews/data/offline_review_queue.dart';
 import 'package:al_wahat_farm_flutter/features/reviews/domain/engineer_review.dart';
 import 'package:al_wahat_farm_flutter/features/reviews/presentation/review_controller.dart';
+import 'package:al_wahat_farm_flutter/features/sync/presentation/sync_scope.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/data/task_evidence_service.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/farm_task.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/task_evidence.dart';
@@ -63,6 +66,18 @@ class _ReviewDetailScreenState extends State<ReviewDetailScreen> {
     final farmId = widget.farmId ?? contextData?.selectedMembership.farm.id;
     if (workspace != null && userId != null && farmId != null) {
       final client = Supabase.instance.client;
+      final services = AppServicesScope.maybeOf(context);
+      final syncEngine = SyncScope.maybeOf(context);
+      final store = services?.cacheStore;
+      final offlineQueue =
+          (services != null && syncEngine != null && store != null)
+              ? OutboxReviewQueue(
+                  outbox: services.outbox,
+                  pendingPhotos: services.pendingPhotos,
+                  syncEngine: syncEngine,
+                  cache: store,
+                )
+              : null;
       _controller = ReviewController(
         taskRepository: workspace.repository,
         reviewRepository: SupabaseEngineerReviewRepository(client),
@@ -72,6 +87,8 @@ class _ReviewDetailScreenState extends State<ReviewDetailScreen> {
         farmId: farmId,
         userId: userId,
         onReviewed: workspace.refresh,
+        connectivity: services?.connectivity,
+        offlineQueue: offlineQueue,
       );
       _ownsController = true;
       _controller!.load();

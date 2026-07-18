@@ -1770,6 +1770,12 @@ abstract class AppLocalizations {
   /// **'Review recorded: {decision}.'**
   String msgReviewRecorded(String decision);
 
+  /// No description provided for @msgReviewRecordedOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Review saved offline. It will be recorded on the farm when you\'re back online.'**
+  String get msgReviewRecordedOffline;
+
   /// No description provided for @errReviewPhotoUnconfirmed.
   ///
   /// In en, this message translates to:
