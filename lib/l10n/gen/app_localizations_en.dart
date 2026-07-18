@@ -680,6 +680,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get msgTaskEvidenceSaved => 'Task evidence saved.';
 
   @override
+  String get msgEvidenceQueuedOffline =>
+      'Evidence saved offline. It will upload when you\'re back online.';
+
+  @override
   String get msgTaskCompleted => 'Task completed.';
 
   @override

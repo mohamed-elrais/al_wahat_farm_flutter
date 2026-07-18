@@ -241,6 +241,7 @@
   "msgTaskStarted": "بدأت المهمة.",
   "msgAssignmentsUpdated": "تم تحديث الإسنادات.",
   "msgTaskEvidenceSaved": "تم حفظ دليل المهمة.",
+  "msgEvidenceQueuedOffline": "تم حفظ الدليل دون اتصال. سيُرفع عند عودة الاتصال بالإنترنت.",
   "msgTaskCompleted": "اكتملت المهمة.",
   "msgTaskCompletedReview": "اكتملت المهمة وأُرسلت لمراجعة المهندس الزراعي.",
   "errTaskStart": "تعذّر بدء المهمة.",

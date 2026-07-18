@@ -241,6 +241,7 @@
   "msgTaskStarted": "Task started.",
   "msgAssignmentsUpdated": "Assignments updated.",
   "msgTaskEvidenceSaved": "Task evidence saved.",
+  "msgEvidenceQueuedOffline": "Evidence saved offline. It will upload when you're back online.",
   "msgTaskCompleted": "Task completed.",
   "msgTaskCompletedReview": "Task completed and sent for engineer review.",
   "errTaskStart": "The task could not be started.",

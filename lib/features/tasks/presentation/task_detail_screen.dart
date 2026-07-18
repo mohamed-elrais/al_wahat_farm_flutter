@@ -3,8 +3,11 @@ import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
+import 'package:al_wahat_farm_flutter/core/app_services.dart';
 import 'package:al_wahat_farm_flutter/features/auth/presentation/authenticated_gate.dart';
 import 'package:al_wahat_farm_flutter/features/farm/domain/farm_hierarchy.dart';
+import 'package:al_wahat_farm_flutter/features/sync/presentation/sync_scope.dart';
+import 'package:al_wahat_farm_flutter/features/tasks/data/offline_evidence_queue.dart';
 import 'package:al_wahat_farm_flutter/features/farm/presentation/farm_hierarchy_gate.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/data/task_evidence_service.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/data/task_repository.dart';
@@ -65,6 +68,15 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
         final farmId = widget.farmId ?? contextData?.selectedMembership.farm.id;
         if (workspace != null && userId != null && farmId != null) {
           final client = Supabase.instance.client;
+          final services = AppServicesScope.maybeOf(context);
+          final syncEngine = SyncScope.maybeOf(context);
+          final offlineEvidence = services != null && syncEngine != null
+              ? OutboxEvidenceQueue(
+                  outbox: services.outbox,
+                  pendingPhotos: services.pendingPhotos,
+                  syncEngine: syncEngine,
+                )
+              : null;
           _controller = TaskDetailController(
             repository: workspace.repository,
             evidencePicker: DeviceTaskEvidencePicker(),
@@ -73,6 +85,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
             farmId: farmId,
             userId: userId,
             onMutated: workspace.refresh,
+            connectivity: services?.connectivity,
+            offlineEvidence: offlineEvidence,
           );
           _ownsController = true;
         }

@@ -11,7 +11,7 @@ class AppDatabase {
   AppDatabase._(this.db);
 
   static const fileName = 'al_wahat_farm.db';
-  static const schemaVersion = 2;
+  static const schemaVersion = 3;
 
   /// Generic key/value cache table. It backs [LocalCacheStore], so every Phase 7
   /// read cache (farm hierarchy, task list/detail) persists here.
@@ -19,6 +19,10 @@ class AppDatabase {
 
   /// Durable, ordered queue of mutations awaiting sync (offline outbox).
   static const outboxTable = 'outbox';
+
+  /// Photo bytes captured offline, awaiting upload+register on sync. Keyed by
+  /// the outbox op id so the executor can pair a queued photo op with its blob.
+  static const pendingPhotosTable = 'pending_photos';
 
   final Database db;
 
@@ -36,11 +40,12 @@ class AppDatabase {
   static Future<void> _onCreate(Database db, int version) async {
     await _createCacheTable(db);
     await _createOutboxTable(db);
+    await _createPendingPhotosTable(db);
   }
 
   static Future<void> _onUpgrade(Database db, int from, int to) async {
     if (from < 2) await _createOutboxTable(db);
-    // Future offline phases (pending photos) add their tables here.
+    if (from < 3) await _createPendingPhotosTable(db);
   }
 
   static Future<void> _createCacheTable(Database db) => db.execute('''
@@ -59,6 +64,22 @@ class AppDatabase {
         status TEXT NOT NULL,
         attempts INTEGER NOT NULL DEFAULT 0,
         last_error TEXT,
+        created_at INTEGER NOT NULL
+      )
+    ''');
+
+  static Future<void> _createPendingPhotosTable(Database db) => db.execute('''
+      CREATE TABLE $pendingPhotosTable (
+        op_id TEXT PRIMARY KEY,
+        task_id TEXT NOT NULL,
+        user_id TEXT NOT NULL,
+        farm_id TEXT NOT NULL,
+        photo_type TEXT NOT NULL,
+        caption TEXT,
+        filename TEXT NOT NULL,
+        content_type TEXT NOT NULL,
+        bytes BLOB NOT NULL,
+        uploaded_path TEXT,
         created_at INTEGER NOT NULL
       )
     ''');

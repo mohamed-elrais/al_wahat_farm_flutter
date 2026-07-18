@@ -7,6 +7,7 @@ import 'package:al_wahat_farm_flutter/core/connectivity/connectivity_service.dar
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/locale_controller.dart';
 import 'package:al_wahat_farm_flutter/features/sync/data/outbox_store.dart';
+import 'package:al_wahat_farm_flutter/features/sync/data/pending_photo_store.dart';
 import 'package:flutter/material.dart';
 
 class AlWahatApp extends StatefulWidget {
@@ -31,6 +32,7 @@ class _AlWahatAppState extends State<AlWahatApp> {
     return AppServices(
       cacheStore: store,
       outbox: InMemoryOutboxStore(),
+      pendingPhotos: InMemoryPendingPhotoStore(),
       connectivity: ConnectivityController(PlatformConnectivityService()),
       locale: LocaleController(store),
     );

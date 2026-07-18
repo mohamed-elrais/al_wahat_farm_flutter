@@ -1326,6 +1326,12 @@ abstract class AppLocalizations {
   /// **'Task evidence saved.'**
   String get msgTaskEvidenceSaved;
 
+  /// No description provided for @msgEvidenceQueuedOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Evidence saved offline. It will upload when you\'re back online.'**
+  String get msgEvidenceQueuedOffline;
+
   /// No description provided for @msgTaskCompleted.
   ///
   /// In en, this message translates to:

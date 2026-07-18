@@ -131,7 +131,17 @@ offline; it replays in order and converges to the same state as if done online.
 
 ---
 
-## 6. Photos offline
+## 6. Photos offline — ✅ (2026-07-18)
+
+Implemented: AppDatabase v3 adds a `pending_photos` blob table; `PendingPhotoStore`
+(sqflite + in-memory) holds captured bytes keyed by op id. Capturing task evidence while
+offline stores the bytes + enqueues an `add_task_photo` op (`OfflineEvidenceQueue`); the
+`TaskMutationExecutor` uploads then registers on reconnect, reusing a stored `uploaded_path`
+so a register retry never re-uploads. Logout clears pending photos. The task detail screen's
+add-evidence / complete-with-evidence flows queue offline and show a "saved offline" message
+(en + ar). Issue/review photo flows can adopt the same `OfflineEvidenceQueue` next.
+
+Original design notes:
 
 Capture path today: `image_picker` → compress → upload to Storage → register via RPC.
 Offline path: capture → compress → **persist bytes** (app-documents dir via

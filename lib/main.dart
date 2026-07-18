@@ -7,6 +7,7 @@ import 'package:al_wahat_farm_flutter/core/config/app_config.dart';
 import 'package:al_wahat_farm_flutter/core/database/app_database.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/locale_controller.dart';
 import 'package:al_wahat_farm_flutter/features/sync/data/outbox_store.dart';
+import 'package:al_wahat_farm_flutter/features/sync/data/pending_photo_store.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -23,14 +24,17 @@ Future<void> main() async {
 Future<AppServices> _bootstrapServices() async {
   LocalCacheStore store;
   OutboxStore outbox;
+  PendingPhotoStore pendingPhotos;
   try {
     final database = await AppDatabase.open();
     store = SqfliteCacheStore(database);
     outbox = SqfliteOutboxStore(database);
+    pendingPhotos = SqflitePendingPhotoStore(database);
   } catch (_) {
     // Fall back to memory so a storage failure never blocks app launch.
     store = InMemoryCacheStore();
     outbox = InMemoryOutboxStore();
+    pendingPhotos = InMemoryPendingPhotoStore();
   }
   final connectivity = ConnectivityController(PlatformConnectivityService());
   await connectivity.start();
@@ -39,6 +43,7 @@ Future<AppServices> _bootstrapServices() async {
   return AppServices(
     cacheStore: store,
     outbox: outbox,
+    pendingPhotos: pendingPhotos,
     connectivity: connectivity,
     locale: locale,
   );

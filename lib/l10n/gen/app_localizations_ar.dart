@@ -677,6 +677,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get msgTaskEvidenceSaved => 'تم حفظ دليل المهمة.';
 
   @override
+  String get msgEvidenceQueuedOffline =>
+      'تم حفظ الدليل دون اتصال. سيُرفع عند عودة الاتصال بالإنترنت.';
+
+  @override
   String get msgTaskCompleted => 'اكتملت المهمة.';
 
   @override

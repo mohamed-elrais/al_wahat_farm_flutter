@@ -11,6 +11,7 @@ import 'package:al_wahat_farm_flutter/features/sync/domain/sync_engine.dart';
 import 'package:al_wahat_farm_flutter/features/sync/presentation/sync_scope.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/data/caching_task_repository.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/data/offline_task_repository.dart';
+import 'package:al_wahat_farm_flutter/features/tasks/data/task_evidence_service.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/data/task_mutation_executor.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/data/task_repository.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_workspace_controller.dart';
@@ -62,7 +63,11 @@ class _AuthenticatedGateState extends State<AuthenticatedGate> {
       final caching = CachingTaskRepository(inner: base, store: store);
       final syncEngine = SyncEngine(
         outbox: services.outbox,
-        executor: TaskMutationExecutor(caching),
+        executor: TaskMutationExecutor(
+          caching,
+          evidenceStorage: SupabaseTaskEvidenceStorage(client),
+          pendingPhotos: services.pendingPhotos,
+        ),
         connectivity: services.connectivity,
       )..start();
       _syncEngine = syncEngine;

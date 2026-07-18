@@ -1,5 +1,7 @@
+import 'package:al_wahat_farm_flutter/core/connectivity/connectivity_service.dart';
 import 'package:al_wahat_farm_flutter/core/errors/operation_failure.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
+import 'package:al_wahat_farm_flutter/features/tasks/data/offline_evidence_queue.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/data/task_repository.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/farm_task.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/task_evidence.dart';
@@ -26,6 +28,8 @@ class TaskDetailController extends ChangeNotifier {
     required this.farmId,
     required this.userId,
     this.onMutated,
+    this.connectivity,
+    this.offlineEvidence,
   })  : _repository = repository,
         _evidencePicker = evidencePicker,
         _evidenceStorage = evidenceStorage;
@@ -38,12 +42,18 @@ class TaskDetailController extends ChangeNotifier {
   final String userId;
   final AsyncCallback? onMutated;
 
+  /// When both are provided and the device is offline, evidence is queued for
+  /// later upload instead of uploaded immediately.
+  final ConnectivityController? connectivity;
+  final OfflineEvidenceQueue? offlineEvidence;
+
   TaskDetailStatus _status = TaskDetailStatus.idle;
   TaskMutationStage _stage = TaskMutationStage.idle;
   TaskDetails? _details;
   PreparedTaskEvidence? _evidence;
   String? _uploadedPath;
   bool _evidenceRegistered = false;
+  bool _queuedOffline = false;
   String Function(AppLocalizations)? _message;
 
   TaskDetailStatus get status => _status;
@@ -127,10 +137,14 @@ class TaskDetailController extends ChangeNotifier {
     if (isBusy || _evidence == null) return false;
     try {
       await _registerEvidence(type: type, caption: caption);
+      final queued = _queuedOffline;
       _evidence = null;
       _uploadedPath = null;
       _evidenceRegistered = false;
-      await _afterMutation((l10n) => l10n.msgTaskEvidenceSaved);
+      _queuedOffline = false;
+      await _afterMutation(queued
+          ? (l10n) => l10n.msgEvidenceQueuedOffline
+          : (l10n) => l10n.msgTaskEvidenceSaved);
       return true;
     } catch (error) {
       _message = _messageFor(error, (l10n) => l10n.errEvidenceRegister);
@@ -162,6 +176,7 @@ class TaskDetailController extends ChangeNotifier {
       _evidence = null;
       _uploadedPath = null;
       _evidenceRegistered = false;
+      _queuedOffline = false;
       final String Function(AppLocalizations) fallbackMessage =
           requiresEngineerReview
               ? (l10n) => l10n.msgTaskCompletedReview
@@ -188,6 +203,25 @@ class TaskDetailController extends ChangeNotifier {
     String? caption,
   }) async {
     final evidence = _evidence!;
+
+    // Offline: hand the bytes to the queue; the sync engine uploads + registers
+    // on reconnect. Skips the network entirely.
+    if ((connectivity?.isOffline ?? false) && offlineEvidence != null) {
+      _setStage(TaskMutationStage.uploadingEvidence);
+      await offlineEvidence!.queueTaskPhoto(
+        userId: userId,
+        farmId: farmId,
+        taskId: taskId,
+        evidence: evidence,
+        type: type,
+        caption: _optionalText(caption),
+      );
+      _evidenceRegistered = true;
+      _queuedOffline = true;
+      return;
+    }
+    _queuedOffline = false;
+
     var path = _uploadedPath;
     if (path == null) {
       _setStage(TaskMutationStage.uploadingEvidence);

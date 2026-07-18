@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:al_wahat_farm_flutter/features/sync/data/pending_photo_store.dart';
 import 'package:al_wahat_farm_flutter/features/sync/data/outbox_store.dart';
 
 import 'package:al_wahat_farm_flutter/app/theme/app_theme.dart';
@@ -43,6 +44,7 @@ void main() {
     final services = AppServices(
       cacheStore: InMemoryCacheStore(),
       outbox: InMemoryOutboxStore(),
+      pendingPhotos: InMemoryPendingPhotoStore(),
       connectivity: connectivity,
       locale: LocaleController(InMemoryCacheStore()),
     );
