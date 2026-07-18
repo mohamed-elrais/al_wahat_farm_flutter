@@ -217,9 +217,17 @@ upload to the private bucket at the exact `{uid}/{farm}/{task}/file` path, then 
   fallback offline, never masks a blocked verdict) so `AuthenticatedGate` bootstraps
   offline. Gate met: app opens and browses fully offline (context + hierarchy + tasks all
   cached). `flutter analyze` clean; `flutter test` 150 passed, 6 skipped.
-- **O1 — Outbox + SyncEngine (idempotent transitions first)**: outbox tables; sync engine;
-  wire the **naturally-safe** ops (start/complete/assign/photos) end-to-end with `op_id`.
-  Gate: offline start→complete→photo replays exactly once; failed-op surfacing works.
+- **O1 — Outbox + SyncEngine (idempotent transitions first)** ✅ (2026-07-18): added the
+  `outbox` table (AppDatabase v2), `PendingMutation` domain, and `OutboxStore` (sqflite +
+  in-memory). `SyncEngine` drains FIFO when online, classifies transient (offline/unexpected
+  → retry, stop to preserve order, cap at maxAttempts) vs terminal (authorization/invalid/
+  conflict/not-found → mark failed, continue), is replay-safe (a committed op is never
+  re-run), and auto-syncs on reconnect. `OfflineTaskRepository` queues start/complete/
+  set-assignments when offline with an optimistic cached-status patch and replays via a
+  `TaskMutationExecutor`; wired into `AuthenticatedGate`, and logout now clears the outbox.
+  Photos deferred to a later slice (need the pending-photo blob store). Gate met for
+  transitions: offline start/complete → replays exactly once; failed-op surfacing works.
+  `flutter analyze` clean; `flutter test` 168 passed, 6 skipped.
 - **O2 — Optimistic creates + reconciliation**: temp ids, `depends_on`, temp→real rewrite;
   offline **create task** and **report issue** (with local photos). Depends on the backend
   idempotency migrations being deployed. Gate: full offline create→…→complete chain

@@ -1,4 +1,5 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_theme.dart';
+import 'package:al_wahat_farm_flutter/features/sync/data/outbox_store.dart';
 import 'package:al_wahat_farm_flutter/core/app_services.dart';
 import 'package:al_wahat_farm_flutter/core/cache/local_cache_store.dart';
 import 'package:al_wahat_farm_flutter/core/connectivity/connectivity_service.dart';
@@ -11,6 +12,7 @@ void main() {
   Widget wrap(Widget child, {double textScaleFactor = 1.0}) {
     final services = AppServices(
       cacheStore: InMemoryCacheStore(),
+      outbox: InMemoryOutboxStore(),
       connectivity: ConnectivityController(PlatformConnectivityService()),
       locale: LocaleController(InMemoryCacheStore()),
     );

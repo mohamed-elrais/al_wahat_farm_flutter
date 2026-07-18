@@ -7,7 +7,10 @@ import 'package:al_wahat_farm_flutter/features/auth/data/operational_context_rep
 import 'package:al_wahat_farm_flutter/features/auth/domain/operational_context.dart';
 import 'package:al_wahat_farm_flutter/features/auth/presentation/auth_bootstrap_controller.dart';
 import 'package:al_wahat_farm_flutter/features/farm/presentation/farm_hierarchy_gate.dart';
+import 'package:al_wahat_farm_flutter/features/sync/domain/sync_engine.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/data/caching_task_repository.dart';
+import 'package:al_wahat_farm_flutter/features/tasks/data/offline_task_repository.dart';
+import 'package:al_wahat_farm_flutter/features/tasks/data/task_mutation_executor.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/data/task_repository.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_workspace_controller.dart';
 import 'package:flutter/material.dart';
@@ -43,17 +46,35 @@ class AuthenticatedGate extends StatefulWidget {
 class _AuthenticatedGateState extends State<AuthenticatedGate> {
   AuthBootstrapController? _controller;
   TaskRepository? _taskRepository;
+  SyncEngine? _syncEngine;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (_controller != null) return;
     final client = Supabase.instance.client;
-    final store = AppServicesScope.maybeOf(context)?.cacheStore;
+    final services = AppServicesScope.maybeOf(context);
+    final store = services?.cacheStore;
 
     final base = SupabaseTaskRepository(client);
-    _taskRepository =
-        store == null ? base : CachingTaskRepository(inner: base, store: store);
+    if (services != null && store != null) {
+      final caching = CachingTaskRepository(inner: base, store: store);
+      final syncEngine = SyncEngine(
+        outbox: services.outbox,
+        executor: TaskMutationExecutor(caching),
+        connectivity: services.connectivity,
+      )..start();
+      _syncEngine = syncEngine;
+      _taskRepository = OfflineTaskRepository(
+        inner: caching,
+        outbox: services.outbox,
+        connectivity: services.connectivity,
+        cache: store,
+        syncEngine: syncEngine,
+      );
+    } else {
+      _taskRepository = base;
+    }
 
     final OperationalContextRepository contextRepository =
         DefaultOperationalContextRepository(
@@ -74,6 +95,7 @@ class _AuthenticatedGateState extends State<AuthenticatedGate> {
   @override
   void dispose() {
     _controller?.dispose();
+    _syncEngine?.dispose();
     super.dispose();
   }
 
