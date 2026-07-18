@@ -344,6 +344,7 @@
   "issueStageRegisteringPhoto": "Registering evidence…",
   "issueErrPhotoPrepare": "Unable to prepare that photo.",
   "issueMsgReported": "Issue reported and engineer review task created.",
+  "issueMsgReportedOffline": "Issue saved offline. It will be reported to the farm when you're back online.",
   "issueErrReport": "The issue could not be reported. Check your connection.",
   "issueMsgReportedWithPhoto": "Issue, review task, and photo evidence saved.",
   "issueErrPartialPrefix": "The issue and review task were saved, but photo registration was not confirmed. ",

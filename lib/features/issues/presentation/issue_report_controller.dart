@@ -1,5 +1,7 @@
+import 'package:al_wahat_farm_flutter/core/connectivity/connectivity_service.dart';
 import 'package:al_wahat_farm_flutter/core/errors/operation_failure.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
+import 'package:al_wahat_farm_flutter/features/issues/data/offline_issue_queue.dart';
 import 'package:al_wahat_farm_flutter/features/issues/data/tree_issue_repository.dart';
 import 'package:al_wahat_farm_flutter/features/issues/domain/issue_photo.dart';
 import 'package:al_wahat_farm_flutter/features/issues/domain/tree_issue_draft.dart';
@@ -25,6 +27,8 @@ class IssueReportController extends ChangeNotifier {
     required this.farmId,
     required this.treeId,
     this.onPersisted,
+    this.connectivity,
+    this.offlineQueue,
   })  : _repository = repository,
         _photoPicker = photoPicker,
         _photoStorage = photoStorage;
@@ -36,6 +40,12 @@ class IssueReportController extends ChangeNotifier {
   final String farmId;
   final String treeId;
   final AsyncCallback? onPersisted;
+
+  /// When offline (and [offlineQueue] is wired), a report is queued for replay
+  /// instead of hitting the backend, so field staff can log issues with no
+  /// connectivity.
+  final ConnectivityController? connectivity;
+  final OfflineIssueQueue? offlineQueue;
 
   IssueSubmissionStage _stage = IssueSubmissionStage.idle;
   PreparedIssuePhoto? _photo;
@@ -102,6 +112,20 @@ class IssueReportController extends ChangeNotifier {
           OperationFailureKind.invalidInput,
           validation,
         );
+      }
+      // Offline: queue the report (and any captured photo) as one op; the issue,
+      // its task, and the photo are created together on reconnect.
+      if ((connectivity?.isOffline ?? false) && offlineQueue != null) {
+        _result = await offlineQueue!.queueReport(
+          draft: draft,
+          userId: userId,
+          farmId: farmId,
+          photo: _photo,
+        );
+        await _refreshSilently();
+        _message = (l10n) => l10n.issueMsgReportedOffline;
+        _setStage(IssueSubmissionStage.success);
+        return true;
       }
       _result = await _repository.report(draft);
       await _refreshSilently();

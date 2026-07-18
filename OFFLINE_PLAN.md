@@ -260,10 +260,20 @@ upload to the private bucket at the exact `{uid}/{farm}/{task}/file` path, then 
     replays** — direct (online) creates omit it, so they keep working before the migration
     is deployed. Logout already wipes the outbox. `flutter test` 180 passed, 6 skipped.
     - Deferred to the rest of O2/O3: the create→start/complete chain **before** first sync
-      (chosen "read-only until synced" to avoid temp→real op rewriting for now), offline
-      **report issue**, and offline **review** (O3). Also: a `create_task` that fails
-      *terminally* on replay currently leaves its provisional row in the list as a ghost —
-      cleaning that up belongs with the O4 failed-ops screen.
+      (chosen "read-only until synced" to avoid temp→real op rewriting for now) and offline
+      **review** (O3). Also: a `create_task` that fails *terminally* on replay currently
+      leaves its provisional row in the list as a ghost — cleaning that up belongs with the
+      O4 failed-ops screen.
+  - Partial ✅ (2026-07-18) — **offline report issue** (backend deployed): reporting a tree
+    issue offline queues a `report_tree_issue` op carrying the draft; any captured photo's
+    bytes go to the pending-photo blob store under the same op id. On reconnect the
+    `IssueMutationExecutor` reports (idempotent on `p_op_id`), then uploads the photo to the
+    real task path and registers it against the real issue id — **all in one op**, so there
+    is no cross-op temp→real dependency. `TreeIssueRepository.report` gained an optional
+    `opId` sent only on replays. A new `CompositeMutationExecutor` lets the single
+    `SyncEngine` drain both task and issue ops. The report screen queues offline (with the
+    photo) and shows a localized "saved offline" message (en + ar). `flutter test` 185
+    passed, 6 skipped.
 - **O3 — Review offline + conflict handling**: `review_task` offline; conflict/terminal
   failure policy; server-wins reconciliation. Gate: worker/role and conflict tests pass.
 - **O4 — Sync UX + hardening**: per-item badges, global sync center, Sync-now, failed-ops

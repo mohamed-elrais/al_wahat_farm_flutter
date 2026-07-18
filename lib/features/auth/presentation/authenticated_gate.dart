@@ -7,6 +7,12 @@ import 'package:al_wahat_farm_flutter/features/auth/data/operational_context_rep
 import 'package:al_wahat_farm_flutter/features/auth/domain/operational_context.dart';
 import 'package:al_wahat_farm_flutter/features/auth/presentation/auth_bootstrap_controller.dart';
 import 'package:al_wahat_farm_flutter/features/farm/presentation/farm_hierarchy_gate.dart';
+import 'package:al_wahat_farm_flutter/features/issues/data/issue_mutation_executor.dart';
+import 'package:al_wahat_farm_flutter/features/issues/data/issue_photo_service.dart';
+import 'package:al_wahat_farm_flutter/features/issues/data/tree_issue_repository.dart';
+import 'package:al_wahat_farm_flutter/features/sync/domain/composite_mutation_executor.dart';
+import 'package:al_wahat_farm_flutter/features/sync/domain/mutation_executor.dart';
+import 'package:al_wahat_farm_flutter/features/sync/domain/pending_mutation.dart';
 import 'package:al_wahat_farm_flutter/features/sync/domain/sync_engine.dart';
 import 'package:al_wahat_farm_flutter/features/sync/presentation/sync_scope.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/data/caching_task_repository.dart';
@@ -61,14 +67,28 @@ class _AuthenticatedGateState extends State<AuthenticatedGate> {
     final base = SupabaseTaskRepository(client);
     if (services != null && store != null) {
       final caching = CachingTaskRepository(inner: base, store: store);
+      final taskExecutor = TaskMutationExecutor(
+        caching,
+        evidenceStorage: SupabaseTaskEvidenceStorage(client),
+        pendingPhotos: services.pendingPhotos,
+        cache: store,
+      );
+      final issueExecutor = IssueMutationExecutor(
+        repository: SupabaseTreeIssueRepository(client),
+        photoStorage: SupabaseIssuePhotoStorage(client),
+        pendingPhotos: services.pendingPhotos,
+      );
       final syncEngine = SyncEngine(
         outbox: services.outbox,
-        executor: TaskMutationExecutor(
-          caching,
-          evidenceStorage: SupabaseTaskEvidenceStorage(client),
-          pendingPhotos: services.pendingPhotos,
-          cache: store,
-        ),
+        executor:
+            CompositeMutationExecutor(<PendingMutationKind, MutationExecutor>{
+          PendingMutationKind.startTask: taskExecutor,
+          PendingMutationKind.completeTask: taskExecutor,
+          PendingMutationKind.setAssignments: taskExecutor,
+          PendingMutationKind.addTaskPhoto: taskExecutor,
+          PendingMutationKind.createTask: taskExecutor,
+          PendingMutationKind.reportIssue: issueExecutor,
+        }),
         connectivity: services.connectivity,
       )..start();
       _syncEngine = syncEngine;

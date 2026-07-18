@@ -344,6 +344,7 @@
   "issueStageRegisteringPhoto": "جارٍ تسجيل الدليل…",
   "issueErrPhotoPrepare": "تعذّر تجهيز تلك الصورة.",
   "issueMsgReported": "تم الإبلاغ عن المشكلة وإنشاء مهمة مراجعة للمهندس الزراعي.",
+  "issueMsgReportedOffline": "تم حفظ المشكلة دون اتصال. سيتم الإبلاغ عنها إلى المزرعة عند عودة الاتصال بالإنترنت.",
   "issueErrReport": "تعذّر الإبلاغ عن المشكلة. تحقق من اتصالك.",
   "issueMsgReportedWithPhoto": "تم حفظ المشكلة ومهمة المراجعة ودليل الصورة.",
   "issueErrPartialPrefix": "تم حفظ المشكلة ومهمة المراجعة، لكن لم يتم تأكيد تسجيل الصورة. ",

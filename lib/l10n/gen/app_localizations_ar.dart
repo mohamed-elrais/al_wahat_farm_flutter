@@ -989,6 +989,10 @@ class AppLocalizationsAr extends AppLocalizations {
       'تم الإبلاغ عن المشكلة وإنشاء مهمة مراجعة للمهندس الزراعي.';
 
   @override
+  String get issueMsgReportedOffline =>
+      'تم حفظ المشكلة دون اتصال. سيتم الإبلاغ عنها إلى المزرعة عند عودة الاتصال بالإنترنت.';
+
+  @override
   String get issueErrReport => 'تعذّر الإبلاغ عن المشكلة. تحقق من اتصالك.';
 
   @override

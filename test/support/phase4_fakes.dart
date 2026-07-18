@@ -40,10 +40,13 @@ class FakeTreeIssueRepository implements TreeIssueRepository {
   @override
   Future<List<TreeIssue>> listForFarm(String farmId) async => const [];
 
+  String? lastReportOpId;
+
   @override
-  Future<ReportedTreeIssue> report(TreeIssueDraft draft) async {
+  Future<ReportedTreeIssue> report(TreeIssueDraft draft, {String? opId}) async {
     events.add('report');
     reportedDraft = draft;
+    lastReportOpId = opId;
     if (reportFailure != null) throw reportFailure!;
     return reportResult;
   }
@@ -89,6 +92,7 @@ class FakeIssuePhotoStorage implements IssuePhotoStorage {
   var uploadAttempts = 0;
   String uploadedPath = 'user-id/farm-id/task-id/issue.jpg';
   String? deletedPath;
+  String? lastUploadTaskId;
 
   @override
   Future<String> upload({
@@ -99,6 +103,7 @@ class FakeIssuePhotoStorage implements IssuePhotoStorage {
   }) async {
     events.add('upload-photo');
     uploadAttempts++;
+    lastUploadTaskId = taskId;
     if (uploadFailure != null) throw uploadFailure!;
     return uploadedPath;
   }

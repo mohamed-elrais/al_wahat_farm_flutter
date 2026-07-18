@@ -1,10 +1,13 @@
+import 'package:al_wahat_farm_flutter/core/app_services.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
 import 'package:al_wahat_farm_flutter/features/farm/presentation/farm_hierarchy_gate.dart';
 import 'package:al_wahat_farm_flutter/features/issues/data/issue_photo_service.dart';
+import 'package:al_wahat_farm_flutter/features/issues/data/offline_issue_queue.dart';
 import 'package:al_wahat_farm_flutter/features/issues/data/tree_issue_repository.dart';
+import 'package:al_wahat_farm_flutter/features/sync/presentation/sync_scope.dart';
 import 'package:al_wahat_farm_flutter/features/issues/domain/issue_photo.dart';
 import 'package:al_wahat_farm_flutter/features/issues/domain/tree_issue_draft.dart';
 import 'package:al_wahat_farm_flutter/features/issues/presentation/issue_report_controller.dart';
@@ -55,6 +58,15 @@ class _IssueReportScreenState extends State<IssueReportScreen> {
     final userId = Supabase.instance.client.auth.currentUser?.id;
     if (tree?.farmId == null || userId == null) return;
     final client = Supabase.instance.client;
+    final services = AppServicesScope.maybeOf(context);
+    final syncEngine = SyncScope.maybeOf(context);
+    final offlineQueue = (services != null && syncEngine != null)
+        ? OutboxIssueQueue(
+            outbox: services.outbox,
+            pendingPhotos: services.pendingPhotos,
+            syncEngine: syncEngine,
+          )
+        : null;
     _ownsController = true;
     _controller = IssueReportController(
       repository: SupabaseTreeIssueRepository(client),
@@ -63,6 +75,8 @@ class _IssueReportScreenState extends State<IssueReportScreen> {
       userId: userId,
       farmId: tree!.farmId!,
       treeId: tree.id,
+      connectivity: services?.connectivity,
+      offlineQueue: offlineQueue,
     );
   }
 

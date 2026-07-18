@@ -1890,6 +1890,12 @@ abstract class AppLocalizations {
   /// **'Issue reported and engineer review task created.'**
   String get issueMsgReported;
 
+  /// No description provided for @issueMsgReportedOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Issue saved offline. It will be reported to the farm when you\'re back online.'**
+  String get issueMsgReportedOffline;
+
   /// No description provided for @issueErrReport.
   ///
   /// In en, this message translates to:

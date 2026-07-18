@@ -91,4 +91,23 @@ class TreeIssueDraft {
         'p_description': description,
         'p_photo_storage_path': photoStoragePath,
       };
+
+  /// Round-trippable serialization used to carry a queued offline report in the
+  /// outbox payload (distinct from [toRpcParameters]). Kept in sync with
+  /// [TreeIssueDraft.fromJson].
+  Map<String, Object?> toJson() => <String, Object?>{
+        'tree_id': treeId,
+        'issue_type': type.wireValue,
+        'severity': severity.name,
+        'description': description,
+        'photo_storage_path': photoStoragePath,
+      };
+
+  factory TreeIssueDraft.fromJson(Map<String, Object?> json) => TreeIssueDraft(
+        treeId: json['tree_id']! as String,
+        type: TreeIssueType.fromJson(json['issue_type']! as String),
+        severity: IssueSeverity.fromJson(json['severity']! as String),
+        description: json['description'] as String?,
+        photoStoragePath: json['photo_storage_path'] as String?,
+      );
 }

@@ -11,7 +11,11 @@ class ReportedTreeIssue {
 
 abstract interface class TreeIssueRepository {
   Future<List<TreeIssue>> listForFarm(String farmId);
-  Future<ReportedTreeIssue> report(TreeIssueDraft draft);
+
+  /// Reports a tree issue (creates the issue and its linked task). [opId] is
+  /// sent as `p_op_id` for duplicate-safe replay and is supplied only when the
+  /// report is replayed from the offline outbox; direct (online) calls omit it.
+  Future<ReportedTreeIssue> report(TreeIssueDraft draft, {String? opId});
   Future<String> addPhoto({
     required String issueId,
     required String storagePath,
@@ -44,16 +48,15 @@ class SupabaseTreeIssueRepository implements TreeIssueRepository {
   }
 
   @override
-  Future<ReportedTreeIssue> report(TreeIssueDraft draft) async {
+  Future<ReportedTreeIssue> report(TreeIssueDraft draft, {String? opId}) async {
     final validation = draft.validate();
     if (validation != null) {
       throw OperationFailure(OperationFailureKind.invalidInput, validation);
     }
     try {
-      final Object? result = await _client.rpc(
-        reportRpc,
-        params: draft.toRpcParameters(),
-      );
+      final params = Map<String, Object?>.of(draft.toRpcParameters());
+      if (opId != null) params['p_op_id'] = opId;
+      final Object? result = await _client.rpc(reportRpc, params: params);
       final rows = result! as List<Object?>;
       if (rows.isEmpty) {
         throw const FormatException('Issue RPC returned no result');

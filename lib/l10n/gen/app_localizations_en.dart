@@ -997,6 +997,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Issue reported and engineer review task created.';
 
   @override
+  String get issueMsgReportedOffline =>
+      'Issue saved offline. It will be reported to the farm when you\'re back online.';
+
+  @override
   String get issueErrReport =>
       'The issue could not be reported. Check your connection.';
 
