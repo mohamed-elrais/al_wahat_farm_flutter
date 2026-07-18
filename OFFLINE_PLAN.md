@@ -91,6 +91,10 @@ unique index is the mechanism; the exact SQL is authored and verified (pgTAP) in
 Supabase repo. **This Flutter repo cannot deploy it** — the plan flags it as an external
 dependency and gates offline-write release on its deployment.
 
+The full backend brief (schema, per-RPC algorithm, concurrency/backward-compat rules, and
+verification checklist) is in **`SUPABASE_OFFLINE_IDEMPOTENCY.md`** — hand that to the
+Supabase work. O2/O3 flip on sending `p_op_id` once it is deployed.
+
 ---
 
 ## 4. Optimistic UI & temp-id reconciliation
