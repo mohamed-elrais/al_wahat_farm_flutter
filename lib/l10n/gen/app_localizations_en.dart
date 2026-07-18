@@ -202,6 +202,46 @@ class AppLocalizationsEn extends AppLocalizations {
   String get logout => 'Log out';
 
   @override
+  String get syncTitle => 'Sync';
+
+  @override
+  String get syncStatusAllSynced => 'All changes are synced';
+
+  @override
+  String syncStatusPending(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count changes waiting to sync',
+      one: '1 change waiting to sync',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String syncStatusFailed(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count changes failed to sync',
+      one: '1 change failed to sync',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get syncSyncing => 'Syncing…';
+
+  @override
+  String get syncNow => 'Sync now';
+
+  @override
+  String get syncRetryFailed => 'Retry failed changes';
+
+  @override
+  String get syncPendingBadge => 'Pending sync';
+
+  @override
   String get gateAccessUnavailableTitle => 'Farm access unavailable';
 
   @override

@@ -240,6 +240,12 @@ upload to the private bucket at the exact `{uid}/{farm}/{task}/file` path, then 
   failure policy; server-wins reconciliation. Gate: worker/role and conflict tests pass.
 - **O4 — Sync UX + hardening**: per-item badges, global sync center, Sync-now, failed-ops
   screen, l10n (en+ar), logout wipe, accessibility. Gate: fidelity + privacy + a11y checks.
+  - Partial ✅ (2026-07-18): `SyncEngine` now exposes reactive pending/failed counts +
+    `isSyncing` + last-synced (refreshed on enqueue and each sync); a `SyncScope`
+    (`InheritedNotifier`) provides it to the shell; the More screen has a **sync center**
+    (status line, **Sync now**, **Retry failed changes**) in en + ar. Logout already wipes
+    the outbox (O1). Remaining O4: per-task-item pending/failed badges, a dedicated
+    failed-ops review screen, and the Phase-8 a11y/fidelity certification of these.
 
 ---
 

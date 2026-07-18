@@ -37,8 +37,24 @@ class SyncEngine extends ChangeNotifier {
 
   bool _running = false;
   bool _started = false;
+  int _pendingCount = 0;
+  int _failedCount = 0;
+  int? _lastSyncedAtMillis;
 
   bool get isSyncing => _running;
+  int get pendingCount => _pendingCount;
+  int get failedCount => _failedCount;
+
+  /// Epoch millis of the last fully-drained sync, or null if never.
+  int? get lastSyncedAtMillis => _lastSyncedAtMillis;
+
+  /// Re-reads the queue sizes and notifies listeners (used after an enqueue so
+  /// badges update immediately, even while offline).
+  Future<void> refresh() async {
+    _pendingCount = await _outbox.pendingCount();
+    _failedCount = await _outbox.failedCount();
+    notifyListeners();
+  }
 
   /// Begin reacting to connectivity: sync whenever the device comes back online.
   void start() {
@@ -54,7 +70,10 @@ class SyncEngine extends ChangeNotifier {
 
   Future<SyncOutcome> sync() async {
     if (_running) return SyncOutcome.alreadyRunning;
-    if (_connectivity.isOffline) return SyncOutcome.offline;
+    if (_connectivity.isOffline) {
+      await refresh();
+      return SyncOutcome.offline;
+    }
     _running = true;
     notifyListeners();
     var hadFailures = false;
@@ -102,6 +121,9 @@ class SyncEngine extends ChangeNotifier {
           data: <String, Object?>{'error': error.runtimeType});
     } finally {
       _running = false;
+      _lastSyncedAtMillis = DateTime.now().millisecondsSinceEpoch;
+      _pendingCount = await _outbox.pendingCount();
+      _failedCount = await _outbox.failedCount();
       notifyListeners();
     }
     if (deferred) return SyncOutcome.deferred;

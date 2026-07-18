@@ -202,6 +202,46 @@ class AppLocalizationsAr extends AppLocalizations {
   String get logout => 'تسجيل الخروج';
 
   @override
+  String get syncTitle => 'المزامنة';
+
+  @override
+  String get syncStatusAllSynced => 'تمت مزامنة جميع التغييرات';
+
+  @override
+  String syncStatusPending(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count تغييرات بانتظار المزامنة',
+      one: 'تغيير واحد بانتظار المزامنة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String syncStatusFailed(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'فشلت مزامنة $count تغييرات',
+      one: 'فشلت مزامنة تغيير واحد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get syncSyncing => 'جارٍ المزامنة…';
+
+  @override
+  String get syncNow => 'المزامنة الآن';
+
+  @override
+  String get syncRetryFailed => 'إعادة محاولة التغييرات الفاشلة';
+
+  @override
+  String get syncPendingBadge => 'بانتظار المزامنة';
+
+  @override
   String get gateAccessUnavailableTitle => 'الوصول إلى المزرعة غير متاح';
 
   @override

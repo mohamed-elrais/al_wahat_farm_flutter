@@ -72,6 +72,17 @@
   "syncDefaultSubtitle": "يتم تحديث بيانات العمليات من Supabase",
   "logout": "تسجيل الخروج",
 
+  "syncTitle": "المزامنة",
+  "syncStatusAllSynced": "تمت مزامنة جميع التغييرات",
+  "syncStatusPending": "{count, plural, =1{تغيير واحد بانتظار المزامنة} other{{count} تغييرات بانتظار المزامنة}}",
+  "@syncStatusPending": { "placeholders": { "count": { "type": "int" } } },
+  "syncStatusFailed": "{count, plural, =1{فشلت مزامنة تغيير واحد} other{فشلت مزامنة {count} تغييرات}}",
+  "@syncStatusFailed": { "placeholders": { "count": { "type": "int" } } },
+  "syncSyncing": "جارٍ المزامنة…",
+  "syncNow": "المزامنة الآن",
+  "syncRetryFailed": "إعادة محاولة التغييرات الفاشلة",
+  "syncPendingBadge": "بانتظار المزامنة",
+
   "gateAccessUnavailableTitle": "الوصول إلى المزرعة غير متاح",
   "gateProfileMissing": "لم يتم إعداد ملف حسابك الشخصي.",
   "gateProfileInactive": "حسابك غير نشط.",

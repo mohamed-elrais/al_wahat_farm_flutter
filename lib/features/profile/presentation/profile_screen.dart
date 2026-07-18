@@ -8,6 +8,7 @@ import 'package:al_wahat_farm_flutter/core/supabase/auth_repository.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
 import 'package:al_wahat_farm_flutter/features/auth/presentation/authenticated_gate.dart';
+import 'package:al_wahat_farm_flutter/features/sync/presentation/sync_scope.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -58,6 +59,7 @@ class ProfileScreen extends StatelessWidget {
                   const Divider(height: 32),
                 ],
                 _SyncStatusTile(connectivity: services?.connectivity),
+                const _SyncCenter(),
                 const SizedBox(height: 8),
                 OutlinedButton.icon(
                   key: const Key('logout-button'),
@@ -146,6 +148,76 @@ class _LanguageChip extends StatelessWidget {
         selected: selected,
         onSelected: (_) => onSelected(),
       );
+}
+
+class _SyncCenter extends StatelessWidget {
+  const _SyncCenter();
+
+  @override
+  Widget build(BuildContext context) {
+    final engine = SyncScope.maybeOf(context);
+    if (engine == null) return const SizedBox.shrink();
+    final l10n = context.l10n;
+    final pending = engine.pendingCount;
+    final failed = engine.failedCount;
+    final syncing = engine.isSyncing;
+
+    final (IconData icon, Color color, String text) = syncing
+        ? (Icons.sync, AppColors.green, l10n.syncSyncing)
+        : failed > 0
+            ? (
+                Icons.error_outline,
+                AppColors.issue,
+                l10n.syncStatusFailed(failed)
+              )
+            : pending > 0
+                ? (
+                    Icons.cloud_upload_outlined,
+                    AppColors.orange,
+                    l10n.syncStatusPending(pending)
+                  )
+                : (
+                    Icons.cloud_done_outlined,
+                    AppColors.green,
+                    l10n.syncStatusAllSynced
+                  );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        const Divider(height: 32),
+        Semantics(
+          label: text,
+          child: ListTile(
+            key: const Key('sync-center-tile'),
+            contentPadding: EdgeInsets.zero,
+            leading: Icon(icon, color: color),
+            title: Text(l10n.syncTitle),
+            subtitle: Text(text),
+          ),
+        ),
+        if (pending > 0 || failed > 0 || syncing)
+          Wrap(
+            spacing: 8,
+            children: <Widget>[
+              OutlinedButton.icon(
+                key: const Key('sync-now-button'),
+                onPressed: syncing ? null : () => engine.sync(),
+                icon: const Icon(Icons.sync, size: 18),
+                label: Text(l10n.syncNow),
+              ),
+              if (failed > 0)
+                OutlinedButton.icon(
+                  key: const Key('sync-retry-failed-button'),
+                  onPressed: syncing ? null : () => engine.retryFailed(),
+                  icon: const Icon(Icons.refresh, size: 18),
+                  label: Text(l10n.syncRetryFailed),
+                ),
+            ],
+          ),
+      ],
+    );
+  }
 }
 
 class _SyncStatusTile extends StatelessWidget {

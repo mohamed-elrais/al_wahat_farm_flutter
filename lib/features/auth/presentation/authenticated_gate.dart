@@ -8,6 +8,7 @@ import 'package:al_wahat_farm_flutter/features/auth/domain/operational_context.d
 import 'package:al_wahat_farm_flutter/features/auth/presentation/auth_bootstrap_controller.dart';
 import 'package:al_wahat_farm_flutter/features/farm/presentation/farm_hierarchy_gate.dart';
 import 'package:al_wahat_farm_flutter/features/sync/domain/sync_engine.dart';
+import 'package:al_wahat_farm_flutter/features/sync/presentation/sync_scope.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/data/caching_task_repository.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/data/offline_task_repository.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/data/task_mutation_executor.dart';
@@ -120,7 +121,9 @@ class _AuthenticatedGateState extends State<AuthenticatedGate> {
                 farmId: context.selectedMembership.farm.id,
                 repository: _taskRepository ??
                     SupabaseTaskRepository(Supabase.instance.client),
-                child: widget.child,
+                child: _syncEngine == null
+                    ? widget.child
+                    : SyncScope(engine: _syncEngine!, child: widget.child),
               ),
             ),
           ),

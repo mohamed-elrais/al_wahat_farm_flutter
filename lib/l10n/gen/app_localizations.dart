@@ -468,6 +468,54 @@ abstract class AppLocalizations {
   /// **'Log out'**
   String get logout;
 
+  /// No description provided for @syncTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync'**
+  String get syncTitle;
+
+  /// No description provided for @syncStatusAllSynced.
+  ///
+  /// In en, this message translates to:
+  /// **'All changes are synced'**
+  String get syncStatusAllSynced;
+
+  /// No description provided for @syncStatusPending.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 change waiting to sync} other{{count} changes waiting to sync}}'**
+  String syncStatusPending(int count);
+
+  /// No description provided for @syncStatusFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 change failed to sync} other{{count} changes failed to sync}}'**
+  String syncStatusFailed(int count);
+
+  /// No description provided for @syncSyncing.
+  ///
+  /// In en, this message translates to:
+  /// **'Syncing…'**
+  String get syncSyncing;
+
+  /// No description provided for @syncNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync now'**
+  String get syncNow;
+
+  /// No description provided for @syncRetryFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry failed changes'**
+  String get syncRetryFailed;
+
+  /// No description provided for @syncPendingBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending sync'**
+  String get syncPendingBadge;
+
   /// No description provided for @gateAccessUnavailableTitle.
   ///
   /// In en, this message translates to:

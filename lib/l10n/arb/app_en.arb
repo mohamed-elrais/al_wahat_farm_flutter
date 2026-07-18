@@ -72,6 +72,17 @@
   "syncDefaultSubtitle": "Operational reads refresh from Supabase",
   "logout": "Log out",
 
+  "syncTitle": "Sync",
+  "syncStatusAllSynced": "All changes are synced",
+  "syncStatusPending": "{count, plural, =1{1 change waiting to sync} other{{count} changes waiting to sync}}",
+  "@syncStatusPending": { "placeholders": { "count": { "type": "int" } } },
+  "syncStatusFailed": "{count, plural, =1{1 change failed to sync} other{{count} changes failed to sync}}",
+  "@syncStatusFailed": { "placeholders": { "count": { "type": "int" } } },
+  "syncSyncing": "Syncing…",
+  "syncNow": "Sync now",
+  "syncRetryFailed": "Retry failed changes",
+  "syncPendingBadge": "Pending sync",
+
   "gateAccessUnavailableTitle": "Farm access unavailable",
   "gateProfileMissing": "Your account profile has not been provisioned.",
   "gateProfileInactive": "Your account is inactive.",
