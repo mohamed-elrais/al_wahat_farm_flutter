@@ -116,6 +116,57 @@ class TaskDraft {
     return null;
   }
 
+  /// Round-trippable serialization used to carry a queued offline creation in
+  /// the outbox payload (distinct from [toRpcParameters], which is the backend
+  /// wire shape). Kept in sync with [TaskDraft.fromJson].
+  Map<String, Object?> toJson() => <String, Object?>{
+        'farm_id': farmId,
+        'task_type': type.wireValue,
+        'title': title,
+        'description': description,
+        'section_id': sectionId,
+        'irrigation_zone_id': irrigationZoneId,
+        'tree_id': treeId,
+        'scheduled_for': scheduledFor?.toIso8601String(),
+        'planned_start_time': plannedStartTime,
+        'planned_duration_minutes': plannedDurationMinutes,
+        'due_at': dueAt?.toIso8601String(),
+        'priority': priority.name,
+        'instructions': instructions,
+        'requires_engineer_review': requiresEngineerReview,
+        'related_tree_issue_id': relatedTreeIssueId,
+        'assignee_profile_ids': assigneeProfileIds,
+      };
+
+  factory TaskDraft.fromJson(Map<String, Object?> json) => TaskDraft(
+        farmId: json['farm_id']! as String,
+        type: TaskType.fromJson(json['task_type']! as String),
+        title: json['title']! as String,
+        description: json['description'] as String?,
+        sectionId: json['section_id'] as String?,
+        irrigationZoneId: json['irrigation_zone_id'] as String?,
+        treeId: json['tree_id'] as String?,
+        scheduledFor: json['scheduled_for'] == null
+            ? null
+            : DateTime.parse(json['scheduled_for']! as String),
+        plannedStartTime: json['planned_start_time'] as String?,
+        plannedDurationMinutes:
+            (json['planned_duration_minutes'] as num?)?.toInt(),
+        dueAt: json['due_at'] == null
+            ? null
+            : DateTime.parse(json['due_at']! as String),
+        priority: TaskPriority.fromJson(json['priority']! as String),
+        instructions: Map<String, Object?>.from(
+          json['instructions'] as Map? ?? const <String, Object?>{},
+        ),
+        requiresEngineerReview:
+            (json['requires_engineer_review'] as bool?) ?? false,
+        relatedTreeIssueId: json['related_tree_issue_id'] as String?,
+        assigneeProfileIds: ((json['assignee_profile_ids'] as List<Object?>?) ??
+                const <Object?>[])
+            .cast<String>(),
+      );
+
   Map<String, Object?> toRpcParameters() => <String, Object?>{
         'p_farm_id': farmId,
         'p_task_type': type.wireValue,

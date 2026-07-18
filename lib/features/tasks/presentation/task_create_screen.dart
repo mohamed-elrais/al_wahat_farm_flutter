@@ -515,6 +515,10 @@ class _TaskCreateScreenState extends State<TaskCreateScreen> {
     final callback = widget.onCreated;
     if (callback != null) {
       callback(taskId);
+    } else if (taskId.startsWith(localTaskIdPrefix)) {
+      // Queued offline: there is no server detail to open yet — return to the
+      // list, where the task shows as pending sync.
+      context.go('/tasks');
     } else {
       context.go('/tasks/$taskId');
     }

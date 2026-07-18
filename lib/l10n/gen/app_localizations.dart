@@ -1560,11 +1560,29 @@ abstract class AppLocalizations {
   /// **'Task created and assigned.'**
   String get msgTaskCreated;
 
+  /// No description provided for @msgTaskCreatedOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Task saved offline. It will be created on the farm when you\'re back online.'**
+  String get msgTaskCreatedOffline;
+
   /// No description provided for @errTaskCreate.
   ///
   /// In en, this message translates to:
   /// **'The task could not be created.'**
   String get errTaskCreate;
+
+  /// No description provided for @taskPendingSyncBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending sync'**
+  String get taskPendingSyncBadge;
+
+  /// No description provided for @taskPendingSyncOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'This task opens once it syncs to the farm.'**
+  String get taskPendingSyncOpen;
 
   /// No description provided for @reviewTaskEyebrow.
   ///

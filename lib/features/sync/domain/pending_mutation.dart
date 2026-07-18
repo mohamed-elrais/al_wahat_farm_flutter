@@ -5,13 +5,15 @@ enum PendingMutationKind {
   startTask,
   completeTask,
   setAssignments,
-  addTaskPhoto;
+  addTaskPhoto,
+  createTask;
 
   factory PendingMutationKind.fromWire(String value) => switch (value) {
         'start_task' => startTask,
         'complete_task' => completeTask,
         'set_assignments' => setAssignments,
         'add_task_photo' => addTaskPhoto,
+        'create_task' => createTask,
         _ => throw FormatException('Unknown mutation kind: $value'),
       };
 
@@ -20,6 +22,7 @@ enum PendingMutationKind {
         completeTask => 'complete_task',
         setAssignments => 'set_assignments',
         addTaskPhoto => 'add_task_photo',
+        createTask => 'create_task',
       };
 }
 

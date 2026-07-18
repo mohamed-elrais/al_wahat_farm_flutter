@@ -67,6 +67,7 @@ class _AuthenticatedGateState extends State<AuthenticatedGate> {
           caching,
           evidenceStorage: SupabaseTaskEvidenceStorage(client),
           pendingPhotos: services.pendingPhotos,
+          cache: store,
         ),
         connectivity: services.connectivity,
       )..start();

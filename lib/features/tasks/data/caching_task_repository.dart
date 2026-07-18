@@ -102,7 +102,8 @@ class CachingTaskRepository implements TaskRepository {
       _inner.listAssignableMembers(farmId);
 
   @override
-  Future<String> create(TaskDraft draft) => _inner.create(draft);
+  Future<String> create(TaskDraft draft, {String? opId}) =>
+      _inner.create(draft, opId: opId);
 
   @override
   Future<void> setAssignments(String taskId, List<String> profileIds) =>

@@ -8,7 +8,12 @@ abstract interface class TaskRepository {
   Future<List<FarmTask>> listForFarm(String farmId);
   Future<TaskDetails> loadDetails(String taskId);
   Future<List<TaskAssignee>> listAssignableMembers(String farmId);
-  Future<String> create(TaskDraft draft);
+
+  /// Creates a task. [opId] is a client op id sent as `p_op_id` for
+  /// duplicate-safe replay; it is supplied only when the creation is replayed
+  /// from the offline outbox. Direct (online) calls omit it, so they keep
+  /// working against a backend that predates the op-id migration.
+  Future<String> create(TaskDraft draft, {String? opId});
   Future<void> setAssignments(String taskId, List<String> profileIds);
   Future<void> start(String taskId, {String? note});
   Future<void> complete(
@@ -123,7 +128,7 @@ class SupabaseTaskRepository implements TaskRepository {
       });
 
   @override
-  Future<String> create(TaskDraft draft) {
+  Future<String> create(TaskDraft draft, {String? opId}) {
     final validation = draft.validate();
     if (validation != null) {
       return Future<String>.error(
@@ -131,10 +136,9 @@ class SupabaseTaskRepository implements TaskRepository {
       );
     }
     return _guard(() async {
-      final Object? result = await _client.rpc(
-        createRpc,
-        params: draft.toRpcParameters(),
-      );
+      final params = Map<String, Object?>.of(draft.toRpcParameters());
+      if (opId != null) params['p_op_id'] = opId;
+      final Object? result = await _client.rpc(createRpc, params: params);
       return result! as String;
     });
   }

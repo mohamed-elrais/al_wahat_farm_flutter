@@ -1,25 +1,34 @@
+import 'dart:convert';
+
+import 'package:al_wahat_farm_flutter/core/cache/local_cache_store.dart';
 import 'package:al_wahat_farm_flutter/features/sync/data/pending_photo_store.dart';
 import 'package:al_wahat_farm_flutter/features/sync/domain/mutation_executor.dart';
 import 'package:al_wahat_farm_flutter/features/sync/domain/pending_mutation.dart';
+import 'package:al_wahat_farm_flutter/features/tasks/data/caching_task_repository.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/data/task_repository.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/farm_task.dart';
+import 'package:al_wahat_farm_flutter/features/tasks/domain/task_draft.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/task_evidence.dart';
 
 /// Replays queued task mutations against the backend. Given the caching task
 /// repository, a successful replay also refreshes the cached detail so the UI
 /// converges to server truth after sync. Photo ops additionally need the
-/// evidence storage and the pending-photo blob store.
+/// evidence storage and the pending-photo blob store; create ops use the cache
+/// store to drop the provisional list row once the real task exists.
 class TaskMutationExecutor implements MutationExecutor {
   const TaskMutationExecutor(
     this._repository, {
     TaskEvidenceStorage? evidenceStorage,
     PendingPhotoStore? pendingPhotos,
+    LocalCacheStore? cache,
   })  : _evidenceStorage = evidenceStorage,
-        _pendingPhotos = pendingPhotos;
+        _pendingPhotos = pendingPhotos,
+        _cache = cache;
 
   final TaskRepository _repository;
   final TaskEvidenceStorage? _evidenceStorage;
   final PendingPhotoStore? _pendingPhotos;
+  final LocalCacheStore? _cache;
 
   @override
   Future<void> execute(PendingMutation mutation) async {
@@ -44,8 +53,44 @@ class TaskMutationExecutor implements MutationExecutor {
       case PendingMutationKind.addTaskPhoto:
         await _executePhoto(mutation);
         return; // _executePhoto refreshes the cache itself
+      case PendingMutationKind.createTask:
+        await _executeCreate(mutation);
+        return; // _executeCreate reconciles the list cache itself
     }
     await _refresh(mutation.payload['taskId']! as String);
+  }
+
+  /// Replays an offline task creation: sends the draft with the outbox op id as
+  /// `p_op_id` (duplicate-safe), then reconciles the cached list by dropping the
+  /// provisional `local:` row and re-pulling server truth.
+  Future<void> _executeCreate(PendingMutation mutation) async {
+    final draft = TaskDraft.fromJson(
+      Map<String, Object?>.from(mutation.payload['draft']! as Map),
+    );
+    await _repository.create(draft, opId: mutation.opId);
+    await _dropProvisional(draft.farmId, '$localTaskIdPrefix${mutation.opId}');
+    try {
+      await _repository.listForFarm(draft.farmId);
+    } catch (_) {
+      // A refresh failure is non-transactional; the task already exists on the
+      // server and the provisional row has been removed.
+    }
+  }
+
+  Future<void> _dropProvisional(String farmId, String tempId) async {
+    final cache = _cache;
+    if (cache == null) return;
+    final key = CachingTaskRepository.listKeyFor(farmId);
+    final raw = await cache.read(key);
+    if (raw == null) return;
+    try {
+      final rows = (jsonDecode(raw) as List<Object?>)
+          .where((row) => (row! as Map)['id'] != tempId)
+          .toList(growable: false);
+      await cache.write(key, jsonEncode(rows));
+    } catch (_) {
+      // Corrupt cache is dropped on the next successful list refresh.
+    }
   }
 
   Future<void> _executePhoto(PendingMutation mutation) async {

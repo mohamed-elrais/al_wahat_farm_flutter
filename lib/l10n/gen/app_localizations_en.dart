@@ -803,7 +803,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get msgTaskCreated => 'Task created and assigned.';
 
   @override
+  String get msgTaskCreatedOffline =>
+      'Task saved offline. It will be created on the farm when you\'re back online.';
+
+  @override
   String get errTaskCreate => 'The task could not be created.';
+
+  @override
+  String get taskPendingSyncBadge => 'Pending sync';
+
+  @override
+  String get taskPendingSyncOpen =>
+      'This task opens once it syncs to the farm.';
 
   @override
   String get reviewTaskEyebrow => 'Review task';

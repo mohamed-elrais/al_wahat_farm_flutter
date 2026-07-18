@@ -799,7 +799,17 @@ class AppLocalizationsAr extends AppLocalizations {
   String get msgTaskCreated => 'تم إنشاء المهمة وإسنادها.';
 
   @override
+  String get msgTaskCreatedOffline =>
+      'تم حفظ المهمة دون اتصال. سيتم إنشاؤها في المزرعة عند عودة الاتصال بالإنترنت.';
+
+  @override
   String get errTaskCreate => 'تعذّر إنشاء المهمة.';
+
+  @override
+  String get taskPendingSyncBadge => 'بانتظار المزامنة';
+
+  @override
+  String get taskPendingSyncOpen => 'تُفتح هذه المهمة بعد مزامنتها مع المزرعة.';
 
   @override
   String get reviewTaskEyebrow => 'مراجعة المهمة';

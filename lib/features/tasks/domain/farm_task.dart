@@ -1,5 +1,11 @@
 import 'package:al_wahat_farm_flutter/features/tasks/domain/task_draft.dart';
 
+/// Prefix of the temporary client id given to a task created while offline,
+/// before it has synced and received its real server id. The suffix is the
+/// outbox op id, so the provisional row and its queued `create_task` mutation
+/// share one identity.
+const String localTaskIdPrefix = 'local:';
+
 enum TaskStatus {
   draft,
   assigned,
@@ -216,6 +222,11 @@ class FarmTask {
   final String? cancellationReason;
   final DateTime createdAt;
   final DateTime updatedAt;
+
+  /// True while this is a provisional row for a task created offline that has
+  /// not yet synced (its [id] is still the local temp id). Such tasks are shown
+  /// read-only until the queued creation replays and returns the real id.
+  bool get isPendingSync => id.startsWith(localTaskIdPrefix);
 
   factory FarmTask.fromJson(Map<String, Object?> json) => FarmTask(
         id: json['id']! as String,

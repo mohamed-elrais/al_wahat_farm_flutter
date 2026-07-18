@@ -1,5 +1,6 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_theme.dart';
 import 'package:al_wahat_farm_flutter/features/farm/domain/farm_hierarchy.dart';
+import 'package:al_wahat_farm_flutter/features/tasks/domain/farm_task.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/task_draft.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_workspace_controller.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/presentation/tasks_screen.dart';
@@ -51,6 +52,57 @@ void main() {
     expect(opened, taskId);
     await tester.tap(find.byKey(const Key('create-task-button')));
     expect(createTapped, isTrue);
+  });
+
+  testWidgets('a task pending sync shows the badge and is not openable',
+      (tester) async {
+    final store = InMemoryTaskStore();
+    final createdAt = DateTime(2026, 7, 13);
+    store.tasks['${localTaskIdPrefix}op1'] = FarmTask(
+      id: '${localTaskIdPrefix}op1',
+      farmId: 'farm-id',
+      type: TaskType.irrigation,
+      title: 'Queued offline task',
+      priority: TaskPriority.medium,
+      status: TaskStatus.assigned,
+      instructions: const <String, Object?>{},
+      requiresEngineerReview: false,
+      createdByProfileId: '',
+      createdAt: createdAt,
+      updatedAt: createdAt,
+      scheduledFor: createdAt,
+    );
+    final workspace = TaskWorkspaceController(
+      repository: _manager(store),
+      farmId: 'farm-id',
+    );
+    addTearDown(workspace.dispose);
+    await workspace.load();
+    var openedCount = 0;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: Scaffold(
+          body: TasksScreen(
+            controller: workspace,
+            role: FarmRole.owner,
+            hierarchy: _hierarchy,
+            now: () => createdAt,
+            onOpenTask: (_) => openedCount++,
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('Queued offline task'), findsOneWidget);
+    expect(find.byKey(const Key('task-pending-sync-badge')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('task-${localTaskIdPrefix}op1')));
+    await tester.pump();
+    expect(openedCount, 0); // pending tasks do not navigate
+    expect(find.text('This task opens once it syncs to the farm.'),
+        findsOneWidget);
   });
 
   testWidgets('worker does not see manager create action', (tester) async {

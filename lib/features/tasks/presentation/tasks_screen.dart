@@ -195,14 +195,20 @@ class _TasksScreenState extends State<TasksScreen> {
                 _TaskTile(
                   task: task,
                   hierarchy: hierarchy,
-                  onTap: () {
-                    final callback = widget.onOpenTask;
-                    if (callback != null) {
-                      callback(task.id);
-                    } else {
-                      context.go('/tasks/${task.id}');
-                    }
-                  },
+                  onTap: task.isPendingSync
+                      ? () => ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(context.l10n.taskPendingSyncOpen),
+                            ),
+                          )
+                      : () {
+                          final callback = widget.onOpenTask;
+                          if (callback != null) {
+                            callback(task.id);
+                          } else {
+                            context.go('/tasks/${task.id}');
+                          }
+                        },
                 ),
                 const SizedBox(height: 10),
               ],
@@ -262,6 +268,7 @@ class _TaskTile extends StatelessWidget {
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: <Widget>[
                           TaskStatusBadge(task.status),
+                          if (task.isPendingSync) const _PendingSyncBadge(),
                           Text(
                             task.priority.localizedLabel(context.l10n),
                             style: TextStyle(
@@ -277,9 +284,44 @@ class _TaskTile extends StatelessWidget {
                     ],
                   ),
                 ),
-                const Icon(Icons.chevron_right),
+                Icon(
+                  task.isPendingSync ? Icons.sync : Icons.chevron_right,
+                  color: task.isPendingSync ? AppColors.orange : null,
+                ),
               ],
             ),
+          ),
+        ),
+      );
+}
+
+class _PendingSyncBadge extends StatelessWidget {
+  const _PendingSyncBadge();
+
+  @override
+  Widget build(BuildContext context) => DecoratedBox(
+        key: const Key('task-pending-sync-badge'),
+        decoration: BoxDecoration(
+          color: AppColors.orange.withOpacity(0.12),
+          borderRadius: BorderRadius.circular(99),
+          border: Border.all(color: AppColors.orange.withOpacity(0.35)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              const Icon(Icons.sync, size: 12, color: AppColors.orange),
+              const SizedBox(width: 4),
+              Text(
+                context.l10n.taskPendingSyncBadge,
+                style: const TextStyle(
+                  color: AppColors.orange,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
           ),
         ),
       );

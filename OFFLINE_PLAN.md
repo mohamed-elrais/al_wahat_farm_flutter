@@ -246,6 +246,19 @@ upload to the private bucket at the exact `{uid}/{farm}/{task}/file` path, then 
   offline **create task** and **report issue** (with local photos). Depends on the backend
   idempotency migrations being deployed. Gate: full offline create→…→complete chain
   converges; replay-safe under lost-response simulation.
+  - Partial ✅ (2026-07-18) — **offline create task, read-only-until-synced**: creating a
+    task offline mints a `local:<opId>` temp id, writes a provisional row to the cached
+    list, and queues a `create_task` op. The row shows a **Pending sync** badge and is not
+    openable until it syncs. On reconnect the `TaskMutationExecutor` replays the draft with
+    the op id as `p_op_id` (duplicate-safe), drops the provisional row, and re-pulls server
+    truth. `TaskRepository.create` gained an optional `opId`; **it is sent only on outbox
+    replays** — direct (online) creates omit it, so they keep working before the migration
+    is deployed. Logout already wipes the outbox. `flutter test` 180 passed, 6 skipped.
+    - Deferred to the rest of O2/O3: the create→start/complete chain **before** first sync
+      (chosen "read-only until synced" to avoid temp→real op rewriting for now), offline
+      **report issue**, and offline **review** (O3). Also: a `create_task` that fails
+      *terminally* on replay currently leaves its provisional row in the list as a ghost —
+      cleaning that up belongs with the O4 failed-ops screen.
 - **O3 — Review offline + conflict handling**: `review_task` offline; conflict/terminal
   failure policy; server-wins reconciliation. Gate: worker/role and conflict tests pass.
 - **O4 — Sync UX + hardening**: per-item badges, global sync center, Sync-now, failed-ops

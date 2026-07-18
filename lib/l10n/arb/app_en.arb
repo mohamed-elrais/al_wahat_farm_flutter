@@ -281,7 +281,10 @@
   "createUnavailableRole": "Your farm role cannot create or assign tasks.",
   "createUnavailableWorkspace": "The farm task workspace is not ready.",
   "msgTaskCreated": "Task created and assigned.",
+  "msgTaskCreatedOffline": "Task saved offline. It will be created on the farm when you're back online.",
   "errTaskCreate": "The task could not be created.",
+  "taskPendingSyncBadge": "Pending sync",
+  "taskPendingSyncOpen": "This task opens once it syncs to the farm.",
 
   "reviewTaskEyebrow": "Review task",
   "reviewQueueEyebrow": "Engineer review",

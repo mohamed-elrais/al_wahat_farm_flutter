@@ -55,6 +55,7 @@ class FakeTaskRepository implements TaskRepository {
   Object? addPhotoFailureAfterCommit;
   int completeFailuresRemaining = 0;
   int createCalls = 0;
+  String? lastCreateOpId;
   int uploadRegistrations = 0;
 
   @override
@@ -96,13 +97,14 @@ class FakeTaskRepository implements TaskRepository {
   }
 
   @override
-  Future<String> create(TaskDraft draft) async {
+  Future<String> create(TaskDraft draft, {String? opId}) async {
     _requireManager();
     final validation = draft.validate();
     if (validation != null) {
       throw OperationFailure(OperationFailureKind.invalidInput, validation);
     }
     createCalls++;
+    lastCreateOpId = opId;
     final taskId = store.nextId('task');
     final createdAt = store.now;
     final task = FarmTask(

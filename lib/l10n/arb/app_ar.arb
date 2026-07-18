@@ -281,6 +281,9 @@
   "createUnavailableRole": "لا يسمح دورك في المزرعة بإنشاء المهام أو إسنادها.",
   "createUnavailableWorkspace": "مساحة عمل مهام المزرعة غير جاهزة.",
   "msgTaskCreated": "تم إنشاء المهمة وإسنادها.",
+  "msgTaskCreatedOffline": "تم حفظ المهمة دون اتصال. سيتم إنشاؤها في المزرعة عند عودة الاتصال بالإنترنت.",
+  "taskPendingSyncBadge": "بانتظار المزامنة",
+  "taskPendingSyncOpen": "تُفتح هذه المهمة بعد مزامنتها مع المزرعة.",
   "errTaskCreate": "تعذّر إنشاء المهمة.",
 
   "reviewTaskEyebrow": "مراجعة المهمة",

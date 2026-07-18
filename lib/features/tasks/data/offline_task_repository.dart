@@ -18,8 +18,11 @@ import 'package:uuid/uuid.dart';
 /// Makes the naturally-idempotent task transitions (start / complete /
 /// set-assignments) work offline: when there is no connectivity the mutation is
 /// queued in the outbox and the cached task detail is patched optimistically, so
-/// the worker sees the change immediately and it replays on reconnect. Reads and
-/// creation flow through the inner (caching) repository unchanged.
+/// the worker sees the change immediately and it replays on reconnect. Offline
+/// task creation is queued too — a provisional `local:` row is written to the
+/// cached list (shown read-only until it syncs) and a `create_task` op replays
+/// with its op id as `p_op_id` on reconnect. Reads flow through the inner
+/// (caching) repository unchanged.
 class OfflineTaskRepository implements TaskRepository {
   OfflineTaskRepository({
     required TaskRepository inner,
@@ -45,8 +48,8 @@ class OfflineTaskRepository implements TaskRepository {
   final Uuid _uuid;
   final int Function() _clock;
 
-  // Reads and creation are unchanged (offline reads come from the cache inside
-  // the inner repository; offline creation arrives in a later phase).
+  // Reads are unchanged (offline reads come from the cache inside the inner
+  // repository).
   @override
   Future<List<FarmTask>> listForFarm(String farmId) =>
       _inner.listForFarm(farmId);
@@ -59,7 +62,37 @@ class OfflineTaskRepository implements TaskRepository {
       _inner.listAssignableMembers(farmId);
 
   @override
-  Future<String> create(TaskDraft draft) => _inner.create(draft);
+  Future<String> create(TaskDraft draft, {String? opId}) async {
+    if (_connectivity.isOnline) {
+      try {
+        return await _inner.create(draft, opId: opId);
+      } on OperationFailure catch (error) {
+        // Only fall through to the queue when the failure is connectivity;
+        // authorization / validation must surface to the caller.
+        if (error.kind != OperationFailureKind.offline) rethrow;
+      }
+    }
+    // Offline: validate up front (there is no backend to reject it), mint a
+    // temp id sharing the outbox op id, show a provisional read-only row, and
+    // queue the creation for replay.
+    final validation = draft.validate();
+    if (validation != null) {
+      throw OperationFailure(OperationFailureKind.invalidInput, validation);
+    }
+    final op = _uuid.v4();
+    final tempId = '$localTaskIdPrefix$op';
+    await _writeProvisional(draft, tempId);
+    await _outbox.enqueue(
+      PendingMutation(
+        opId: op,
+        kind: PendingMutationKind.createTask,
+        payload: <String, Object?>{'draft': draft.toJson()},
+        createdAt: _clock(),
+      ),
+    );
+    unawaited(_syncEngine.sync());
+    return tempId;
+  }
 
   @override
   Future<String> addPhoto(TaskEvidenceRegistration registration) =>
@@ -140,6 +173,50 @@ class OfflineTaskRepository implements TaskRepository {
       await _patchCachedStatus(taskId, optimisticStatus);
     }
     unawaited(_syncEngine.sync()); // no-op while offline; drains when online
+  }
+
+  /// Inserts a provisional task at the front of the cached list so the offline
+  /// creation is visible immediately. The row carries the temp id and is shown
+  /// read-only until the queued creation replays and a refresh brings the real
+  /// task from the server.
+  Future<void> _writeProvisional(TaskDraft draft, String tempId) async {
+    final key = CachingTaskRepository.listKeyFor(draft.farmId);
+    final rows = <Object?>[];
+    final raw = await _cache.read(key);
+    if (raw != null) {
+      try {
+        rows.addAll(jsonDecode(raw) as List<Object?>);
+      } catch (_) {
+        rows.clear(); // corrupt cache: start fresh with just the provisional row
+      }
+    }
+    final now = DateTime.fromMillisecondsSinceEpoch(_clock());
+    final task = FarmTask(
+      id: tempId,
+      farmId: draft.farmId,
+      type: draft.type,
+      title: draft.title.trim(),
+      priority: draft.priority,
+      status: draft.assigneeProfileIds.isEmpty
+          ? TaskStatus.draft
+          : TaskStatus.assigned,
+      instructions: draft.instructions,
+      requiresEngineerReview: draft.requiresEngineerReview,
+      createdByProfileId: '',
+      createdAt: now,
+      updatedAt: now,
+      sectionId: draft.sectionId,
+      irrigationZoneId: draft.irrigationZoneId,
+      treeId: draft.treeId,
+      relatedTreeIssueId: draft.relatedTreeIssueId,
+      description: draft.description,
+      scheduledFor: draft.scheduledFor,
+      plannedStartTime: draft.plannedStartTime,
+      plannedDurationMinutes: draft.plannedDurationMinutes,
+      dueAt: draft.dueAt,
+    );
+    rows.insert(0, task.toJson());
+    await _cache.write(key, jsonEncode(rows));
   }
 
   /// Optimistically reflects a status change in the cached task detail so the

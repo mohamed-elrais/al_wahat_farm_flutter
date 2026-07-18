@@ -1,6 +1,7 @@
 import 'package:al_wahat_farm_flutter/core/errors/operation_failure.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/data/task_repository.dart';
+import 'package:al_wahat_farm_flutter/features/tasks/domain/farm_task.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/task_draft.dart';
 import 'package:flutter/foundation.dart';
 
@@ -45,7 +46,11 @@ class TaskCreateController extends ChangeNotifier {
         // creation failed.
       }
       _status = TaskCreateStatus.success;
-      _message = (l10n) => l10n.msgTaskCreated;
+      // A temp id means the creation was queued offline; tell the manager it
+      // will be created on the farm when connectivity returns.
+      _message = _taskId!.startsWith(localTaskIdPrefix)
+          ? ((l10n) => l10n.msgTaskCreatedOffline)
+          : ((l10n) => l10n.msgTaskCreated);
       notifyListeners();
       return _taskId;
     } catch (error) {
