@@ -2,14 +2,12 @@
   "@@locale": "en",
   "appTitle": "Al Wahat Farm Operations",
   "brandName": "Al Wahat",
-
   "navHome": "Home",
   "navMap": "Map",
   "navScan": "Scan",
   "navTasks": "Tasks",
   "navMore": "More",
   "notifications": "Notifications",
-
   "commonRetry": "Retry",
   "commonCancel": "Cancel",
   "commonSave": "Save",
@@ -17,19 +15,22 @@
   "commonBack": "Back",
   "commonLoading": "Loading…",
   "routeUnavailable": "Route unavailable: {path}",
-  "@routeUnavailable": { "placeholders": { "path": { "type": "String" } } },
+  "@routeUnavailable": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
   "commonCamera": "Camera",
   "commonGallery": "Gallery",
   "commonRemove": "Remove",
-
   "offlineBanner": "Offline · showing cached farm and task data",
   "offlineBannerSemantics": "You are offline. Showing cached farm and task data.",
-
   "languageLabel": "Language",
   "languageSystem": "System default",
   "languageEnglish": "English",
   "languageArabic": "العربية",
-
   "loginWelcomeTitle": "Welcome to\nAl Wahat.",
   "loginEyebrow": "Farm operations",
   "loginSignInTitle": "Sign in",
@@ -41,7 +42,6 @@
   "loginInvalidEmail": "Enter a valid email address",
   "loginInvalidPassword": "Password is required",
   "loginFailed": "Unable to sign in. Check your connection.",
-
   "homeDateEyebrow": "Sunday · 12 July",
   "homeHeroTitle": "Your farm.\nTree by tree.",
   "homeHeroLede": "Field operations grounded in every mapped tree and irrigation zone.",
@@ -56,13 +56,18 @@
   "homeNoTasksToday": "No tasks are scheduled for today.",
   "homeViewAllTasks": "View all tasks",
   "homeWorkspaceUnavailable": "Task workspace is unavailable.",
-
   "moreEyebrow": "Account and sync",
   "moreTitle": "More",
   "moreFarmMember": "Farm member",
   "moreRoleResolves": "Role resolves from active farm membership",
   "moreSignedInAs": "Signed in as {name}",
-  "@moreSignedInAs": { "placeholders": { "name": { "type": "String" } } },
+  "@moreSignedInAs": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "syncOnline": "Online",
   "syncOffline": "Offline",
   "syncOnlineSubtitle": "Online · operational reads refresh from Supabase",
@@ -71,19 +76,29 @@
   "syncStatusOfflineSemantics": "Sync status offline",
   "syncDefaultSubtitle": "Operational reads refresh from Supabase",
   "logout": "Log out",
-
   "syncTitle": "Sync",
   "syncStatusAllSynced": "All changes are synced",
   "syncStatusPending": "{count, plural, =1{1 change waiting to sync} other{{count} changes waiting to sync}}",
-  "@syncStatusPending": { "placeholders": { "count": { "type": "int" } } },
+  "@syncStatusPending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "syncStatusFailed": "{count, plural, =1{1 change failed to sync} other{{count} changes failed to sync}}",
-  "@syncStatusFailed": { "placeholders": { "count": { "type": "int" } } },
+  "@syncStatusFailed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "syncSyncing": "Syncing…",
   "syncNow": "Sync now",
   "syncRetryFailed": "Retry failed changes",
   "syncPendingBadge": "Pending sync",
   "syncReviewFailed": "Review failed changes",
-
   "failedOpsEyebrow": "Sync",
   "failedOpsTitle": "Failed changes",
   "failedOpsIntro": "These changes could not be synced to the farm. Retry them, or discard the ones you no longer need.",
@@ -102,7 +117,6 @@
   "failedOpsKindCreateTask": "Create task",
   "failedOpsKindReportIssue": "Report tree issue",
   "failedOpsKindReviewTask": "Review decision",
-
   "gateAccessUnavailableTitle": "Farm access unavailable",
   "gateProfileMissing": "Your account profile has not been provisioned.",
   "gateProfileInactive": "Your account is inactive.",
@@ -111,12 +125,10 @@
   "gateLoadFailedMessage": "Check your connection and try again.",
   "hierarchyFailedTitle": "Unable to load farm data",
   "hierarchyFailedMessage": "Check your connection and farm access, then try again.",
-
   "roleOwner": "Owner",
   "roleAgriculturalEngineer": "Agricultural engineer",
   "roleWorker": "Worker",
   "roleAccountant": "Accountant",
-
   "taskStatusDraft": "Draft",
   "taskStatusAssigned": "Assigned",
   "taskStatusInProgress": "In progress",
@@ -125,7 +137,6 @@
   "taskStatusApproved": "Approved",
   "taskStatusReturned": "Returned",
   "taskStatusCancelled": "Cancelled",
-
   "taskTypeIrrigation": "Irrigation",
   "taskTypeFertilization": "Fertilization",
   "taskTypeHarmfulWeedControl": "Harmful weed control",
@@ -135,12 +146,10 @@
   "taskTypeTreeInspection": "Tree inspection",
   "taskTypeEngineerReview": "Engineer review",
   "taskTypeGeneral": "General field work",
-
   "priorityLow": "Low",
   "priorityMedium": "Medium",
   "priorityHigh": "High",
   "priorityUrgent": "Urgent",
-
   "activityCreated": "Task created",
   "activityAssigned": "Assignments updated",
   "activityUnassigned": "Assignments cleared",
@@ -152,13 +161,11 @@
   "activityCommented": "Comment added",
   "activityCancelled": "Task cancelled",
   "activityPhotoAdded": "Evidence added",
-
   "photoTypeBefore": "Before work",
   "photoTypeAfter": "After work",
   "photoTypeEvidence": "Evidence",
   "photoTypeIssue": "Issue",
   "photoTypeReview": "Review",
-
   "issueTypeInsufficientIrrigation": "Insufficient irrigation",
   "issueTypeCloggedDripper": "Clogged dripper",
   "issueTypeLeakOrDripperDamage": "Leak or dripper damage",
@@ -166,20 +173,24 @@
   "issueTypePestOrDisease": "Pest or disease",
   "issueTypeTreeDamage": "Tree damage",
   "issueTypeOther": "Other",
-
   "reviewDecisionApproved": "Approved",
   "reviewDecisionReturned": "Returned for correction",
   "reviewDecisionFollowUp": "Follow-up required",
   "reviewActionApprove": "Approve",
   "reviewActionReturn": "Return for correction",
   "reviewActionFollowUp": "Request follow-up",
-
   "tasksEyebrow": "Field operations",
   "tasksTitle": "Farm tasks",
   "tasksCreate": "Create",
   "tasksFilterToday": "Today",
   "tasksFilterAll": "All ({count})",
-  "@tasksFilterAll": { "placeholders": { "count": { "type": "int" } } },
+  "@tasksFilterAll": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "tasksLoadingTitle": "Loading farm tasks",
   "tasksLoadingMessage": "Checking your role-filtered task queue…",
   "tasksLoadFailedTitle": "Tasks could not be loaded",
@@ -191,22 +202,50 @@
   "reviewQueueEntryTitle": "Review queue",
   "reviewQueueEntryNone": "No tasks awaiting review",
   "reviewQueueEntryCount": "{count, plural, =1{1 task awaiting review} other{{count} tasks awaiting review}}",
-  "@reviewQueueEntryCount": { "placeholders": { "count": { "type": "int" } } },
-
+  "@reviewQueueEntryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "targetTree": "Tree {code}",
-  "@targetTree": { "placeholders": { "code": { "type": "String" } } },
+  "@targetTree": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
   "targetTreeGeneric": "Tree",
   "targetZone": "Zone {code}",
-  "@targetZone": { "placeholders": { "code": { "type": "String" } } },
+  "@targetZone": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
   "targetZoneGeneric": "Irrigation zone",
   "targetSection": "Section {code}",
-  "@targetSection": { "placeholders": { "code": { "type": "String" } } },
+  "@targetSection": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
   "targetSectionGeneric": "Farm section",
   "targetWholeFarm": "Whole farm",
   "scheduleNotScheduled": "Not scheduled",
   "scheduleDue": "Due {value}",
-  "@scheduleDue": { "placeholders": { "value": { "type": "String" } } },
-
+  "@scheduleDue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "taskDetailEyebrow": "Task detail",
   "backToTasks": "Back to tasks",
   "detailType": "Type",
@@ -215,21 +254,39 @@
   "detailPriority": "Priority",
   "detailPlannedDuration": "Planned duration",
   "durationMinutes": "{minutes} minutes",
-  "@durationMinutes": { "placeholders": { "minutes": { "type": "int" } } },
+  "@durationMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
   "detailDescription": "Description",
   "detailInstructions": "Instructions",
   "assignmentsTitle": "Assignments",
   "editAction": "Edit",
   "noActiveAssignees": "No active assignees.",
   "assignedAt": "Assigned {value}",
-  "@assignedAt": { "placeholders": { "value": { "type": "String" } } },
+  "@assignedAt": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "assignedFarmMember": "Assigned farm member",
   "actionsTitle": "Actions",
   "startTask": "Start task",
   "completeAction": "Complete",
   "addEvidence": "Add evidence",
   "evidenceCount": "Evidence ({count})",
-  "@evidenceCount": { "placeholders": { "count": { "type": "int" } } },
+  "@evidenceCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "noEvidence": "No task evidence has been registered.",
   "activityTitle": "Activity",
   "noActivity": "No task activity is visible.",
@@ -241,7 +298,13 @@
   "sendForReview": "Send for engineer review",
   "optionalCompletionEvidence": "Optional completion evidence",
   "selectedFile": "Selected: {file}",
-  "@selectedFile": { "placeholders": { "file": { "type": "String" } } },
+  "@selectedFile": {
+    "placeholders": {
+      "file": {
+        "type": "String"
+      }
+    }
+  },
   "evidenceTypeLabel": "Evidence type",
   "evidenceCaptionLabel": "Evidence caption",
   "confirmCompletion": "Confirm completion",
@@ -251,7 +314,6 @@
   "saveEvidence": "Save evidence",
   "unableToLoadTask": "Unable to load this task.",
   "taskWorkspaceUnavailable": "Task workspace is unavailable.",
-
   "stageReady": "Ready",
   "stageStarting": "Starting task…",
   "stageAssigning": "Saving assignments…",
@@ -259,7 +321,6 @@
   "stageUploadingEvidence": "Uploading private evidence…",
   "stageRegisteringEvidence": "Registering evidence…",
   "stageCompleting": "Completing task…",
-
   "msgTaskStarted": "Task started.",
   "msgAssignmentsUpdated": "Assignments updated.",
   "msgTaskEvidenceSaved": "Task evidence saved.",
@@ -272,7 +333,6 @@
   "errEvidenceRegister": "Evidence registration was not confirmed. You can safely retry.",
   "errTaskComplete": "The task could not be completed.",
   "errCompletionUnconfirmed": "Evidence is saved, but task completion was not confirmed. Retry completion without uploading again.",
-
   "createEyebrow": "Plan field work",
   "createTitle": "Create task",
   "taskTitleField": "Task title *",
@@ -307,12 +367,17 @@
   "errTaskCreate": "The task could not be created.",
   "taskPendingSyncBadge": "Pending sync",
   "taskPendingSyncOpen": "This task opens once it syncs to the farm.",
-
   "reviewTaskEyebrow": "Review task",
   "reviewQueueEyebrow": "Engineer review",
   "reviewQueueTitle": "Review queue",
   "reviewQueuePending": "{count, plural, =1{1 task awaiting a decision.} other{{count} tasks awaiting a decision.}}",
-  "@reviewQueuePending": { "placeholders": { "count": { "type": "int" } } },
+  "@reviewQueuePending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "reviewQueueLoadingTitle": "Loading review queue",
   "reviewQueueLoadingMessage": "Checking tasks flagged for engineer review…",
   "reviewQueueFailedTitle": "Queue could not be loaded",
@@ -332,30 +397,65 @@
   "reviewNotesHint": "Explain the decision for the assignee.",
   "optionalReviewPhoto": "Optional review photo",
   "reviewHistory": "Review history ({count})",
-  "@reviewHistory": { "placeholders": { "count": { "type": "int" } } },
+  "@reviewHistory": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "noReviews": "No review decisions have been recorded yet.",
   "reviewWorkspaceUnavailable": "Review workspace is unavailable.",
   "unableToLoadReview": "Unable to load this review.",
   "confirmDecision": "Confirm {action}",
-  "@confirmDecision": { "placeholders": { "action": { "type": "String" } } },
+  "@confirmDecision": {
+    "placeholders": {
+      "action": {
+        "type": "String"
+      }
+    }
+  },
   "reviewStagePickingPhoto": "Preparing photo…",
   "reviewStageUploadingPhoto": "Uploading private photo…",
   "reviewStageSubmitting": "Recording decision…",
   "msgReviewRecorded": "Review recorded: {decision}.",
-  "@msgReviewRecorded": { "placeholders": { "decision": { "type": "String" } } },
+  "@msgReviewRecorded": {
+    "placeholders": {
+      "decision": {
+        "type": "String"
+      }
+    }
+  },
   "msgReviewRecordedOffline": "Review saved offline. It will be recorded on the farm when you're back online.",
   "errReviewPhotoUnconfirmed": "The review photo is uploaded, but the decision was not confirmed. Retry without uploading again.",
   "errReviewRecord": "The review decision could not be recorded.",
   "errReviewPhotoPrepare": "Unable to prepare that review photo.",
-
   "reportIssueTitle": "Report tree issue",
   "issueSectionRow": "Section {section} · Row {row} / Tree {tree}",
-  "@issueSectionRow": { "placeholders": { "section": { "type": "String" }, "row": { "type": "String" }, "tree": { "type": "String" } } },
+  "@issueSectionRow": {
+    "placeholders": {
+      "section": {
+        "type": "String"
+      },
+      "row": {
+        "type": "String"
+      },
+      "tree": {
+        "type": "String"
+      }
+    }
+  },
   "issueTypeLabel": "Issue type",
   "issueSeverityLabel": "Severity",
   "issueObservationLabel": "Observation (optional)",
   "issueKibPrepared": "{kib} KiB prepared",
-  "@issueKibPrepared": { "placeholders": { "kib": { "type": "int" } } },
+  "@issueKibPrepared": {
+    "placeholders": {
+      "kib": {
+        "type": "int"
+      }
+    }
+  },
   "issueRemovePhoto": "Remove photo",
   "reportIssueButton": "Report issue",
   "issueReportedButton": "Issue reported",
@@ -372,7 +472,6 @@
   "issueMsgReportedWithPhoto": "Issue, review task, and photo evidence saved.",
   "issueErrPartialPrefix": "The issue and review task were saved, but photo registration was not confirmed. ",
   "issueMsgRetryPhoto": "You can safely retry the photo.",
-
   "selectedTree": "Selected tree",
   "attachTask": "Attach a task",
   "reportAnIssue": "Report an issue",
@@ -385,14 +484,12 @@
   "treeUnavailableTitle": "Tree unavailable",
   "treeUnavailableMessage": "This tree is inactive or no longer visible to your farm.",
   "goBack": "Go back",
-
   "scanQrInactive": "This QR code is not active or visible to your farm.",
   "scanOffline": "Unable to scan while offline. Try again when connected.",
   "scanLookingUp": "Looking up tree…",
   "scanPointCamera": "Point the camera at a tree QR label.",
   "scanCameraOff": "Camera access is off. Enable it in Settings to scan tree labels.",
   "scanCameraUnavailable": "The camera is unavailable. You can try again after checking permissions.",
-
   "mapEyebrow": "Coordinate-accurate 2D map",
   "mapZoomIn": "Zoom in",
   "mapZoomOut": "Zoom out",
@@ -405,35 +502,103 @@
   "mapLayerFlushValves": "Flush valves",
   "mapLayerWaterSupply": "Water supply",
   "mapSectionName": "Section {id}",
-  "@mapSectionName": { "placeholders": { "id": { "type": "String" } } },
+  "@mapSectionName": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
   "mapValveNameZone": "Section {section} — Submain {submain} — Zone Control Valve {number}",
-  "@mapValveNameZone": { "placeholders": { "section": { "type": "String" }, "submain": { "type": "String" }, "number": { "type": "String" } } },
+  "@mapValveNameZone": {
+    "placeholders": {
+      "section": {
+        "type": "String"
+      },
+      "submain": {
+        "type": "String"
+      },
+      "number": {
+        "type": "String"
+      }
+    }
+  },
   "mapValveNameIsolation": "Mainline Isolation Valve {number}",
-  "@mapValveNameIsolation": { "placeholders": { "number": { "type": "String" } } },
+  "@mapValveNameIsolation": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
   "mapIsolationSheetTitle": "Mainline valve",
   "mapValveTreeCount": "{count, plural, =0{No planted trees depend on this valve} =1{1 tree is fed through this valve} other{{count} trees are fed through this valve}}",
-  "@mapValveTreeCount": { "placeholders": { "count": { "type": "int" } } },
+  "@mapValveTreeCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "mapValveDownstream": "Feeds submains: {list}",
-  "@mapValveDownstream": { "placeholders": { "list": { "type": "String" } } },
+  "@mapValveDownstream": {
+    "placeholders": {
+      "list": {
+        "type": "String"
+      }
+    }
+  },
   "mapValveHighlightHint": "The downstream line and its zones are highlighted on the map. Tap empty map space to clear.",
   "mapZoneSheetTitle": "Irrigation zone",
   "mapZoneTreeCount": "{count, plural, =0{No trees mapped to this zone} =1{1 tree irrigated by this valve} other{{count} trees irrigated by this valve}}",
-  "@mapZoneTreeCount": { "placeholders": { "count": { "type": "int" } } },
+  "@mapZoneTreeCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "mapZoneTreesPlanned": "Planned capacity: {count} trees",
-  "@mapZoneTreesPlanned": { "placeholders": { "count": { "type": "int" } } },
+  "@mapZoneTreesPlanned": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "mapZoneHighlightHint": "The zone's lines and trees are highlighted on the map. Tap empty map space to clear.",
   "mapAllSections": "All 12 sections",
   "mapSectionEmpty": "Empty",
   "mapSectionUnplanted": "Unplanted",
   "mapSelectAnyTree": "Select any tree",
   "mapTreePointsAvailable": "{count} tree points are available.",
-  "@mapTreePointsAvailable": { "placeholders": { "count": { "type": "int" } } },
+  "@mapTreePointsAvailable": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "mapGeometryFailed": "The bundled farm geometry could not be loaded.\n{error}",
-  "@mapGeometryFailed": { "placeholders": { "error": { "type": "String" } } },
+  "@mapGeometryFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "mapDiscrepancySemantics": "Farm data discrepancy warning",
   "mapDiscrepancy": "{count, plural, =1{Farm data check · 1 difference} other{Farm data check · {count} differences}}\n{summary}",
-  "@mapDiscrepancy": { "placeholders": { "count": { "type": "int" }, "summary": { "type": "String" } } },
-
+  "@mapDiscrepancy": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "summary": {
+        "type": "String"
+      }
+    }
+  },
   "inventoryTitle": "Inventory",
   "inventoryEyebrow": "Farm supplies",
   "inventorySearchHint": "Search items",
@@ -443,7 +608,13 @@
   "inventoryEmptyWorker": "No items have been added yet.",
   "inventoryLowStock": "Low stock",
   "inventoryLowStockCount": "{count, plural, =1{1 item below minimum stock} other{{count} items below minimum stock}}",
-  "@inventoryLowStockCount": { "placeholders": { "count": { "type": "int" } } },
+  "@inventoryLowStockCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "inventoryQuantityLabel": "In stock",
   "inventoryMinimumLabel": "Minimum",
   "inventoryAddItem": "Add item",
@@ -497,5 +668,104 @@
   "categoryHerbicide": "Herbicides",
   "categoryFungicide": "Fungicides",
   "categoryTool": "Farm tools",
-  "categoryOther": "Other"
+  "categoryOther": "Other",
+  "schedulesTitle": "Schedules",
+  "schedulesEyebrow": "Recurring operations",
+  "scheduleNew": "New schedule",
+  "schedulesEmptyTitle": "No schedules yet",
+  "schedulesEmptyMessage": "Create a recurring irrigation, fertilization, or spraying plan.",
+  "schedulesLoadFailed": "Schedules could not be loaded.",
+  "planStatusDraft": "Draft",
+  "planStatusActive": "Active",
+  "planStatusPaused": "Paused",
+  "planStatusCompleted": "Completed",
+  "planStatusArchived": "Archived",
+  "scheduleOnce": "Once",
+  "scheduleDaily": "Daily",
+  "scheduleWeekly": "Weekly",
+  "basisPerFeddan": "Per feddan",
+  "basisPerTree": "Per tree",
+  "basisAbsolute": "Fixed amount",
+  "methodFertigation": "Fertigation",
+  "methodSoilApplication": "Soil application",
+  "methodFoliarSpray": "Foliar spray",
+  "methodManualApplication": "Manual application",
+  "scheduleTypeField": "Operation",
+  "scheduleTitleField": "Schedule title",
+  "scheduleTitleRequired": "Enter a schedule title",
+  "scheduleRecurrenceField": "Repeats",
+  "scheduleWeekdaysField": "On days",
+  "scheduleWeekdaysRequired": "Pick at least one weekday",
+  "scheduleStartsOn": "Starts on",
+  "scheduleEndsOn": "Ends on (optional)",
+  "scheduleTimeField": "Execution time",
+  "scheduleDurationField": "Duration (minutes)",
+  "scheduleTargetsTitle": "Targets",
+  "scheduleTargetFarm": "Whole farm",
+  "scheduleTargetSections": "Sections",
+  "scheduleTargetZones": "Irrigation zones",
+  "scheduleProductTitle": "Product & dose",
+  "scheduleProductField": "Product from inventory",
+  "scheduleRateField": "Application rate",
+  "scheduleBasisField": "Rate basis",
+  "scheduleMethodField": "Application method",
+  "schedulePerOccurrence": "Needed per run: {quantity} {unit}",
+  "@schedulePerOccurrence": {
+    "placeholders": {
+      "quantity": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "scheduleCoverage": "{count, plural, =0{Current stock covers no applications} =1{Current stock covers 1 application} other{Current stock covers {count} applications}}",
+  "@scheduleCoverage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "scheduleInsufficient": "Not enough stock — tasks will not be generated until you restock.",
+  "scheduleAssigneesTitle": "Assigned workers",
+  "scheduleCreate": "Create schedule",
+  "scheduleSaving": "Saving…",
+  "scheduleMsgCreated": "Schedule created.",
+  "scheduleMsgUpdated": "Schedule updated.",
+  "scheduleErrGeneric": "The schedule could not be saved.",
+  "scheduleNextOccurrences": "Next dates",
+  "scheduleGenerateNow": "Generate today's tasks",
+  "scheduleGenerated": "{count, plural, =0{No new tasks to generate} =1{1 task generated} other{{count} tasks generated}}",
+  "@scheduleGenerated": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "schedulePause": "Pause",
+  "scheduleActivate": "Activate",
+  "scheduleArchive": "Archive",
+  "scheduleTargetCount": "{count, plural, =1{1 target} other{{count} targets}}",
+  "@scheduleTargetCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "taskProductTitle": "Product to apply",
+  "taskProductQuantity": "{quantity} {unit}",
+  "@taskProductQuantity": {
+    "placeholders": {
+      "quantity": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  }
 }

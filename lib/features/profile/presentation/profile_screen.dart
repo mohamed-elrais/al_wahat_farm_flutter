@@ -59,6 +59,17 @@ class ProfileScreen extends StatelessWidget {
                   _LanguageSelector(controller: services.locale),
                   const Divider(height: 32),
                 ],
+                if (membership?.role.canManageSchedules ?? false) ...<Widget>[
+                  ListTile(
+                    key: const Key('schedules-entry-tile'),
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.event_repeat_outlined,
+                        color: AppColors.green),
+                    title: Text(l10n.schedulesTitle),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => context.go('/more/schedules'),
+                  ),
+                ],
                 if (membership?.role.isOperational ?? false) ...<Widget>[
                   ListTile(
                     key: const Key('inventory-entry-tile'),

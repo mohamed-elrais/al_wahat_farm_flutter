@@ -14,6 +14,9 @@ import 'package:al_wahat_farm_flutter/features/map/presentation/scanner_screen.d
 import 'package:al_wahat_farm_flutter/features/profile/presentation/profile_screen.dart';
 import 'package:al_wahat_farm_flutter/features/reviews/presentation/review_detail_screen.dart';
 import 'package:al_wahat_farm_flutter/features/reviews/presentation/review_queue_screen.dart';
+import 'package:al_wahat_farm_flutter/features/schedules/presentation/schedule_detail_screen.dart';
+import 'package:al_wahat_farm_flutter/features/schedules/presentation/schedule_form_screen.dart';
+import 'package:al_wahat_farm_flutter/features/schedules/presentation/schedules_screen.dart';
 import 'package:al_wahat_farm_flutter/features/sync/presentation/failed_ops_screen.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/presentation/tasks_screen.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_create_screen.dart';
@@ -132,6 +135,22 @@ GoRouter createRouter(AppConfig config) {
                   GoRoute(
                     path: 'failed-ops',
                     builder: (_, __) => const FailedOpsScreen(),
+                  ),
+                  GoRoute(
+                    path: 'schedules',
+                    builder: (_, __) => const SchedulesScreen(),
+                    routes: <RouteBase>[
+                      GoRoute(
+                        path: 'new',
+                        builder: (_, __) => const ScheduleFormScreen(),
+                      ),
+                      GoRoute(
+                        path: ':planId',
+                        builder: (_, state) => ScheduleDetailScreen(
+                          planId: state.pathParameters['planId']!,
+                        ),
+                      ),
+                    ],
                   ),
                   GoRoute(
                     path: 'inventory',

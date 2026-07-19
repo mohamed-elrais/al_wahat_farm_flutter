@@ -1476,4 +1476,210 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get categoryOther => 'Other';
+
+  @override
+  String get schedulesTitle => 'Schedules';
+
+  @override
+  String get schedulesEyebrow => 'Recurring operations';
+
+  @override
+  String get scheduleNew => 'New schedule';
+
+  @override
+  String get schedulesEmptyTitle => 'No schedules yet';
+
+  @override
+  String get schedulesEmptyMessage =>
+      'Create a recurring irrigation, fertilization, or spraying plan.';
+
+  @override
+  String get schedulesLoadFailed => 'Schedules could not be loaded.';
+
+  @override
+  String get planStatusDraft => 'Draft';
+
+  @override
+  String get planStatusActive => 'Active';
+
+  @override
+  String get planStatusPaused => 'Paused';
+
+  @override
+  String get planStatusCompleted => 'Completed';
+
+  @override
+  String get planStatusArchived => 'Archived';
+
+  @override
+  String get scheduleOnce => 'Once';
+
+  @override
+  String get scheduleDaily => 'Daily';
+
+  @override
+  String get scheduleWeekly => 'Weekly';
+
+  @override
+  String get basisPerFeddan => 'Per feddan';
+
+  @override
+  String get basisPerTree => 'Per tree';
+
+  @override
+  String get basisAbsolute => 'Fixed amount';
+
+  @override
+  String get methodFertigation => 'Fertigation';
+
+  @override
+  String get methodSoilApplication => 'Soil application';
+
+  @override
+  String get methodFoliarSpray => 'Foliar spray';
+
+  @override
+  String get methodManualApplication => 'Manual application';
+
+  @override
+  String get scheduleTypeField => 'Operation';
+
+  @override
+  String get scheduleTitleField => 'Schedule title';
+
+  @override
+  String get scheduleTitleRequired => 'Enter a schedule title';
+
+  @override
+  String get scheduleRecurrenceField => 'Repeats';
+
+  @override
+  String get scheduleWeekdaysField => 'On days';
+
+  @override
+  String get scheduleWeekdaysRequired => 'Pick at least one weekday';
+
+  @override
+  String get scheduleStartsOn => 'Starts on';
+
+  @override
+  String get scheduleEndsOn => 'Ends on (optional)';
+
+  @override
+  String get scheduleTimeField => 'Execution time';
+
+  @override
+  String get scheduleDurationField => 'Duration (minutes)';
+
+  @override
+  String get scheduleTargetsTitle => 'Targets';
+
+  @override
+  String get scheduleTargetFarm => 'Whole farm';
+
+  @override
+  String get scheduleTargetSections => 'Sections';
+
+  @override
+  String get scheduleTargetZones => 'Irrigation zones';
+
+  @override
+  String get scheduleProductTitle => 'Product & dose';
+
+  @override
+  String get scheduleProductField => 'Product from inventory';
+
+  @override
+  String get scheduleRateField => 'Application rate';
+
+  @override
+  String get scheduleBasisField => 'Rate basis';
+
+  @override
+  String get scheduleMethodField => 'Application method';
+
+  @override
+  String schedulePerOccurrence(String quantity, String unit) {
+    return 'Needed per run: $quantity $unit';
+  }
+
+  @override
+  String scheduleCoverage(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Current stock covers $count applications',
+      one: 'Current stock covers 1 application',
+      zero: 'Current stock covers no applications',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get scheduleInsufficient =>
+      'Not enough stock — tasks will not be generated until you restock.';
+
+  @override
+  String get scheduleAssigneesTitle => 'Assigned workers';
+
+  @override
+  String get scheduleCreate => 'Create schedule';
+
+  @override
+  String get scheduleSaving => 'Saving…';
+
+  @override
+  String get scheduleMsgCreated => 'Schedule created.';
+
+  @override
+  String get scheduleMsgUpdated => 'Schedule updated.';
+
+  @override
+  String get scheduleErrGeneric => 'The schedule could not be saved.';
+
+  @override
+  String get scheduleNextOccurrences => 'Next dates';
+
+  @override
+  String get scheduleGenerateNow => 'Generate today\'s tasks';
+
+  @override
+  String scheduleGenerated(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tasks generated',
+      one: '1 task generated',
+      zero: 'No new tasks to generate',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get schedulePause => 'Pause';
+
+  @override
+  String get scheduleActivate => 'Activate';
+
+  @override
+  String get scheduleArchive => 'Archive';
+
+  @override
+  String scheduleTargetCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count targets',
+      one: '1 target',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get taskProductTitle => 'Product to apply';
+
+  @override
+  String taskProductQuantity(String quantity, String unit) {
+    return '$quantity $unit';
+  }
 }

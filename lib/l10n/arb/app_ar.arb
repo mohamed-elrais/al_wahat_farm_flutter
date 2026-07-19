@@ -2,14 +2,12 @@
   "@@locale": "ar",
   "appTitle": "عمليات مزرعة الواحة",
   "brandName": "الواحة",
-
   "navHome": "الرئيسية",
   "navMap": "الخريطة",
   "navScan": "مسح",
   "navTasks": "المهام",
   "navMore": "المزيد",
   "notifications": "الإشعارات",
-
   "commonRetry": "إعادة المحاولة",
   "commonCancel": "إلغاء",
   "commonSave": "حفظ",
@@ -17,19 +15,22 @@
   "commonBack": "رجوع",
   "commonLoading": "جارٍ التحميل…",
   "routeUnavailable": "المسار غير متاح: {path}",
-  "@routeUnavailable": { "placeholders": { "path": { "type": "String" } } },
+  "@routeUnavailable": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
   "commonCamera": "الكاميرا",
   "commonGallery": "المعرض",
   "commonRemove": "إزالة",
-
   "offlineBanner": "غير متصل · عرض بيانات المزرعة والمهام المخزّنة",
   "offlineBannerSemantics": "أنت غير متصل. يتم عرض بيانات المزرعة والمهام المخزّنة.",
-
   "languageLabel": "اللغة",
   "languageSystem": "الإعداد الافتراضي للنظام",
   "languageEnglish": "English",
   "languageArabic": "العربية",
-
   "loginWelcomeTitle": "مرحبًا بك في\nالواحة.",
   "loginEyebrow": "عمليات المزرعة",
   "loginSignInTitle": "تسجيل الدخول",
@@ -41,7 +42,6 @@
   "loginInvalidEmail": "أدخل عنوان بريد إلكتروني صالحًا",
   "loginInvalidPassword": "كلمة المرور مطلوبة",
   "loginFailed": "تعذّر تسجيل الدخول. تحقق من اتصالك.",
-
   "homeDateEyebrow": "الأحد · 12 يوليو",
   "homeHeroTitle": "مزرعتك.\nشجرةً شجرة.",
   "homeHeroLede": "عمليات ميدانية قائمة على كل شجرة ومنطقة ري مُدرجة على الخريطة.",
@@ -56,13 +56,18 @@
   "homeNoTasksToday": "لا توجد مهام مجدولة لهذا اليوم.",
   "homeViewAllTasks": "عرض جميع المهام",
   "homeWorkspaceUnavailable": "مساحة عمل المهام غير متاحة.",
-
   "moreEyebrow": "الحساب والمزامنة",
   "moreTitle": "المزيد",
   "moreFarmMember": "عضو المزرعة",
   "moreRoleResolves": "يُحدَّد الدور من عضوية المزرعة النشطة",
   "moreSignedInAs": "تم تسجيل الدخول باسم {name}",
-  "@moreSignedInAs": { "placeholders": { "name": { "type": "String" } } },
+  "@moreSignedInAs": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "syncOnline": "متصل",
   "syncOffline": "غير متصل",
   "syncOnlineSubtitle": "متصل · يتم تحديث بيانات العمليات من Supabase",
@@ -71,19 +76,29 @@
   "syncStatusOfflineSemantics": "حالة المزامنة: غير متصل",
   "syncDefaultSubtitle": "يتم تحديث بيانات العمليات من Supabase",
   "logout": "تسجيل الخروج",
-
   "syncTitle": "المزامنة",
   "syncStatusAllSynced": "تمت مزامنة جميع التغييرات",
   "syncStatusPending": "{count, plural, =1{تغيير واحد بانتظار المزامنة} other{{count} تغييرات بانتظار المزامنة}}",
-  "@syncStatusPending": { "placeholders": { "count": { "type": "int" } } },
+  "@syncStatusPending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "syncStatusFailed": "{count, plural, =1{فشلت مزامنة تغيير واحد} other{فشلت مزامنة {count} تغييرات}}",
-  "@syncStatusFailed": { "placeholders": { "count": { "type": "int" } } },
+  "@syncStatusFailed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "syncSyncing": "جارٍ المزامنة…",
   "syncNow": "المزامنة الآن",
   "syncRetryFailed": "إعادة محاولة التغييرات الفاشلة",
   "syncPendingBadge": "بانتظار المزامنة",
   "syncReviewFailed": "مراجعة التغييرات الفاشلة",
-
   "failedOpsEyebrow": "المزامنة",
   "failedOpsTitle": "التغييرات الفاشلة",
   "failedOpsIntro": "تعذّرت مزامنة هذه التغييرات مع المزرعة. أعد المحاولة، أو تجاهل ما لم تعد بحاجة إليه.",
@@ -102,7 +117,6 @@
   "failedOpsKindCreateTask": "إنشاء مهمة",
   "failedOpsKindReportIssue": "الإبلاغ عن مشكلة شجرة",
   "failedOpsKindReviewTask": "قرار المراجعة",
-
   "gateAccessUnavailableTitle": "الوصول إلى المزرعة غير متاح",
   "gateProfileMissing": "لم يتم إعداد ملف حسابك الشخصي.",
   "gateProfileInactive": "حسابك غير نشط.",
@@ -111,12 +125,10 @@
   "gateLoadFailedMessage": "تحقق من اتصالك وحاول مرة أخرى.",
   "hierarchyFailedTitle": "تعذّر تحميل بيانات المزرعة",
   "hierarchyFailedMessage": "تحقق من اتصالك ومن صلاحية وصولك إلى المزرعة، ثم حاول مرة أخرى.",
-
   "roleOwner": "المالك",
   "roleAgriculturalEngineer": "مهندس زراعي",
   "roleWorker": "عامل",
   "roleAccountant": "محاسب",
-
   "taskStatusDraft": "مسودة",
   "taskStatusAssigned": "مُسندة",
   "taskStatusInProgress": "قيد التنفيذ",
@@ -125,7 +137,6 @@
   "taskStatusApproved": "معتمدة",
   "taskStatusReturned": "مُعادة",
   "taskStatusCancelled": "ملغاة",
-
   "taskTypeIrrigation": "الري",
   "taskTypeFertilization": "التسميد",
   "taskTypeHarmfulWeedControl": "مكافحة الأعشاب الضارة",
@@ -135,12 +146,10 @@
   "taskTypeTreeInspection": "فحص الأشجار",
   "taskTypeEngineerReview": "مراجعة المهندس الزراعي",
   "taskTypeGeneral": "عمل ميداني عام",
-
   "priorityLow": "منخفضة",
   "priorityMedium": "متوسطة",
   "priorityHigh": "عالية",
   "priorityUrgent": "عاجلة",
-
   "activityCreated": "تم إنشاء المهمة",
   "activityAssigned": "تم تحديث الإسنادات",
   "activityUnassigned": "تم مسح الإسنادات",
@@ -152,13 +161,11 @@
   "activityCommented": "تمت إضافة تعليق",
   "activityCancelled": "تم إلغاء المهمة",
   "activityPhotoAdded": "تمت إضافة دليل",
-
   "photoTypeBefore": "قبل العمل",
   "photoTypeAfter": "بعد العمل",
   "photoTypeEvidence": "دليل",
   "photoTypeIssue": "مشكلة",
   "photoTypeReview": "مراجعة",
-
   "issueTypeInsufficientIrrigation": "ري غير كافٍ",
   "issueTypeCloggedDripper": "نقّاط مسدود",
   "issueTypeLeakOrDripperDamage": "تسرّب أو تلف في النقّاط",
@@ -166,20 +173,24 @@
   "issueTypePestOrDisease": "آفة أو مرض",
   "issueTypeTreeDamage": "تلف في الشجرة",
   "issueTypeOther": "أخرى",
-
   "reviewDecisionApproved": "معتمدة",
   "reviewDecisionReturned": "أُعيدت للتصحيح",
   "reviewDecisionFollowUp": "تتطلب متابعة",
   "reviewActionApprove": "اعتماد",
   "reviewActionReturn": "إعادة للتصحيح",
   "reviewActionFollowUp": "طلب متابعة",
-
   "tasksEyebrow": "عمليات المزرعة",
   "tasksTitle": "مهام المزرعة",
   "tasksCreate": "إنشاء",
   "tasksFilterToday": "اليوم",
   "tasksFilterAll": "الكل ({count})",
-  "@tasksFilterAll": { "placeholders": { "count": { "type": "int" } } },
+  "@tasksFilterAll": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "tasksLoadingTitle": "جارٍ تحميل مهام المزرعة",
   "tasksLoadingMessage": "جارٍ التحقق من قائمة مهامك المصفّاة حسب دورك…",
   "tasksLoadFailedTitle": "تعذّر تحميل المهام",
@@ -191,22 +202,50 @@
   "reviewQueueEntryTitle": "قائمة انتظار المراجعة",
   "reviewQueueEntryNone": "لا توجد مهام بانتظار المراجعة",
   "reviewQueueEntryCount": "{count, plural, =1{مهمة واحدة بانتظار المراجعة} other{{count} مهام بانتظار المراجعة}}",
-  "@reviewQueueEntryCount": { "placeholders": { "count": { "type": "int" } } },
-
+  "@reviewQueueEntryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "targetTree": "الشجرة {code}",
-  "@targetTree": { "placeholders": { "code": { "type": "String" } } },
+  "@targetTree": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
   "targetTreeGeneric": "شجرة",
   "targetZone": "المنطقة {code}",
-  "@targetZone": { "placeholders": { "code": { "type": "String" } } },
+  "@targetZone": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
   "targetZoneGeneric": "منطقة ري",
   "targetSection": "القسم {code}",
-  "@targetSection": { "placeholders": { "code": { "type": "String" } } },
+  "@targetSection": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
   "targetSectionGeneric": "قسم من المزرعة",
   "targetWholeFarm": "المزرعة بأكملها",
   "scheduleNotScheduled": "غير مجدولة",
   "scheduleDue": "الاستحقاق {value}",
-  "@scheduleDue": { "placeholders": { "value": { "type": "String" } } },
-
+  "@scheduleDue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "taskDetailEyebrow": "تفاصيل المهمة",
   "backToTasks": "العودة إلى المهام",
   "detailType": "النوع",
@@ -215,21 +254,39 @@
   "detailPriority": "الأولوية",
   "detailPlannedDuration": "المدة المخطط لها",
   "durationMinutes": "{minutes} دقيقة",
-  "@durationMinutes": { "placeholders": { "minutes": { "type": "int" } } },
+  "@durationMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
   "detailDescription": "الوصف",
   "detailInstructions": "التعليمات",
   "assignmentsTitle": "الإسنادات",
   "editAction": "تعديل",
   "noActiveAssignees": "لا يوجد مكلّفون نشطون.",
   "assignedAt": "تم الإسناد {value}",
-  "@assignedAt": { "placeholders": { "value": { "type": "String" } } },
+  "@assignedAt": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "assignedFarmMember": "عضو المزرعة المُكلّف",
   "actionsTitle": "الإجراءات",
   "startTask": "بدء المهمة",
   "completeAction": "إكمال",
   "addEvidence": "إضافة دليل",
   "evidenceCount": "الأدلة ({count})",
-  "@evidenceCount": { "placeholders": { "count": { "type": "int" } } },
+  "@evidenceCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "noEvidence": "لم يتم تسجيل أي دليل للمهمة.",
   "activityTitle": "النشاط",
   "noActivity": "لا يوجد نشاط مرئي للمهمة.",
@@ -241,7 +298,13 @@
   "sendForReview": "إرسال لمراجعة المهندس الزراعي",
   "optionalCompletionEvidence": "دليل إكمال اختياري",
   "selectedFile": "المحدد: {file}",
-  "@selectedFile": { "placeholders": { "file": { "type": "String" } } },
+  "@selectedFile": {
+    "placeholders": {
+      "file": {
+        "type": "String"
+      }
+    }
+  },
   "evidenceTypeLabel": "نوع الدليل",
   "evidenceCaptionLabel": "تعليق الدليل",
   "confirmCompletion": "تأكيد الإكمال",
@@ -251,7 +314,6 @@
   "saveEvidence": "حفظ الدليل",
   "unableToLoadTask": "تعذّر تحميل هذه المهمة.",
   "taskWorkspaceUnavailable": "مساحة عمل المهام غير متاحة.",
-
   "stageReady": "جاهز",
   "stageStarting": "جارٍ بدء المهمة…",
   "stageAssigning": "جارٍ حفظ الإسنادات…",
@@ -259,7 +321,6 @@
   "stageUploadingEvidence": "جارٍ رفع الدليل الخاص…",
   "stageRegisteringEvidence": "جارٍ تسجيل الدليل…",
   "stageCompleting": "جارٍ إكمال المهمة…",
-
   "msgTaskStarted": "بدأت المهمة.",
   "msgAssignmentsUpdated": "تم تحديث الإسنادات.",
   "msgTaskEvidenceSaved": "تم حفظ دليل المهمة.",
@@ -272,7 +333,6 @@
   "errEvidenceRegister": "لم يتم تأكيد تسجيل الدليل. يمكنك إعادة المحاولة بأمان.",
   "errTaskComplete": "تعذّر إكمال المهمة.",
   "errCompletionUnconfirmed": "تم حفظ الدليل، لكن لم يتم تأكيد إكمال المهمة. أعد محاولة الإكمال دون الرفع مرة أخرى.",
-
   "createEyebrow": "التخطيط للعمل الميداني",
   "createTitle": "إنشاء مهمة",
   "taskTitleField": "عنوان المهمة *",
@@ -307,12 +367,17 @@
   "taskPendingSyncBadge": "بانتظار المزامنة",
   "taskPendingSyncOpen": "تُفتح هذه المهمة بعد مزامنتها مع المزرعة.",
   "errTaskCreate": "تعذّر إنشاء المهمة.",
-
   "reviewTaskEyebrow": "مراجعة المهمة",
   "reviewQueueEyebrow": "مراجعة المهندس الزراعي",
   "reviewQueueTitle": "قائمة انتظار المراجعة",
   "reviewQueuePending": "{count, plural, =1{مهمة واحدة بانتظار القرار.} other{{count} مهام بانتظار القرار.}}",
-  "@reviewQueuePending": { "placeholders": { "count": { "type": "int" } } },
+  "@reviewQueuePending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "reviewQueueLoadingTitle": "جارٍ تحميل قائمة انتظار المراجعة",
   "reviewQueueLoadingMessage": "جارٍ التحقق من المهام المحوّلة لمراجعة المهندس الزراعي…",
   "reviewQueueFailedTitle": "تعذّر تحميل قائمة الانتظار",
@@ -332,30 +397,65 @@
   "reviewNotesHint": "اشرح القرار للمكلّف.",
   "optionalReviewPhoto": "صورة مراجعة اختيارية",
   "reviewHistory": "سجل المراجعات ({count})",
-  "@reviewHistory": { "placeholders": { "count": { "type": "int" } } },
+  "@reviewHistory": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "noReviews": "لم يتم تسجيل أي قرارات مراجعة بعد.",
   "reviewWorkspaceUnavailable": "مساحة عمل المراجعة غير متاحة.",
   "unableToLoadReview": "تعذّر تحميل هذه المراجعة.",
   "confirmDecision": "تأكيد {action}",
-  "@confirmDecision": { "placeholders": { "action": { "type": "String" } } },
+  "@confirmDecision": {
+    "placeholders": {
+      "action": {
+        "type": "String"
+      }
+    }
+  },
   "reviewStagePickingPhoto": "جارٍ تجهيز الصورة…",
   "reviewStageUploadingPhoto": "جارٍ رفع الصورة الخاصة…",
   "reviewStageSubmitting": "جارٍ تسجيل القرار…",
   "msgReviewRecorded": "تم تسجيل المراجعة: {decision}.",
-  "@msgReviewRecorded": { "placeholders": { "decision": { "type": "String" } } },
+  "@msgReviewRecorded": {
+    "placeholders": {
+      "decision": {
+        "type": "String"
+      }
+    }
+  },
   "msgReviewRecordedOffline": "تم حفظ المراجعة دون اتصال. سيتم تسجيلها في المزرعة عند عودة الاتصال بالإنترنت.",
   "errReviewPhotoUnconfirmed": "تم رفع صورة المراجعة، لكن لم يتم تأكيد القرار. أعد المحاولة دون الرفع مرة أخرى.",
   "errReviewRecord": "تعذّر تسجيل قرار المراجعة.",
   "errReviewPhotoPrepare": "تعذّر تجهيز صورة المراجعة تلك.",
-
   "reportIssueTitle": "الإبلاغ عن مشكلة في شجرة",
   "issueSectionRow": "القسم {section} · الصف {row} / الشجرة {tree}",
-  "@issueSectionRow": { "placeholders": { "section": { "type": "String" }, "row": { "type": "String" }, "tree": { "type": "String" } } },
+  "@issueSectionRow": {
+    "placeholders": {
+      "section": {
+        "type": "String"
+      },
+      "row": {
+        "type": "String"
+      },
+      "tree": {
+        "type": "String"
+      }
+    }
+  },
   "issueTypeLabel": "نوع المشكلة",
   "issueSeverityLabel": "الخطورة",
   "issueObservationLabel": "ملاحظة (اختياري)",
   "issueKibPrepared": "تم تجهيز {kib} ك.ب",
-  "@issueKibPrepared": { "placeholders": { "kib": { "type": "int" } } },
+  "@issueKibPrepared": {
+    "placeholders": {
+      "kib": {
+        "type": "int"
+      }
+    }
+  },
   "issueRemovePhoto": "إزالة الصورة",
   "reportIssueButton": "الإبلاغ عن مشكلة",
   "issueReportedButton": "تم الإبلاغ عن المشكلة",
@@ -372,7 +472,6 @@
   "issueMsgReportedWithPhoto": "تم حفظ المشكلة ومهمة المراجعة ودليل الصورة.",
   "issueErrPartialPrefix": "تم حفظ المشكلة ومهمة المراجعة، لكن لم يتم تأكيد تسجيل الصورة. ",
   "issueMsgRetryPhoto": "يمكنك إعادة محاولة رفع الصورة بأمان.",
-
   "selectedTree": "الشجرة المحددة",
   "attachTask": "إرفاق مهمة",
   "reportAnIssue": "الإبلاغ عن مشكلة",
@@ -385,14 +484,12 @@
   "treeUnavailableTitle": "الشجرة غير متاحة",
   "treeUnavailableMessage": "هذه الشجرة غير نشطة أو لم تعد مرئية لمزرعتك.",
   "goBack": "العودة",
-
   "scanQrInactive": "رمز QR هذا غير نشط أو غير مرئي لمزرعتك.",
   "scanOffline": "تعذّر المسح أثناء عدم الاتصال. حاول مرة أخرى عند الاتصال.",
   "scanLookingUp": "جارٍ البحث عن الشجرة…",
   "scanPointCamera": "وجّه الكاميرا نحو ملصق QR الخاص بالشجرة.",
   "scanCameraOff": "الوصول إلى الكاميرا معطّل. فعّله في الإعدادات لمسح ملصقات الأشجار.",
   "scanCameraUnavailable": "الكاميرا غير متاحة. يمكنك المحاولة مرة أخرى بعد التحقق من الأذونات.",
-
   "mapEyebrow": "خريطة ثنائية الأبعاد دقيقة الإحداثيات",
   "mapZoomIn": "تكبير",
   "mapZoomOut": "تصغير",
@@ -405,35 +502,103 @@
   "mapLayerFlushValves": "محابس الغسيل",
   "mapLayerWaterSupply": "إمداد المياه",
   "mapSectionName": "القسم {id}",
-  "@mapSectionName": { "placeholders": { "id": { "type": "String" } } },
+  "@mapSectionName": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
   "mapValveNameZone": "القسم {section} — الخط الفرعي {submain} — محبس المنطقة {number}",
-  "@mapValveNameZone": { "placeholders": { "section": { "type": "String" }, "submain": { "type": "String" }, "number": { "type": "String" } } },
+  "@mapValveNameZone": {
+    "placeholders": {
+      "section": {
+        "type": "String"
+      },
+      "submain": {
+        "type": "String"
+      },
+      "number": {
+        "type": "String"
+      }
+    }
+  },
   "mapValveNameIsolation": "محبس عزل الخط الرئيسي {number}",
-  "@mapValveNameIsolation": { "placeholders": { "number": { "type": "String" } } },
+  "@mapValveNameIsolation": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
   "mapIsolationSheetTitle": "محبس الخط الرئيسي",
   "mapValveTreeCount": "{count, plural, =0{لا توجد أشجار مزروعة تعتمد على هذا المحبس} =1{شجرة واحدة تُغذّى عبر هذا المحبس} other{{count} شجرة تُغذّى عبر هذا المحبس}}",
-  "@mapValveTreeCount": { "placeholders": { "count": { "type": "int" } } },
+  "@mapValveTreeCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "mapValveDownstream": "يغذي الخطوط الفرعية: {list}",
-  "@mapValveDownstream": { "placeholders": { "list": { "type": "String" } } },
+  "@mapValveDownstream": {
+    "placeholders": {
+      "list": {
+        "type": "String"
+      }
+    }
+  },
   "mapValveHighlightHint": "الخط اللاحق ومناطقه مميزة على الخريطة. اضغط على مساحة فارغة من الخريطة للإزالة.",
   "mapZoneSheetTitle": "منطقة الري",
   "mapZoneTreeCount": "{count, plural, =0{لا توجد أشجار مرتبطة بهذه المنطقة} =1{شجرة واحدة تُروى من هذا المحبس} other{{count} أشجار تُروى من هذا المحبس}}",
-  "@mapZoneTreeCount": { "placeholders": { "count": { "type": "int" } } },
+  "@mapZoneTreeCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "mapZoneTreesPlanned": "السعة المخططة: {count} شجرة",
-  "@mapZoneTreesPlanned": { "placeholders": { "count": { "type": "int" } } },
+  "@mapZoneTreesPlanned": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "mapZoneHighlightHint": "خطوط المنطقة وأشجارها مميزة على الخريطة. اضغط على مساحة فارغة من الخريطة للإزالة.",
   "mapAllSections": "جميع الأقسام الـ 12",
   "mapSectionEmpty": "فارغ",
   "mapSectionUnplanted": "غير مزروع",
   "mapSelectAnyTree": "اختر أي شجرة",
   "mapTreePointsAvailable": "تتوفر {count} نقطة شجرة.",
-  "@mapTreePointsAvailable": { "placeholders": { "count": { "type": "int" } } },
+  "@mapTreePointsAvailable": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "mapGeometryFailed": "تعذّر تحميل هندسة المزرعة المُضمّنة.\n{error}",
-  "@mapGeometryFailed": { "placeholders": { "error": { "type": "String" } } },
+  "@mapGeometryFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "mapDiscrepancySemantics": "تحذير من تعارض في بيانات المزرعة",
   "mapDiscrepancy": "{count, plural, =1{فحص بيانات المزرعة · فرق واحد} other{فحص بيانات المزرعة · {count} فروقات}}\n{summary}",
-  "@mapDiscrepancy": { "placeholders": { "count": { "type": "int" }, "summary": { "type": "String" } } },
-
+  "@mapDiscrepancy": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "summary": {
+        "type": "String"
+      }
+    }
+  },
   "inventoryTitle": "المخزون",
   "inventoryEyebrow": "مستلزمات المزرعة",
   "inventorySearchHint": "ابحث في الأصناف",
@@ -443,7 +608,13 @@
   "inventoryEmptyWorker": "لم تتم إضافة أصناف بعد.",
   "inventoryLowStock": "مخزون منخفض",
   "inventoryLowStockCount": "{count, plural, =1{صنف واحد دون الحد الأدنى للمخزون} other{{count} أصناف دون الحد الأدنى للمخزون}}",
-  "@inventoryLowStockCount": { "placeholders": { "count": { "type": "int" } } },
+  "@inventoryLowStockCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "inventoryQuantityLabel": "المتوفر",
   "inventoryMinimumLabel": "الحد الأدنى",
   "inventoryAddItem": "إضافة صنف",
@@ -497,5 +668,104 @@
   "categoryHerbicide": "مبيدات أعشاب",
   "categoryFungicide": "مبيدات فطرية",
   "categoryTool": "أدوات زراعية",
-  "categoryOther": "أخرى"
+  "categoryOther": "أخرى",
+  "schedulesTitle": "الجداول",
+  "schedulesEyebrow": "عمليات متكررة",
+  "scheduleNew": "جدول جديد",
+  "schedulesEmptyTitle": "لا توجد جداول بعد",
+  "schedulesEmptyMessage": "أنشئ خطة متكررة للري أو التسميد أو الرش.",
+  "schedulesLoadFailed": "تعذر تحميل الجداول.",
+  "planStatusDraft": "مسودة",
+  "planStatusActive": "نشط",
+  "planStatusPaused": "متوقف مؤقتاً",
+  "planStatusCompleted": "مكتمل",
+  "planStatusArchived": "مؤرشف",
+  "scheduleOnce": "مرة واحدة",
+  "scheduleDaily": "يومياً",
+  "scheduleWeekly": "أسبوعياً",
+  "basisPerFeddan": "لكل فدان",
+  "basisPerTree": "لكل شجرة",
+  "basisAbsolute": "كمية ثابتة",
+  "methodFertigation": "تسميد مع الري",
+  "methodSoilApplication": "إضافة أرضية",
+  "methodFoliarSpray": "رش ورقي",
+  "methodManualApplication": "إضافة يدوية",
+  "scheduleTypeField": "العملية",
+  "scheduleTitleField": "عنوان الجدول",
+  "scheduleTitleRequired": "أدخل عنوان الجدول",
+  "scheduleRecurrenceField": "التكرار",
+  "scheduleWeekdaysField": "في أيام",
+  "scheduleWeekdaysRequired": "اختر يوماً واحداً على الأقل",
+  "scheduleStartsOn": "يبدأ في",
+  "scheduleEndsOn": "ينتهي في (اختياري)",
+  "scheduleTimeField": "وقت التنفيذ",
+  "scheduleDurationField": "المدة (دقائق)",
+  "scheduleTargetsTitle": "الأهداف",
+  "scheduleTargetFarm": "المزرعة كاملة",
+  "scheduleTargetSections": "الأقسام",
+  "scheduleTargetZones": "مناطق الري",
+  "scheduleProductTitle": "المنتج والجرعة",
+  "scheduleProductField": "منتج من المخزون",
+  "scheduleRateField": "معدل الإضافة",
+  "scheduleBasisField": "أساس المعدل",
+  "scheduleMethodField": "طريقة الإضافة",
+  "schedulePerOccurrence": "المطلوب لكل تنفيذ: {quantity} {unit}",
+  "@schedulePerOccurrence": {
+    "placeholders": {
+      "quantity": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "scheduleCoverage": "{count, plural, =0{المخزون الحالي لا يغطي أي تنفيذ} =1{المخزون الحالي يغطي تنفيذاً واحداً} other{المخزون الحالي يغطي {count} تنفيذات}}",
+  "@scheduleCoverage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "scheduleInsufficient": "المخزون غير كافٍ — لن تُنشأ المهام حتى تعيد التخزين.",
+  "scheduleAssigneesTitle": "العمال المكلفون",
+  "scheduleCreate": "إنشاء الجدول",
+  "scheduleSaving": "جارٍ الحفظ…",
+  "scheduleMsgCreated": "تم إنشاء الجدول.",
+  "scheduleMsgUpdated": "تم تحديث الجدول.",
+  "scheduleErrGeneric": "تعذر حفظ الجدول.",
+  "scheduleNextOccurrences": "المواعيد القادمة",
+  "scheduleGenerateNow": "إنشاء مهام اليوم",
+  "scheduleGenerated": "{count, plural, =0{لا توجد مهام جديدة للإنشاء} =1{تم إنشاء مهمة واحدة} other{تم إنشاء {count} مهام}}",
+  "@scheduleGenerated": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "schedulePause": "إيقاف مؤقت",
+  "scheduleActivate": "تفعيل",
+  "scheduleArchive": "أرشفة",
+  "scheduleTargetCount": "{count, plural, =1{هدف واحد} other{{count} أهداف}}",
+  "@scheduleTargetCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "taskProductTitle": "المنتج المطلوب",
+  "taskProductQuantity": "{quantity} {unit}",
+  "@taskProductQuantity": {
+    "placeholders": {
+      "quantity": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  }
 }

@@ -494,9 +494,9 @@ pgTAP green) before their Flutter counterparts — proven pattern from the offli
 [x] M0  enums + role getters                       (backend + tiny Flutter)
 [x] M1  inventory tables/RPCs/RLS/pgTAP            (backend)
 [x] M2  inventory Flutter module                   (app)
-[ ] M3  plan product/rate/assignees + generator +  (backend)
+[x] M3  plan product/rate/assignees + generator +  (backend)
         consumption/reversal + pgTAP
-[ ] M4  schedules Flutter UI + task product card   (app)
+[x] M4  schedules Flutter UI + task product card   (app)
 [ ] M5  task_targets + trigger + backfill + RPC    (backend)
 [ ] M6  multi-target task UI + offline payload     (app)
 [ ] M7  map → task create + task → map focus       (app)

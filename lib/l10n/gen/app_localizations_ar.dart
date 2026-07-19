@@ -1465,4 +1465,210 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get categoryOther => 'أخرى';
+
+  @override
+  String get schedulesTitle => 'الجداول';
+
+  @override
+  String get schedulesEyebrow => 'عمليات متكررة';
+
+  @override
+  String get scheduleNew => 'جدول جديد';
+
+  @override
+  String get schedulesEmptyTitle => 'لا توجد جداول بعد';
+
+  @override
+  String get schedulesEmptyMessage =>
+      'أنشئ خطة متكررة للري أو التسميد أو الرش.';
+
+  @override
+  String get schedulesLoadFailed => 'تعذر تحميل الجداول.';
+
+  @override
+  String get planStatusDraft => 'مسودة';
+
+  @override
+  String get planStatusActive => 'نشط';
+
+  @override
+  String get planStatusPaused => 'متوقف مؤقتاً';
+
+  @override
+  String get planStatusCompleted => 'مكتمل';
+
+  @override
+  String get planStatusArchived => 'مؤرشف';
+
+  @override
+  String get scheduleOnce => 'مرة واحدة';
+
+  @override
+  String get scheduleDaily => 'يومياً';
+
+  @override
+  String get scheduleWeekly => 'أسبوعياً';
+
+  @override
+  String get basisPerFeddan => 'لكل فدان';
+
+  @override
+  String get basisPerTree => 'لكل شجرة';
+
+  @override
+  String get basisAbsolute => 'كمية ثابتة';
+
+  @override
+  String get methodFertigation => 'تسميد مع الري';
+
+  @override
+  String get methodSoilApplication => 'إضافة أرضية';
+
+  @override
+  String get methodFoliarSpray => 'رش ورقي';
+
+  @override
+  String get methodManualApplication => 'إضافة يدوية';
+
+  @override
+  String get scheduleTypeField => 'العملية';
+
+  @override
+  String get scheduleTitleField => 'عنوان الجدول';
+
+  @override
+  String get scheduleTitleRequired => 'أدخل عنوان الجدول';
+
+  @override
+  String get scheduleRecurrenceField => 'التكرار';
+
+  @override
+  String get scheduleWeekdaysField => 'في أيام';
+
+  @override
+  String get scheduleWeekdaysRequired => 'اختر يوماً واحداً على الأقل';
+
+  @override
+  String get scheduleStartsOn => 'يبدأ في';
+
+  @override
+  String get scheduleEndsOn => 'ينتهي في (اختياري)';
+
+  @override
+  String get scheduleTimeField => 'وقت التنفيذ';
+
+  @override
+  String get scheduleDurationField => 'المدة (دقائق)';
+
+  @override
+  String get scheduleTargetsTitle => 'الأهداف';
+
+  @override
+  String get scheduleTargetFarm => 'المزرعة كاملة';
+
+  @override
+  String get scheduleTargetSections => 'الأقسام';
+
+  @override
+  String get scheduleTargetZones => 'مناطق الري';
+
+  @override
+  String get scheduleProductTitle => 'المنتج والجرعة';
+
+  @override
+  String get scheduleProductField => 'منتج من المخزون';
+
+  @override
+  String get scheduleRateField => 'معدل الإضافة';
+
+  @override
+  String get scheduleBasisField => 'أساس المعدل';
+
+  @override
+  String get scheduleMethodField => 'طريقة الإضافة';
+
+  @override
+  String schedulePerOccurrence(String quantity, String unit) {
+    return 'المطلوب لكل تنفيذ: $quantity $unit';
+  }
+
+  @override
+  String scheduleCoverage(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'المخزون الحالي يغطي $count تنفيذات',
+      one: 'المخزون الحالي يغطي تنفيذاً واحداً',
+      zero: 'المخزون الحالي لا يغطي أي تنفيذ',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get scheduleInsufficient =>
+      'المخزون غير كافٍ — لن تُنشأ المهام حتى تعيد التخزين.';
+
+  @override
+  String get scheduleAssigneesTitle => 'العمال المكلفون';
+
+  @override
+  String get scheduleCreate => 'إنشاء الجدول';
+
+  @override
+  String get scheduleSaving => 'جارٍ الحفظ…';
+
+  @override
+  String get scheduleMsgCreated => 'تم إنشاء الجدول.';
+
+  @override
+  String get scheduleMsgUpdated => 'تم تحديث الجدول.';
+
+  @override
+  String get scheduleErrGeneric => 'تعذر حفظ الجدول.';
+
+  @override
+  String get scheduleNextOccurrences => 'المواعيد القادمة';
+
+  @override
+  String get scheduleGenerateNow => 'إنشاء مهام اليوم';
+
+  @override
+  String scheduleGenerated(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'تم إنشاء $count مهام',
+      one: 'تم إنشاء مهمة واحدة',
+      zero: 'لا توجد مهام جديدة للإنشاء',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get schedulePause => 'إيقاف مؤقت';
+
+  @override
+  String get scheduleActivate => 'تفعيل';
+
+  @override
+  String get scheduleArchive => 'أرشفة';
+
+  @override
+  String scheduleTargetCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count أهداف',
+      one: 'هدف واحد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get taskProductTitle => 'المنتج المطلوب';
+
+  @override
+  String taskProductQuantity(String quantity, String unit) {
+    return '$quantity $unit';
+  }
 }

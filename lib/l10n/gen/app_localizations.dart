@@ -2717,6 +2717,354 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Other'**
   String get categoryOther;
+
+  /// No description provided for @schedulesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedules'**
+  String get schedulesTitle;
+
+  /// No description provided for @schedulesEyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Recurring operations'**
+  String get schedulesEyebrow;
+
+  /// No description provided for @scheduleNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New schedule'**
+  String get scheduleNew;
+
+  /// No description provided for @schedulesEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No schedules yet'**
+  String get schedulesEmptyTitle;
+
+  /// No description provided for @schedulesEmptyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a recurring irrigation, fertilization, or spraying plan.'**
+  String get schedulesEmptyMessage;
+
+  /// No description provided for @schedulesLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedules could not be loaded.'**
+  String get schedulesLoadFailed;
+
+  /// No description provided for @planStatusDraft.
+  ///
+  /// In en, this message translates to:
+  /// **'Draft'**
+  String get planStatusDraft;
+
+  /// No description provided for @planStatusActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get planStatusActive;
+
+  /// No description provided for @planStatusPaused.
+  ///
+  /// In en, this message translates to:
+  /// **'Paused'**
+  String get planStatusPaused;
+
+  /// No description provided for @planStatusCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get planStatusCompleted;
+
+  /// No description provided for @planStatusArchived.
+  ///
+  /// In en, this message translates to:
+  /// **'Archived'**
+  String get planStatusArchived;
+
+  /// No description provided for @scheduleOnce.
+  ///
+  /// In en, this message translates to:
+  /// **'Once'**
+  String get scheduleOnce;
+
+  /// No description provided for @scheduleDaily.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily'**
+  String get scheduleDaily;
+
+  /// No description provided for @scheduleWeekly.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly'**
+  String get scheduleWeekly;
+
+  /// No description provided for @basisPerFeddan.
+  ///
+  /// In en, this message translates to:
+  /// **'Per feddan'**
+  String get basisPerFeddan;
+
+  /// No description provided for @basisPerTree.
+  ///
+  /// In en, this message translates to:
+  /// **'Per tree'**
+  String get basisPerTree;
+
+  /// No description provided for @basisAbsolute.
+  ///
+  /// In en, this message translates to:
+  /// **'Fixed amount'**
+  String get basisAbsolute;
+
+  /// No description provided for @methodFertigation.
+  ///
+  /// In en, this message translates to:
+  /// **'Fertigation'**
+  String get methodFertigation;
+
+  /// No description provided for @methodSoilApplication.
+  ///
+  /// In en, this message translates to:
+  /// **'Soil application'**
+  String get methodSoilApplication;
+
+  /// No description provided for @methodFoliarSpray.
+  ///
+  /// In en, this message translates to:
+  /// **'Foliar spray'**
+  String get methodFoliarSpray;
+
+  /// No description provided for @methodManualApplication.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual application'**
+  String get methodManualApplication;
+
+  /// No description provided for @scheduleTypeField.
+  ///
+  /// In en, this message translates to:
+  /// **'Operation'**
+  String get scheduleTypeField;
+
+  /// No description provided for @scheduleTitleField.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule title'**
+  String get scheduleTitleField;
+
+  /// No description provided for @scheduleTitleRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a schedule title'**
+  String get scheduleTitleRequired;
+
+  /// No description provided for @scheduleRecurrenceField.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeats'**
+  String get scheduleRecurrenceField;
+
+  /// No description provided for @scheduleWeekdaysField.
+  ///
+  /// In en, this message translates to:
+  /// **'On days'**
+  String get scheduleWeekdaysField;
+
+  /// No description provided for @scheduleWeekdaysRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick at least one weekday'**
+  String get scheduleWeekdaysRequired;
+
+  /// No description provided for @scheduleStartsOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Starts on'**
+  String get scheduleStartsOn;
+
+  /// No description provided for @scheduleEndsOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Ends on (optional)'**
+  String get scheduleEndsOn;
+
+  /// No description provided for @scheduleTimeField.
+  ///
+  /// In en, this message translates to:
+  /// **'Execution time'**
+  String get scheduleTimeField;
+
+  /// No description provided for @scheduleDurationField.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration (minutes)'**
+  String get scheduleDurationField;
+
+  /// No description provided for @scheduleTargetsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Targets'**
+  String get scheduleTargetsTitle;
+
+  /// No description provided for @scheduleTargetFarm.
+  ///
+  /// In en, this message translates to:
+  /// **'Whole farm'**
+  String get scheduleTargetFarm;
+
+  /// No description provided for @scheduleTargetSections.
+  ///
+  /// In en, this message translates to:
+  /// **'Sections'**
+  String get scheduleTargetSections;
+
+  /// No description provided for @scheduleTargetZones.
+  ///
+  /// In en, this message translates to:
+  /// **'Irrigation zones'**
+  String get scheduleTargetZones;
+
+  /// No description provided for @scheduleProductTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Product & dose'**
+  String get scheduleProductTitle;
+
+  /// No description provided for @scheduleProductField.
+  ///
+  /// In en, this message translates to:
+  /// **'Product from inventory'**
+  String get scheduleProductField;
+
+  /// No description provided for @scheduleRateField.
+  ///
+  /// In en, this message translates to:
+  /// **'Application rate'**
+  String get scheduleRateField;
+
+  /// No description provided for @scheduleBasisField.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate basis'**
+  String get scheduleBasisField;
+
+  /// No description provided for @scheduleMethodField.
+  ///
+  /// In en, this message translates to:
+  /// **'Application method'**
+  String get scheduleMethodField;
+
+  /// No description provided for @schedulePerOccurrence.
+  ///
+  /// In en, this message translates to:
+  /// **'Needed per run: {quantity} {unit}'**
+  String schedulePerOccurrence(String quantity, String unit);
+
+  /// No description provided for @scheduleCoverage.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Current stock covers no applications} =1{Current stock covers 1 application} other{Current stock covers {count} applications}}'**
+  String scheduleCoverage(int count);
+
+  /// No description provided for @scheduleInsufficient.
+  ///
+  /// In en, this message translates to:
+  /// **'Not enough stock — tasks will not be generated until you restock.'**
+  String get scheduleInsufficient;
+
+  /// No description provided for @scheduleAssigneesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Assigned workers'**
+  String get scheduleAssigneesTitle;
+
+  /// No description provided for @scheduleCreate.
+  ///
+  /// In en, this message translates to:
+  /// **'Create schedule'**
+  String get scheduleCreate;
+
+  /// No description provided for @scheduleSaving.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving…'**
+  String get scheduleSaving;
+
+  /// No description provided for @scheduleMsgCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule created.'**
+  String get scheduleMsgCreated;
+
+  /// No description provided for @scheduleMsgUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule updated.'**
+  String get scheduleMsgUpdated;
+
+  /// No description provided for @scheduleErrGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'The schedule could not be saved.'**
+  String get scheduleErrGeneric;
+
+  /// No description provided for @scheduleNextOccurrences.
+  ///
+  /// In en, this message translates to:
+  /// **'Next dates'**
+  String get scheduleNextOccurrences;
+
+  /// No description provided for @scheduleGenerateNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate today\'s tasks'**
+  String get scheduleGenerateNow;
+
+  /// No description provided for @scheduleGenerated.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No new tasks to generate} =1{1 task generated} other{{count} tasks generated}}'**
+  String scheduleGenerated(int count);
+
+  /// No description provided for @schedulePause.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get schedulePause;
+
+  /// No description provided for @scheduleActivate.
+  ///
+  /// In en, this message translates to:
+  /// **'Activate'**
+  String get scheduleActivate;
+
+  /// No description provided for @scheduleArchive.
+  ///
+  /// In en, this message translates to:
+  /// **'Archive'**
+  String get scheduleArchive;
+
+  /// No description provided for @scheduleTargetCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 target} other{{count} targets}}'**
+  String scheduleTargetCount(int count);
+
+  /// No description provided for @taskProductTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Product to apply'**
+  String get taskProductTitle;
+
+  /// No description provided for @taskProductQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'{quantity} {unit}'**
+  String taskProductQuantity(String quantity, String unit);
 }
 
 class _AppLocalizationsDelegate

@@ -6,6 +6,8 @@ import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
 import 'package:al_wahat_farm_flutter/core/app_services.dart';
 import 'package:al_wahat_farm_flutter/features/auth/presentation/authenticated_gate.dart';
 import 'package:al_wahat_farm_flutter/features/farm/domain/farm_hierarchy.dart';
+import 'package:al_wahat_farm_flutter/features/inventory/domain/inventory_models.dart';
+import 'package:al_wahat_farm_flutter/features/schedules/domain/schedule_models.dart';
 import 'package:al_wahat_farm_flutter/features/sync/presentation/sync_scope.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/data/offline_evidence_queue.dart';
 import 'package:al_wahat_farm_flutter/features/farm/presentation/farm_hierarchy_gate.dart';
@@ -234,6 +236,12 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                   value: context.l10n.durationMinutes(
                     task.plannedDurationMinutes!,
                   ),
+                ),
+              if (_productLine(context, task.instructions) != null)
+                _DetailRow(
+                  icon: Icons.science_outlined,
+                  label: context.l10n.taskProductTitle,
+                  value: _productLine(context, task.instructions)!,
                 ),
               if (task.description != null &&
                   task.description!.isNotEmpty) ...<Widget>[
@@ -840,6 +848,31 @@ String _memberName(
     if (member.profileId == id) return member.fullName;
   }
   return l10n.assignedFarmMember;
+}
+
+/// "50 Grams · Fertigation" for plan-generated tasks that carry a
+/// consumption spec in their instructions; null otherwise.
+String? _productLine(BuildContext context, Map<String, Object?> instructions) {
+  final quantity = instructions['required_quantity'];
+  if (instructions['inventory_item_id'] == null || quantity == null) {
+    return null;
+  }
+  final l10n = context.l10n;
+  String unitLabel = '${instructions['required_unit'] ?? ''}';
+  try {
+    unitLabel = InventoryUnit.fromJson(unitLabel).localizedLabel(l10n);
+  } catch (_) {
+    // Unknown unit string: show it raw.
+  }
+  final line = l10n.taskProductQuantity('$quantity', unitLabel);
+  final methodWire = instructions['application_method'];
+  if (methodWire == null) return line;
+  try {
+    final method = ApplicationMethod.fromJson('$methodWire');
+    return '$line · ${method.localizedLabel(l10n)}';
+  } catch (_) {
+    return line;
+  }
 }
 
 String _instructionsText(Map<String, Object?> instructions) {

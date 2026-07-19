@@ -2,6 +2,7 @@ import 'package:al_wahat_farm_flutter/l10n/gen/app_localizations.dart';
 import 'package:al_wahat_farm_flutter/features/inventory/domain/inventory_models.dart';
 import 'package:al_wahat_farm_flutter/features/issues/domain/tree_issue_draft.dart';
 import 'package:al_wahat_farm_flutter/features/reviews/domain/engineer_review.dart';
+import 'package:al_wahat_farm_flutter/features/schedules/domain/schedule_models.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/farm_task.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/task_draft.dart';
 import 'package:al_wahat_farm_flutter/shared/models/farm_role.dart';
@@ -151,5 +152,50 @@ extension InventoryCategoryL10n on InventoryCategory {
         'tool' => l10n.categoryTool,
         'other' => l10n.categoryOther,
         _ => name,
+      };
+}
+
+extension OperationPlanTypeL10n on OperationPlanType {
+  String localizedLabel(AppLocalizations l10n) => switch (this) {
+        OperationPlanType.irrigation => l10n.taskTypeIrrigation,
+        OperationPlanType.fertilization => l10n.taskTypeFertilization,
+        OperationPlanType.harmfulWeedControl => l10n.taskTypeHarmfulWeedControl,
+        OperationPlanType.pestControl => l10n.taskTypePestControl,
+        OperationPlanType.diseaseControl => l10n.taskTypeDiseaseControl,
+      };
+}
+
+extension OperationPlanStatusL10n on OperationPlanStatus {
+  String localizedLabel(AppLocalizations l10n) => switch (this) {
+        OperationPlanStatus.draft => l10n.planStatusDraft,
+        OperationPlanStatus.active => l10n.planStatusActive,
+        OperationPlanStatus.paused => l10n.planStatusPaused,
+        OperationPlanStatus.completed => l10n.planStatusCompleted,
+        OperationPlanStatus.archived => l10n.planStatusArchived,
+      };
+}
+
+extension PlanScheduleTypeL10n on PlanScheduleType {
+  String localizedLabel(AppLocalizations l10n) => switch (this) {
+        PlanScheduleType.once => l10n.scheduleOnce,
+        PlanScheduleType.daily => l10n.scheduleDaily,
+        PlanScheduleType.weekly => l10n.scheduleWeekly,
+      };
+}
+
+extension RateBasisL10n on RateBasis {
+  String localizedLabel(AppLocalizations l10n) => switch (this) {
+        RateBasis.perFeddan => l10n.basisPerFeddan,
+        RateBasis.perTree => l10n.basisPerTree,
+        RateBasis.absolute => l10n.basisAbsolute,
+      };
+}
+
+extension ApplicationMethodL10n on ApplicationMethod {
+  String localizedLabel(AppLocalizations l10n) => switch (this) {
+        ApplicationMethod.fertigation => l10n.methodFertigation,
+        ApplicationMethod.soilApplication => l10n.methodSoilApplication,
+        ApplicationMethod.foliarSpray => l10n.methodFoliarSpray,
+        ApplicationMethod.manualApplication => l10n.methodManualApplication,
       };
 }
