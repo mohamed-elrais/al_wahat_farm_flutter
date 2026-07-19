@@ -103,6 +103,9 @@ PODS:
   - shared_preferences_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
+  - sqflite (0.0.3):
+    - Flutter
+    - FlutterMacOS
   - url_launcher_ios (0.0.1):
     - Flutter
 
@@ -117,6 +120,7 @@ DEPENDENCIES:
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - SDWebImage (= 5.19.7)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
+  - sqflite (from `.symlinks/plugins/sqflite/darwin`)
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
 
 SPEC REPOS:
@@ -158,6 +162,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/path_provider_foundation/darwin"
   shared_preferences_foundation:
     :path: ".symlinks/plugins/shared_preferences_foundation/darwin"
+  sqflite:
+    :path: ".symlinks/plugins/sqflite/darwin"
   url_launcher_ios:
     :path: ".symlinks/plugins/url_launcher_ios/ios"
 
@@ -188,8 +194,9 @@ SPEC CHECKSUMS:
   SDWebImage: 8a6b7b160b4d710e2a22b6900e25301075c34cb3
   SDWebImageWebPCoder: 0e06e365080397465cc73a7a9b472d8a3bd0f377
   shared_preferences_foundation: 0b09b969fb36da5551c0bc4a2dbd9d0ff9387478
+  sqflite: c35dad70033b8862124f8337cc994a809fcd9fa3
   url_launcher_ios: a1c1f2bf89969cb13cce46d0333c7257d346e169
 
-PODFILE CHECKSUM: 6a1140a8916ef70e002ad0fb31be4a7d8049d7a4
+PODFILE CHECKSUM: 0269d97cd232c66b521ede101fc36e9fcb9a62b4
 
 COCOAPODS: 1.17.0
