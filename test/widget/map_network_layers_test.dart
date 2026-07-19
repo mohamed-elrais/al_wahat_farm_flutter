@@ -44,6 +44,37 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets(
+      'map header survives a narrow display-zoomed canvas without overflow',
+      (tester) async {
+    // Realme C75 geometry: density override 540 -> a 320dp-wide canvas.
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 3.375;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final map = await tester.runAsync(
+      () => const MapAssetRepository().load().then(ProjectedFarmMap.new),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: Scaffold(
+          body: FarmMapScreen(mapFuture: Future<ProjectedFarmMap>.value(map!)),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    // All four controls are present in the stacked narrow layout, and the
+    // full-width title lays out without overflow errors.
+    expect(find.byTooltip('Map layers'), findsOneWidget);
+    expect(find.byTooltip('Zoom in'), findsOneWidget);
+    expect(find.text('Al Wahat farm overview'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   test('painter renders every network layer without errors', () async {
     final map = ProjectedFarmMap(await const MapAssetRepository().load());
     expect(map.branchLines, hasLength(121));

@@ -703,22 +703,44 @@ class _MapHeader extends StatelessWidget {
     final selected = section == null
         ? null
         : map.data.sections.firstWhere((item) => item.id == section);
-    return Row(
+    final titleBlock = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Eyebrow(context.l10n.mapEyebrow),
-              Text(
-                selected == null
-                    ? context.l10n.homeFarmOverview
-                    : '${context.l10n.mapSectionName(selected.id)} · ${selected.treeCount == 0 ? context.l10n.mapSectionUnplanted : selected.treeCount}',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-            ],
-          ),
+        Eyebrow(context.l10n.mapEyebrow),
+        Text(
+          selected == null
+              ? context.l10n.homeFarmOverview
+              : '${context.l10n.mapSectionName(selected.id)} · ${selected.treeCount == 0 ? context.l10n.mapSectionUnplanted : selected.treeCount}',
+          style: Theme.of(context).textTheme.titleLarge,
         ),
+      ],
+    );
+    final controls = _controls(context);
+    // Four 44dp controls leave too little of a narrow (display-zoomed)
+    // canvas for the title, wrapping it line-per-word. Below 380dp the title
+    // gets the full width and the controls move to their own row.
+    return LayoutBuilder(
+      builder: (context, constraints) => constraints.maxWidth < 380
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                titleBlock,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: controls,
+                ),
+              ],
+            )
+          : Row(
+              children: <Widget>[
+                Expanded(child: titleBlock),
+                ...controls,
+              ],
+            ),
+    );
+  }
+
+  List<Widget> _controls(BuildContext context) => <Widget>[
         _Control(
           icon: Icons.add,
           tooltip: context.l10n.mapZoomIn,
@@ -778,9 +800,7 @@ class _MapHeader extends StatelessWidget {
             if (value == 'waterSupply') onWaterSupply(!waterSupply);
           },
         ),
-      ],
-    );
-  }
+      ];
 }
 
 class _Control extends StatelessWidget {
