@@ -67,7 +67,9 @@ GoRouter createRouter(AppConfig config) {
             routes: <RouteBase>[
               GoRoute(
                 path: '/map',
-                builder: (_, __) => const FarmMapScreen(),
+                builder: (_, state) => FarmMapScreen(
+                  focus: state.uri.queryParameters['focus'],
+                ),
                 routes: <RouteBase>[
                   GoRoute(
                     path: 'tree/:treeId',
@@ -102,6 +104,8 @@ GoRouter createRouter(AppConfig config) {
                     path: 'create',
                     builder: (_, state) => TaskCreateScreen(
                       initialTreeId: state.uri.queryParameters['treeId'],
+                      initialZoneId: state.uri.queryParameters['zoneId'],
+                      initialSectionId: state.uri.queryParameters['sectionId'],
                     ),
                   ),
                   GoRoute(

@@ -18,9 +18,14 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class FarmMapScreen extends StatefulWidget {
-  const FarmMapScreen({this.mapFuture, super.key});
+  const FarmMapScreen({this.mapFuture, this.focus, super.key});
 
   final Future<ProjectedFarmMap>? mapFuture;
+
+  /// Deep-link focus request: `tree:<id>`, `zone:<uuid>` or
+  /// `section:<id|uuid>`. Applied once after the map loads; unknown ids are
+  /// a graceful no-op.
+  final String? focus;
 
   @override
   State<FarmMapScreen> createState() => _FarmMapScreenState();
@@ -42,12 +47,23 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
   FarmHierarchy? _lastLiveHierarchy;
   ProjectedFarmMap? _lastReconciledMap;
   TreeReconciliationResult? _reconciliation;
+  String? _pendingFocus;
 
   @override
   void initState() {
     super.initState();
+    _pendingFocus = widget.focus;
     _map = widget.mapFuture ??
         const MapAssetRepository().load().then(ProjectedFarmMap.new);
+  }
+
+  @override
+  void didUpdateWidget(FarmMapScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // A new deep link while the map tab is alive re-arms the focus.
+    if (widget.focus != oldWidget.focus && widget.focus != null) {
+      _pendingFocus = widget.focus;
+    }
   }
 
   @override
@@ -79,6 +95,13 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
                 manager && (_reconciliation?.hasDiscrepancies ?? false);
             return LayoutBuilder(
               builder: (BuildContext context, BoxConstraints constraints) {
+                final focus = _pendingFocus;
+                if (focus != null) {
+                  _pendingFocus = null;
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (mounted) _applyFocus(map, focus, constraints.biggest);
+                  });
+                }
                 final wide = constraints.maxWidth >= AppBreakpoints.tablet;
                 final selectedValve = _selectedValve;
                 final highlightZones = selectedValve == null
@@ -165,6 +188,23 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
                           _fit(map, section, constraints.biggest);
                         },
                       ),
+                      if (manager && _liveSectionFor(_section) != null) ...[
+                        const SizedBox(height: 8),
+                        Align(
+                          alignment: AlignmentDirectional.centerStart,
+                          child: OutlinedButton.icon(
+                            key: const Key('map-section-create-task'),
+                            onPressed: () => context.go(
+                              '/tasks/create?sectionId='
+                              '${_liveSectionFor(_section)!.id}',
+                            ),
+                            icon: const Icon(Icons.assignment_add, size: 18),
+                            label: Text(
+                              context.l10n.mapCreateTaskForSection(_section!),
+                            ),
+                          ),
+                        ),
+                      ],
                       if (showDataWarning) ...<Widget>[
                         const SizedBox(height: 8),
                         _DiscrepancyBanner(result: _reconciliation!),
@@ -314,14 +354,103 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
     final zones = _zonesFor(map, valve) ?? const <String>{};
     final actualTrees =
         map.data.trees.where((tree) => zones.contains(tree.zoneId)).length;
+    final canManageTasks = OperationalContextScope.maybeOf(context)
+            ?.selectedMembership
+            .role
+            .canManageTasks ??
+        false;
+    final zoneUuid = valve.zoneUuid;
+    final zoneIsLive = zoneUuid != null &&
+        (FarmHierarchyScope.maybeOf(context)
+                ?.hierarchy
+                .zones
+                .any((zone) => zone.id == zoneUuid) ??
+            false);
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (sheetContext) => _ZoneSheet(
         valve: valve,
         actualTrees: actualTrees,
+        onCreateTask: valve.isZoneControl && zoneIsLive && canManageTasks
+            ? () {
+                Navigator.of(sheetContext).pop();
+                context.go('/tasks/create?zoneId=$zoneUuid');
+              }
+            : null,
       ),
     );
+  }
+
+  /// Applies a `kind:id` deep-link focus: selects the entity, fits its
+  /// section and opens its sheet. Unknown kinds or ids do nothing.
+  void _applyFocus(ProjectedFarmMap map, String focus, Size viewport) {
+    final separator = focus.indexOf(':');
+    if (separator <= 0 || separator == focus.length - 1) return;
+    final kind = focus.substring(0, separator);
+    final id = focus.substring(separator + 1);
+    switch (kind) {
+      case 'tree':
+        for (final tree in map.data.trees) {
+          if (tree.id == id) {
+            _fitSection(map, tree.section, viewport);
+            _selectTree(tree);
+            return;
+          }
+        }
+      case 'zone':
+        for (final valve in map.data.valves) {
+          if (valve.isZoneControl && valve.zoneUuid == id) {
+            final section = valve.section;
+            if (section != null) _fitSection(map, section, viewport);
+            _selectValve(map, valve);
+            return;
+          }
+        }
+      case 'section':
+        final resolved = _mapSectionIdFor(map, id);
+        if (resolved != null) {
+          setState(() {
+            _selectedTree = null;
+          });
+          _fitSection(map, resolved, viewport);
+        }
+    }
+  }
+
+  /// Resolves a section token that may be a map section id ("A") or a live
+  /// hierarchy section uuid.
+  String? _mapSectionIdFor(ProjectedFarmMap map, String token) {
+    if (map.data.sections.any((section) => section.id == token)) return token;
+    final hierarchy = FarmHierarchyScope.maybeOf(context)?.hierarchy;
+    if (hierarchy == null) return null;
+    for (final section in hierarchy.sections) {
+      if (section.id == token) {
+        return map.data.sections.any((item) => item.id == section.code)
+            ? section.code
+            : null;
+      }
+    }
+    return null;
+  }
+
+  void _fitSection(ProjectedFarmMap map, String section, Size viewport) {
+    if (!map.data.sections.any((item) => item.id == section)) return;
+    setState(() => _section = section);
+    _fit(map, section, viewport);
+  }
+
+  /// The live hierarchy section matching the map section filter, if any.
+  FarmSection? _liveSectionFor(String? mapSectionId) {
+    if (mapSectionId == null) return null;
+    final hierarchy = FarmHierarchyScope.maybeOf(context)?.hierarchy;
+    if (hierarchy == null) return null;
+    for (final section in hierarchy.sections) {
+      if (section.code == mapSectionId || section.id == mapSectionId) {
+        return section;
+      }
+    }
+    return null;
   }
 
   void _zoom(double factor) {
@@ -366,10 +495,17 @@ String valveDisplayName(AppLocalizations l10n, NetworkValve valve) {
 /// tree counts, a mainline isolation valve just identifies itself. Dismissing
 /// it keeps the map highlight; tapping empty map space clears it.
 class _ZoneSheet extends StatelessWidget {
-  const _ZoneSheet({required this.valve, required this.actualTrees});
+  const _ZoneSheet({
+    required this.valve,
+    required this.actualTrees,
+    this.onCreateTask,
+  });
 
   final NetworkValve valve;
   final int actualTrees;
+
+  /// Manager-only: creates a task targeting this valve's live zone.
+  final VoidCallback? onCreateTask;
 
   @override
   Widget build(BuildContext context) {
@@ -445,6 +581,15 @@ class _ZoneSheet extends StatelessWidget {
                     .bodySmall
                     ?.copyWith(color: AppColors.muted),
               ),
+              if (onCreateTask != null) ...<Widget>[
+                const SizedBox(height: 10),
+                FilledButton.icon(
+                  key: const Key('zone-sheet-create-task'),
+                  onPressed: onCreateTask,
+                  icon: const Icon(Icons.assignment_add),
+                  label: Text(l10n.attachTask),
+                ),
+              ],
             ],
           ),
         ),

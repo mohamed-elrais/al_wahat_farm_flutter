@@ -19,6 +19,8 @@ enum _TaskScope { farm, section, zone, tree }
 class TaskCreateScreen extends StatefulWidget {
   const TaskCreateScreen({
     this.initialTreeId,
+    this.initialZoneId,
+    this.initialSectionId,
     this.controller,
     this.workspace,
     this.hierarchy,
@@ -30,6 +32,8 @@ class TaskCreateScreen extends StatefulWidget {
   });
 
   final String? initialTreeId;
+  final String? initialZoneId;
+  final String? initialSectionId;
   final TaskCreateController? controller;
   final TaskWorkspaceController? workspace;
   final FarmHierarchy? hierarchy;
@@ -92,12 +96,24 @@ class _TaskCreateScreenState extends State<TaskCreateScreen> {
     }
 
     final treeId = widget.initialTreeId;
+    final zoneId = widget.initialZoneId;
+    final sectionId = widget.initialSectionId;
     final hierarchy = _hierarchy;
-    if (!_initialTargetApplied && treeId != null && hierarchy != null) {
+    if (!_initialTargetApplied &&
+        hierarchy != null &&
+        (treeId != null || zoneId != null || sectionId != null)) {
       _initialTargetApplied = true;
-      if (hierarchy.trees.any((tree) => tree.id == treeId)) {
+      if (treeId != null && hierarchy.trees.any((tree) => tree.id == treeId)) {
         _scope = _TaskScope.tree;
         _targetIds.add(treeId);
+      } else if (zoneId != null &&
+          hierarchy.zones.any((zone) => zone.id == zoneId)) {
+        _scope = _TaskScope.zone;
+        _targetIds.add(zoneId);
+      } else if (sectionId != null &&
+          hierarchy.sections.any((section) => section.id == sectionId)) {
+        _scope = _TaskScope.section;
+        _targetIds.add(sectionId);
       }
     }
   }

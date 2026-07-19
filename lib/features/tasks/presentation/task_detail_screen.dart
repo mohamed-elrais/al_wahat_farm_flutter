@@ -14,6 +14,7 @@ import 'package:al_wahat_farm_flutter/features/farm/presentation/farm_hierarchy_
 import 'package:al_wahat_farm_flutter/features/tasks/data/task_evidence_service.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/data/task_repository.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/farm_task.dart';
+import 'package:al_wahat_farm_flutter/features/tasks/domain/task_draft.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/task_evidence.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_detail_controller.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_widgets.dart';
@@ -221,7 +222,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                     ? context.l10n.scheduleTargetCount(details.targets.length)
                     : taskTargetLabel(context.l10n, task, _hierarchy),
               ),
-              if (details.targets.length > 1)
+              if (details.targets.isNotEmpty)
                 Padding(
                   padding: const EdgeInsetsDirectional.only(
                     start: 30,
@@ -231,12 +232,14 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                     spacing: 8,
                     runSpacing: 8,
                     children: <Widget>[
+                      // Tappable: each target opens the map focused on it.
                       for (final target in details.targets)
-                        Chip(
+                        ActionChip(
                           key: Key(
                             'task-target-${target.entityId ?? 'farm'}',
                           ),
                           visualDensity: VisualDensity.compact,
+                          avatar: const Icon(Icons.map_outlined, size: 16),
                           label: Text(
                             taskTargetChipLabel(
                               context.l10n,
@@ -244,6 +247,11 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                               _hierarchy,
                             ),
                           ),
+                          onPressed: _mapFocusToken(target) == null
+                              ? null
+                              : () => context.go(
+                                    '/map?focus=${_mapFocusToken(target)}',
+                                  ),
                         ),
                     ],
                   ),
@@ -869,6 +877,14 @@ class _DetailFailure extends StatelessWidget {
           ),
         ),
       );
+}
+
+/// `/map?focus=` token for a task target; null for an empty target row.
+String? _mapFocusToken(TaskTarget target) {
+  if (target.treeId != null) return 'tree:${target.treeId}';
+  if (target.irrigationZoneId != null) return 'zone:${target.irrigationZoneId}';
+  if (target.sectionId != null) return 'section:${target.sectionId}';
+  return null;
 }
 
 String _memberName(

@@ -499,7 +499,7 @@ pgTAP green) before their Flutter counterparts — proven pattern from the offli
 [x] M4  schedules Flutter UI + task product card   (app)
 [x] M5  task_targets + trigger + backfill + RPC    (backend)
 [x] M6  multi-target task UI + offline payload     (app)
-[ ] M7  map → task create + task → map focus       (app)
+[x] M7  map → task create + task → map focus       (app)
 [ ] M8  i18n/a11y/golden certification + docs      (both)
 ```
 

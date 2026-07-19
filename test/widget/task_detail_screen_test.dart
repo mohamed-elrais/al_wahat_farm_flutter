@@ -7,6 +7,7 @@ import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_detail_sc
 import 'package:al_wahat_farm_flutter/shared/models/farm_role.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 
 import '../support/task_fakes.dart';
 
@@ -114,17 +115,34 @@ void main() {
     );
     addTearDown(controller.dispose);
 
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: AppTheme.light,
-        home: TaskDetailScreen(
-          taskId: taskId,
-          controller: controller,
-          hierarchy: _zonedHierarchy,
-          role: FarmRole.owner,
-          userId: 'manager-id',
-          farmId: 'farm-id',
+    final router = GoRouter(
+      initialLocation: '/detail',
+      routes: <RouteBase>[
+        GoRoute(
+          path: '/detail',
+          builder: (_, __) => TaskDetailScreen(
+            taskId: taskId,
+            controller: controller,
+            hierarchy: _zonedHierarchy,
+            role: FarmRole.owner,
+            userId: 'manager-id',
+            farmId: 'farm-id',
+          ),
         ),
+        GoRoute(
+          path: '/map',
+          builder: (_, GoRouterState state) => Scaffold(
+            body: Text(
+              'map-stub:${state.uri.queryParameters['focus']}',
+            ),
+          ),
+        ),
+      ],
+    );
+    await tester.pumpWidget(
+      MaterialApp.router(
+        theme: AppTheme.light,
+        routerConfig: router,
       ),
     );
     await tester.pumpAndSettle();
@@ -134,6 +152,11 @@ void main() {
     expect(find.byKey(const Key('task-target-zone-2')), findsOneWidget);
     expect(find.text('Zone Z1'), findsOneWidget);
     expect(find.text('Zone Z2'), findsOneWidget);
+
+    // A target chip deep-links to the map focused on that target.
+    await tester.tap(find.byKey(const Key('task-target-zone-2')));
+    await tester.pumpAndSettle();
+    expect(find.text('map-stub:zone:zone-2'), findsOneWidget);
   });
 }
 

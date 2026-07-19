@@ -474,6 +474,12 @@
   "issueErrPartialPrefix": "تم حفظ المشكلة ومهمة المراجعة، لكن لم يتم تأكيد تسجيل الصورة. ",
   "issueMsgRetryPhoto": "يمكنك إعادة محاولة رفع الصورة بأمان.",
   "selectedTree": "الشجرة المحددة",
+  "mapCreateTaskForSection": "إنشاء مهمة للقسم {code}",
+  "@mapCreateTaskForSection": {
+    "placeholders": {
+      "code": {"type": "String"}
+    }
+  },
   "attachTask": "إرفاق مهمة",
   "reportAnIssue": "الإبلاغ عن مشكلة",
   "treeUnavailableActions": "نقطة الإحداثيات هذه غير متوفرة في بيانات المزرعة المباشرة، لذا فإن الإجراءات التشغيلية معطّلة.",

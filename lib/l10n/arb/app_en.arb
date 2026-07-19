@@ -474,6 +474,12 @@
   "issueErrPartialPrefix": "The issue and review task were saved, but photo registration was not confirmed. ",
   "issueMsgRetryPhoto": "You can safely retry the photo.",
   "selectedTree": "Selected tree",
+  "mapCreateTaskForSection": "Create task for Section {code}",
+  "@mapCreateTaskForSection": {
+    "placeholders": {
+      "code": {"type": "String"}
+    }
+  },
   "attachTask": "Attach a task",
   "reportAnIssue": "Report an issue",
   "treeUnavailableActions": "This geometry point is not available in live farm data, so operational actions are disabled.",
