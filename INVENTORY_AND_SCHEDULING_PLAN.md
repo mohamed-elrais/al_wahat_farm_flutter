@@ -500,7 +500,31 @@ pgTAP green) before their Flutter counterparts — proven pattern from the offli
 [x] M5  task_targets + trigger + backfill + RPC    (backend)
 [x] M6  multi-target task UI + offline payload     (app)
 [x] M7  map → task create + task → map focus       (app)
-[ ] M8  i18n/a11y/golden certification + docs      (both)
+[x] M8  i18n/a11y/golden certification + docs      (both)
 ```
 
 All §3 and §3.1 decisions are confirmed. The plan is fully unblocked; start at M0.
+
+## 12. Delivery record (2026-07-20)
+
+All milestones M0–M8 are implemented and verified locally.
+
+- **Backend** (Al-Wahat-Farm-supabase): commits `0ff4357` (M0), `8682942` (M1),
+  `a7ebc25` (M3), `82389a6` (M5). pgTAP suite **153/153** across 7 files
+  (`inventory_foundations`, `inventory_module`, `plan_dosing`, `task_targets`
+  + the pre-existing op-id/photo suites).
+- **App** (this repo): commits `cf377dd` (M0), `23106a1` (M2), `4a94678` (M4),
+  `b3f69b9` (M6), `da0bae0` (M7) + the M8 certification commit. Full suite
+  green (unit + widget + golden), analyzer clean, `dart format` clean.
+- **M8 certification**: en/ar ARB parity + placeholder tests, inventory
+  200%-text-scale + labelled-target a11y test, goldens for inventory list,
+  schedules list and multi-target task detail
+  (`test/goldens/inventory_list_390x844.png`, `schedules_list_390x844.png`,
+  `task_detail_targets_390x844.png`).
+
+**Deployment order (unchanged contract):** push the Supabase migrations
+(`supabase db push`) **before** shipping this app build — M1/M3/M5 backend
+must be live before M2/M4/M6/M7 UI reaches devices. Single-target task
+creation keeps working against the old backend (the app only sends
+`p_targets` for two or more targets), so a stale app + new backend is also
+safe.

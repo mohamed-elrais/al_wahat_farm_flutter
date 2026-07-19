@@ -5,9 +5,13 @@ import 'package:al_wahat_farm_flutter/core/app_services.dart';
 import 'package:al_wahat_farm_flutter/core/cache/local_cache_store.dart';
 import 'package:al_wahat_farm_flutter/core/connectivity/connectivity_service.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/locale_controller.dart';
+import 'package:al_wahat_farm_flutter/features/inventory/presentation/inventory_controller.dart';
+import 'package:al_wahat_farm_flutter/features/inventory/presentation/inventory_screen.dart';
 import 'package:al_wahat_farm_flutter/features/profile/presentation/profile_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../support/inventory_fakes.dart';
 
 void main() {
   Widget wrap(Widget child, {double textScaleFactor = 1.0}) {
@@ -48,6 +52,28 @@ void main() {
 
     expect(find.byKey(const Key('logout-button')), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+      'inventory list survives 200% text scaling and labels its actions',
+      (tester) async {
+    final handle = tester.ensureSemantics();
+    final repo = FakeInventoryRepository();
+    final fertilizer = repo.seedCategory('fertilizer');
+    repo.seedItem('Calcium nitrate',
+        categoryId: fertilizer, quantity: 5, minimumStock: 10);
+    final controller = InventoryController(repository: repo, farmId: 'farm-id');
+    addTearDown(controller.dispose);
+
+    await tester.pumpWidget(
+      wrap(InventoryScreen(controller: controller), textScaleFactor: 2),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Calcium nitrate'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
+    handle.dispose();
   });
 
   testWidgets('sync status exposes an accessible label', (tester) async {

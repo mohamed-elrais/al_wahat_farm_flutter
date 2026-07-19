@@ -289,6 +289,21 @@ review screenshots are certified, while physical-device capture, a live side-by-
 diff with the running React reference, form/full-map goldens, and live backend mutations
 are explicitly listed as remaining in `FIDELITY_REPORT.md`.
 
+## Inventory & scheduling extension (2026-07)
+
+`INVENTORY_AND_SCHEDULING_PLAN.md` M0–M8 delivered: inventory module
+(categories/items/append-only transaction ledger, manager-edit worker-read),
+recurring fertilization/chemical/irrigation schedules reusing the
+operation-plan engine with per-feddan dosing (60 trees = 1 feddan,
+`farms.trees_per_feddan`), stock-blocked generation with auto-recovery after
+restock, consumption on task completion with shortfall recording and reversal
+on returned-for-correction, multi-target tasks (`task_targets`, same-kind rule
+enforced in the database, legacy single-target columns mirror the first
+target), and map ↔ tasks integration (`/tasks/create?zoneId|sectionId`,
+`/map?focus=tree:|zone:|section:`, tappable target chips). Certification: ARB
+parity tests, a11y checks, and goldens for the new screens; see the plan's
+§12 delivery record for commits and suite counts.
+
 ## Architecture decisions
 
 - Feature-first presentation (`features/<name>/`) with shared app/core infrastructure.
