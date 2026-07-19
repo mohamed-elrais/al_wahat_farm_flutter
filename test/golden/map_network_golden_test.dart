@@ -70,13 +70,8 @@ void main() {
       (widget) => widget is CustomPaint && widget.painter is FarmMapPainter,
     );
     final canvasBox = tester.renderObject<RenderBox>(canvasFinder);
-    final viewerRect =
-        tester.getRect(find.byType(InteractiveViewer)).deflate(24);
     final isolation = map.valves.firstWhere(
-      (projected) =>
-          !projected.valve.isZoneControl &&
-          (projected.valve.downstreamSubmains?.contains('05') ?? false) &&
-          viewerRect.contains(canvasBox.localToGlobal(projected.point)),
+      (projected) => projected.valve.assetId == 'IRR-IV-ML-04',
     );
     await tester.tapAt(canvasBox.localToGlobal(isolation.point));
     await tester.pumpAndSettle();

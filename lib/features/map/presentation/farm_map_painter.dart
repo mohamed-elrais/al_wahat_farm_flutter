@@ -18,6 +18,7 @@ class FarmMapPainter extends CustomPainter {
     this.showWaterSupply = false,
     this.selectedValveId,
     this.highlightZoneUuids,
+    this.highlightSubmains,
     this.highlightLine,
   });
 
@@ -33,11 +34,13 @@ class FarmMapPainter extends CustomPainter {
 
   /// Asset id of the tapped valve (haloed). When [highlightZoneUuids] is set,
   /// the zones' branch lines and trees keep full color while everything else
-  /// recedes — a single zone for a zone control valve, every downstream zone
-  /// for a mainline isolation valve. [highlightLine] is the pipe geometry fed
+  /// recedes — a single zone for a zone control valve, every zone of the fed
+  /// submain for a mainline isolation valve. [highlightSubmains] keeps that
+  /// submain's risers and flush valves lit; [highlightLine] is the pipe fed
   /// through the selected valve, drawn emphasized.
   final String? selectedValveId;
   final Set<String>? highlightZoneUuids;
+  final Set<String>? highlightSubmains;
   final List<Offset>? highlightLine;
 
   static const overviewTreeRadius = 2.7;
@@ -193,12 +196,23 @@ class FarmMapPainter extends CustomPainter {
       );
     }
     for (final riser in map.risers) {
-      final dim = _dimmed(riser.feature.section);
+      final dim = _networkDimmed(riser.feature.submain, riser.feature.section);
       canvas.drawRect(
         Rect.fromCircle(center: riser.point, radius: riserRadius),
         Paint()..color = AppColors.waterMain.withOpacity(dim ? 0.2 : 1),
       );
     }
+  }
+
+  /// Dimming for submain-bound hardware (risers, flush valves): when a
+  /// submain is highlighted only its own hardware stays lit; otherwise the
+  /// section-scoped dimming applies.
+  bool _networkDimmed(String? submain, String? section) {
+    final submains = highlightSubmains;
+    if (submains != null) {
+      return submain == null || !submains.contains(submain);
+    }
+    return _dimmed(section);
   }
 
   void _drawWaterSupply(Canvas canvas) {
@@ -229,7 +243,7 @@ class FarmMapPainter extends CustomPainter {
 
   void _drawFlushValves(Canvas canvas) {
     for (final flush in map.flushValves) {
-      final dim = _dimmed(flush.feature.section);
+      final dim = _networkDimmed(flush.feature.submain, flush.feature.section);
       final paint = Paint()
         ..color = const Color(0xFF8A6D4F).withOpacity(dim ? 0.2 : 0.95);
       final center = flush.point;
@@ -433,5 +447,6 @@ class FarmMapPainter extends CustomPainter {
       oldDelegate.showWaterSupply != showWaterSupply ||
       oldDelegate.selectedValveId != selectedValveId ||
       oldDelegate.highlightZoneUuids != highlightZoneUuids ||
+      oldDelegate.highlightSubmains != highlightSubmains ||
       oldDelegate.highlightLine != highlightLine;
 }

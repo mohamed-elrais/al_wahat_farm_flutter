@@ -110,33 +110,39 @@ void main() {
     // viewer area (some sit under the header chrome after the initial fit).
     final viewerRect =
         tester.getRect(find.byType(InteractiveViewer)).deflate(24);
+    // Valve 04 is the user-facing contract: it shuts off submain 04, whose
+    // SM04 assets (zones, branches, flush valves) carry 276 trees.
     final isolation = map.valves.firstWhere(
-      (projected) =>
-          !projected.valve.isZoneControl &&
-          // A valve feeding planted submains (05 carries treed zones), so the
-          // highlight has zones and the sheet has a nonzero count.
-          (projected.valve.downstreamSubmains?.contains('05') ?? false) &&
-          viewerRect.contains(canvasBox.localToGlobal(projected.point)),
+      (projected) => projected.valve.assetId == 'IRR-IV-ML-04',
+    );
+    expect(
+      viewerRect.contains(canvasBox.localToGlobal(isolation.point)),
+      isTrue,
+      reason: 'valve 04 must be inside the fitted viewer to tap',
     );
     await tester.tapAt(canvasBox.localToGlobal(isolation.point));
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('zone-sheet')), findsOneWidget);
-    final number = isolation.valve.assetId.split('-').last;
-    expect(find.text('Mainline Isolation Valve $number'), findsOneWidget);
+    expect(find.text('Mainline Isolation Valve 04'), findsOneWidget);
     expect(find.text('MAINLINE VALVE'), findsOneWidget); // Eyebrow uppercases
-    // Downstream trees are counted and the downstream network highlights.
+    // Valve 04 counts submain 04's trees and highlights its network.
     expect(find.byKey(const Key('valve-sheet-trees')), findsOneWidget);
     expect(
-      find.textContaining('Feeds submains:'),
+      find.text('276 trees are fed through this valve'),
       findsOneWidget,
     );
+    expect(find.text('Feeds submains: 04'), findsOneWidget);
     final painter =
         tester.widget<CustomPaint>(canvasFinder).painter! as FarmMapPainter;
-    expect(painter.selectedValveId, isolation.valve.assetId);
+    expect(painter.selectedValveId, 'IRR-IV-ML-04');
+    expect(painter.highlightSubmains, <String>{'04'});
     expect(painter.highlightZoneUuids, isNotEmpty);
-    expect(painter.highlightLine, isNotNull);
-    expect(painter.highlightLine!.length, greaterThanOrEqualTo(2));
+    // The highlighted pipe is submain 04 itself.
+    final submain04 = map.data.valves
+        .firstWhere((valve) => valve.assetId == 'IRR-IV-ML-04')
+        .downstreamLine!;
+    expect(painter.highlightLine, hasLength(submain04.length));
   });
 
   testWidgets('zone sheet is fully localized in Arabic', (tester) async {

@@ -27,7 +27,6 @@ Usage:
 import argparse
 import copy
 import json
-import math
 import re
 import sys
 import xml.etree.ElementTree as ET
@@ -145,80 +144,15 @@ def build_branch_lines(document, zone_uuids):
     return sorted(lines, key=lambda item: item["assetId"])
 
 
-def _projected_param(polyline, point):
-    """(distance, arc-length parameter, projected point) of the closest point
-    on the polyline to `point`, all in coordinate degrees."""
-    best = (float("inf"), 0.0, polyline[0])
-    travelled = 0.0
-    for start, end in zip(polyline, polyline[1:]):
-        vx, vy = end[0] - start[0], end[1] - start[1]
-        length = math.hypot(vx, vy)
-        t = 0.0
-        if length > 0:
-            t = ((point[0] - start[0]) * vx + (point[1] - start[1]) * vy) / (
-                length * length
-            )
-            t = max(0.0, min(1.0, t))
-        projected = (start[0] + t * vx, start[1] + t * vy)
-        distance = math.hypot(point[0] - projected[0], point[1] - projected[1])
-        if distance < best[0]:
-            best = (distance, travelled + t * length, projected)
-        travelled += length
-    return best
-
-
-def mainline_topology(document):
-    """Downstream data for the mainline isolation valves, derived from the
-    surveyed geometry: the valves sit on the mainline polyline, flow starts at
-    the booster-pump end, and each submain tees off at a known arc position.
-    Closing a valve therefore isolates every submain connecting beyond it.
-    Verified against the data: every submain endpoint lies within ~1.3 m of
-    the mainline, every valve within ~3.3 m, and the resulting downstream sets
-    shrink monotonically along the line.
-    """
-    mainline = None
-    pump = None
-    for placemark in folder(document, "04 Water Source & Supply").findall(
-        "k:Placemark", NS
-    ):
-        meta = fields(placemark)
-        if meta.get("asset_type") == "mainline":
-            mainline = coordinates(placemark)
-        if meta.get("asset_type") == "irrigation_booster_pump":
-            pump = coordinates(placemark)[0]
-    # Flow direction: the polyline must start at the pump end.
-    if math.hypot(pump[0] - mainline[-1][0], pump[1] - mainline[-1][1]) < math.hypot(
-        pump[0] - mainline[0][0], pump[1] - mainline[0][1]
-    ):
-        mainline = list(reversed(mainline))
-
-    submain_params = {}
+def build_valves(document, zone_uuids):
+    # The naming convention is the topology: Mainline Isolation Valve NN is
+    # the shutoff for Irrigation Submain NN, and every dependent asset carries
+    # the submain in its id (IRR-ZCV-D-SM04-*, IRR-BR-C-SM04-*,
+    # IRR-FV-D-SM04-*). Pure id matching - no geometric inference.
+    submain_lines = {}
     for placemark in folder(document, "05 Submains").findall("k:Placemark", NS):
         meta = fields(placemark)
-        submain_id = meta["asset_id"].split("-")[-1]
-        line = coordinates(placemark)
-        # The submain's mainline connection is whichever endpoint sits on the
-        # line; take the closer one and record its arc position.
-        submain_params[submain_id] = min(
-            (_projected_param(mainline, end) for end in (line[0], line[-1])),
-            key=lambda item: item[0],
-        )[1]
-    return mainline, submain_params
-
-
-def _downstream_line(mainline, projected, param):
-    """The mainline geometry from the valve position to the far end."""
-    line = [[projected[0], projected[1]]]
-    travelled = 0.0
-    for start, end in zip(mainline, mainline[1:]):
-        travelled += math.hypot(end[0] - start[0], end[1] - start[1])
-        if travelled > param + 1e-9:
-            line.append([end[0], end[1]])
-    return line
-
-
-def build_valves(document, zone_uuids):
-    mainline, submain_params = mainline_topology(document)
+        submain_lines[meta["asset_id"].split("-")[-1]] = coordinates(placemark)
     mosque_line = None
     for placemark in folder(document, "04 Water Source & Supply").findall(
         "k:Placemark", NS
@@ -236,18 +170,12 @@ def build_valves(document, zone_uuids):
         if "irrigation_zone_tree_count" in meta:
             record["zoneTreeCount"] = int(meta["irrigation_zone_tree_count"])
         if meta["asset_type"] == "isolation_valve":
-            if "-ML-" in record["assetId"]:
-                _, param, projected = _projected_param(
-                    mainline, (record["lng"], record["lat"])
-                )
-                record["downstreamSubmains"] = sorted(
-                    submain_id
-                    for submain_id, connection in submain_params.items()
-                    if connection > param + 1e-9
-                )
-                record["downstreamLine"] = _downstream_line(
-                    mainline, projected, param
-                )
+            number = record["assetId"].split("-")[-1]
+            if "-ML-" in record["assetId"] and number in submain_lines:
+                record["downstreamSubmains"] = [number]
+                record["downstreamLine"] = [
+                    [lng, lat] for lng, lat in submain_lines[number]
+                ]
             elif mosque_line is not None:
                 # The mosque supply valve isolates the mosque line itself.
                 record["downstreamSubmains"] = []

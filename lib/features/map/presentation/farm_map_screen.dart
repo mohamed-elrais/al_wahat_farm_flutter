@@ -84,8 +84,9 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
                 final highlightZones = selectedValve == null
                     ? null
                     : _zonesFor(map, selectedValve);
-                final highlightLine = selectedValve == null ||
-                        selectedValve.isZoneControl
+                final isolationSelected =
+                    selectedValve != null && !selectedValve.isZoneControl;
+                final highlightLine = !isolationSelected
                     ? null
                     : map.valves
                         .firstWhere(
@@ -93,6 +94,11 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
                               projected.valve.assetId == selectedValve.assetId,
                         )
                         .downstreamPoints;
+                final submains = selectedValve?.downstreamSubmains;
+                final highlightSubmains =
+                    isolationSelected && (submains?.isNotEmpty ?? false)
+                        ? submains!.toSet()
+                        : null;
                 final canvas = _MapPanel(
                   map: map,
                   transformation: _transformation,
@@ -100,6 +106,7 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
                   selectedTree: _selectedTree,
                   selectedValveId: selectedValve?.assetId,
                   highlightZones: highlightZones,
+                  highlightSubmains: highlightSubmains,
                   highlightLine: highlightLine,
                   showTrees: _trees,
                   showIrrigation: _irrigation,
@@ -502,6 +509,7 @@ class _MapPanel extends StatefulWidget {
     required this.selectedTree,
     required this.selectedValveId,
     required this.highlightZones,
+    required this.highlightSubmains,
     required this.highlightLine,
     required this.showTrees,
     required this.showIrrigation,
@@ -519,6 +527,7 @@ class _MapPanel extends StatefulWidget {
   final FarmTree? selectedTree;
   final String? selectedValveId;
   final Set<String>? highlightZones;
+  final Set<String>? highlightSubmains;
   final List<Offset>? highlightLine;
   final bool showTrees;
   final bool showIrrigation;
@@ -639,6 +648,7 @@ class _MapPanelState extends State<_MapPanel> {
                           showWaterSupply: widget.showWaterSupply,
                           selectedValveId: widget.selectedValveId,
                           highlightZoneUuids: widget.highlightZones,
+                          highlightSubmains: widget.highlightSubmains,
                           highlightLine: widget.highlightLine,
                         ),
                       ),

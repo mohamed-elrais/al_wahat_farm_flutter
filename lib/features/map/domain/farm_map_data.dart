@@ -190,9 +190,11 @@ class NetworkValve {
   final int? zoneTreeCount;
   final String? status;
 
-  /// Isolation valves only: the submains fed through this valve and the pipe
-  /// geometry beyond it (derived from the surveyed mainline topology by the
-  /// asset generator).
+  /// Isolation valves only: the submain(s) this valve shuts off and that
+  /// pipe's geometry. Mainline Isolation Valve NN is the shutoff for
+  /// Irrigation Submain NN — the naming convention is the topology, so every
+  /// dependent asset shares the SMNN id (IRR-ZCV-*-SM04-*, IRR-BR-*-SM04-*,
+  /// IRR-FV-*-SM04-*).
   final List<String>? downstreamSubmains;
   final List<GeoCoordinate>? downstreamLine;
 

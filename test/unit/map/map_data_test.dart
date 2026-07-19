@@ -70,25 +70,39 @@ void main() {
       expect(data.waterSupply.lines, hasLength(12));
     });
 
-    test('mainline isolation valves carry derived downstream topology', () {
+    test('mainline isolation valve NN is the shutoff for submain NN', () {
       final isolation = data.valves
           .where((valve) => valve.assetId.contains('-IV-ML-'))
           .toList(growable: false);
       expect(isolation, hasLength(10));
       for (final valve in isolation) {
-        expect(valve.downstreamSubmains, isNotNull,
-            reason: '${valve.assetId} lacks downstream submains');
+        final number = valve.assetId.split('-').last;
+        expect(valve.downstreamSubmains, <String>[number],
+            reason: '${valve.assetId} must feed submain $number');
         expect(valve.downstreamLine, isNotNull,
-            reason: '${valve.assetId} lacks a downstream line');
+            reason: '${valve.assetId} lacks its submain geometry');
+        expect(valve.downstreamLine!.length, greaterThanOrEqualTo(2));
       }
-      // The valve nearest the pump cuts off the most submains; the terminal
-      // valve cuts off none. Downstream sets shrink along the line.
-      final bySubmainCount = <String, int>{
-        for (final valve in isolation)
-          valve.assetId: valve.downstreamSubmains!.length,
-      };
-      expect(bySubmainCount['IRR-IV-ML-01'], 9);
-      expect(bySubmainCount['IRR-IV-ML-10'], 0);
+      // Spot-check the user-facing contract: valve 04 controls the SM04
+      // assets (ZCVs, branch lines, flush valves) and their trees.
+      final sm04Zones = data.valves
+          .where((valve) =>
+              valve.isZoneControl &&
+              valve.submain == '04' &&
+              valve.zoneUuid != null)
+          .map((valve) => valve.zoneUuid)
+          .toSet();
+      final sm04Trees =
+          data.trees.where((tree) => sm04Zones.contains(tree.zoneId)).length;
+      expect(sm04Trees, 276);
+      expect(
+        data.branchLines.where((line) => line.submain == '04'),
+        isNotEmpty,
+      );
+      expect(
+        data.flushValves.where((valve) => valve.submain == '04'),
+        isNotEmpty,
+      );
     });
 
     test('zone control valves cover every tree zone by uuid', () {
