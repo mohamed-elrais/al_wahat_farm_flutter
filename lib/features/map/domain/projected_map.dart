@@ -34,9 +34,16 @@ class ProjectedBranchLine {
 }
 
 class ProjectedValve {
-  const ProjectedValve({required this.valve, required this.point});
+  const ProjectedValve({
+    required this.valve,
+    required this.point,
+    this.downstreamPoints,
+  });
   final NetworkValve valve;
   final Offset point;
+
+  /// Isolation valves only: the projected pipe geometry beyond the valve.
+  final List<Offset>? downstreamPoints;
 }
 
 class ProjectedNetworkPoint {
@@ -76,6 +83,9 @@ class ProjectedFarmMap {
                 latitude: valve.latitude,
               ),
             ),
+            downstreamPoints: valve.downstreamLine
+                ?.map(projection.project)
+                .toList(growable: false),
           ),
         )
         .toList(growable: false);

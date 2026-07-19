@@ -16,8 +16,9 @@ class FarmMapPainter extends CustomPainter {
     this.showValves = true,
     this.showFlushValves = false,
     this.showWaterSupply = false,
-    this.selectedZoneValveId,
-    this.selectedZoneUuid,
+    this.selectedValveId,
+    this.highlightZoneUuids,
+    this.highlightLine,
   });
 
   final ProjectedFarmMap map;
@@ -30,10 +31,14 @@ class FarmMapPainter extends CustomPainter {
   final bool showFlushValves;
   final bool showWaterSupply;
 
-  /// Asset id of the tapped zone control valve and the live-zone uuid it
-  /// controls: its branch lines and trees highlight, everything else recedes.
-  final String? selectedZoneValveId;
-  final String? selectedZoneUuid;
+  /// Asset id of the tapped valve (haloed). When [highlightZoneUuids] is set,
+  /// the zones' branch lines and trees keep full color while everything else
+  /// recedes — a single zone for a zone control valve, every downstream zone
+  /// for a mainline isolation valve. [highlightLine] is the pipe geometry fed
+  /// through the selected valve, drawn emphasized.
+  final String? selectedValveId;
+  final Set<String>? highlightZoneUuids;
+  final List<Offset>? highlightLine;
 
   static const overviewTreeRadius = 2.7;
   static const sectionTreeRadius = 4.4;
@@ -51,9 +56,36 @@ class FarmMapPainter extends CustomPainter {
     if (showWaterSupply) _drawWaterSupply(canvas);
     if (showUtilities) _drawUtilities(canvas);
     _drawLabels(canvas);
+    _drawHighlightLine(canvas);
     if (showFlushValves) _drawFlushValves(canvas);
     if (showTrees) _drawTrees(canvas);
     if (showValves) _drawValves(canvas);
+  }
+
+  /// The pipe fed through the selected valve, emphasized above the base
+  /// network (drawn regardless of layer toggles so the selection always
+  /// explains itself).
+  void _drawHighlightLine(Canvas canvas) {
+    final line = highlightLine;
+    if (line == null || line.length < 2) return;
+    canvas.drawPoints(
+      PointMode.polygon,
+      line,
+      Paint()
+        ..color = Colors.white
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round
+        ..strokeWidth = 5.4,
+    );
+    canvas.drawPoints(
+      PointMode.polygon,
+      line,
+      Paint()
+        ..color = AppColors.waterMain
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round
+        ..strokeWidth = 3.2,
+    );
   }
 
   void _drawGround(Canvas canvas, Size size) {
@@ -137,11 +169,13 @@ class FarmMapPainter extends CustomPainter {
       }
     }
     // Branch lines in their zone color, so each zone's reach is visible.
-    // Zone-recede mode only applies when a zone (not just a valve) is
-    // selected: an isolation-valve selection keeps the network visible.
-    final zoneMode = selectedZoneUuid != null;
+    // Zone-recede mode only applies when highlighted zones are set (a zone
+    // valve's own zone, or every zone downstream of an isolation valve).
+    final zoneMode = highlightZoneUuids != null;
     for (final branch in map.branchLines) {
-      final inZone = zoneMode && branch.line.zoneId == selectedZoneValveId;
+      final inZone = zoneMode &&
+          branch.line.zoneUuid != null &&
+          highlightZoneUuids!.contains(branch.line.zoneUuid);
       final dim = zoneMode ? !inZone : _dimmed(branch.line.section);
       canvas.drawPoints(
         PointMode.polygon,
@@ -212,8 +246,9 @@ class FarmMapPainter extends CustomPainter {
     for (final projected in map.valves) {
       final valve = projected.valve;
       final selected =
-          selectedZoneValveId != null && valve.assetId == selectedZoneValveId;
-      final dim = selectedZoneUuid != null ? !selected : _dimmed(valve.section);
+          selectedValveId != null && valve.assetId == selectedValveId;
+      final dim =
+          highlightZoneUuids != null ? !selected : _dimmed(valve.section);
       final zone = valve.isZoneControl;
       final fill =
           zone ? (valve.color ?? AppColors.waterMain) : const Color(0xFF32424E);
@@ -311,8 +346,8 @@ class FarmMapPainter extends CustomPainter {
         continue;
       }
       final selected = projected.tree.id == selectedTreeId;
-      final outsideZone =
-          selectedZoneUuid != null && projected.tree.zoneId != selectedZoneUuid;
+      final outsideZone = highlightZoneUuids != null &&
+          !highlightZoneUuids!.contains(projected.tree.zoneId);
       final radius = selected
           ? selectedTreeRadius
           : selectedSection == null
@@ -396,6 +431,7 @@ class FarmMapPainter extends CustomPainter {
       oldDelegate.showValves != showValves ||
       oldDelegate.showFlushValves != showFlushValves ||
       oldDelegate.showWaterSupply != showWaterSupply ||
-      oldDelegate.selectedZoneValveId != selectedZoneValveId ||
-      oldDelegate.selectedZoneUuid != selectedZoneUuid;
+      oldDelegate.selectedValveId != selectedValveId ||
+      oldDelegate.highlightZoneUuids != highlightZoneUuids ||
+      oldDelegate.highlightLine != highlightLine;
 }

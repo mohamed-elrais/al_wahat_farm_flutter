@@ -173,6 +173,8 @@ class NetworkValve {
     this.color,
     this.zoneTreeCount,
     this.status,
+    this.downstreamSubmains,
+    this.downstreamLine,
   });
 
   final String assetId;
@@ -187,6 +189,12 @@ class NetworkValve {
   final Color? color;
   final int? zoneTreeCount;
   final String? status;
+
+  /// Isolation valves only: the submains fed through this valve and the pipe
+  /// geometry beyond it (derived from the surveyed mainline topology by the
+  /// asset generator).
+  final List<String>? downstreamSubmains;
+  final List<GeoCoordinate>? downstreamLine;
 
   bool get isZoneControl => type == 'zone_control_valve';
 
@@ -205,6 +213,11 @@ class NetworkValve {
             : _parseColor(json['color']! as String),
         zoneTreeCount: (json['zoneTreeCount'] as num?)?.toInt(),
         status: json['status'] as String?,
+        downstreamSubmains:
+            (json['downstreamSubmains'] as List<Object?>?)?.cast<String>(),
+        downstreamLine: json['downstreamLine'] == null
+            ? null
+            : _coordinates(json['downstreamLine']),
       );
 }
 

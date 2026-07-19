@@ -46,14 +46,14 @@ void main() {
 
     expect(find.byKey(const Key('zone-sheet')), findsOneWidget);
     expect(find.text(target.valve.name), findsOneWidget);
-    expect(painter().selectedZoneValveId, target.valve.assetId);
-    expect(painter().selectedZoneUuid, target.valve.zoneUuid);
+    expect(painter().selectedValveId, target.valve.assetId);
+    expect(painter().highlightZoneUuids, <String>{target.valve.zoneUuid!});
 
     // Dismiss the sheet; the highlight stays.
     await tester.tapAt(const Offset(215, 60));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('zone-sheet')), findsNothing);
-    expect(painter().selectedZoneValveId, target.valve.assetId);
+    expect(painter().selectedValveId, target.valve.assetId);
 
     // A tap on empty map space (far from every valve and tree) clears it.
     final scale = 430 / canvasBox.size.width;
@@ -78,7 +78,7 @@ void main() {
     final globalEmpty = canvasBox.localToGlobal(empty!);
     await tester.tapAt(globalEmpty);
     await tester.pumpAndSettle();
-    expect(painter().selectedZoneValveId, isNull);
+    expect(painter().selectedValveId, isNull);
   });
 
   testWidgets('tapping a mainline isolation valve shows its localized sheet',
@@ -113,6 +113,9 @@ void main() {
     final isolation = map.valves.firstWhere(
       (projected) =>
           !projected.valve.isZoneControl &&
+          // A valve feeding planted submains (05 carries treed zones), so the
+          // highlight has zones and the sheet has a nonzero count.
+          (projected.valve.downstreamSubmains?.contains('05') ?? false) &&
           viewerRect.contains(canvasBox.localToGlobal(projected.point)),
     );
     await tester.tapAt(canvasBox.localToGlobal(isolation.point));
@@ -122,12 +125,18 @@ void main() {
     final number = isolation.valve.assetId.split('-').last;
     expect(find.text('Mainline Isolation Valve $number'), findsOneWidget);
     expect(find.text('MAINLINE VALVE'), findsOneWidget); // Eyebrow uppercases
-    // No zone: nothing recedes, only the valve halo (no tree counts either).
-    expect(find.byKey(const Key('zone-sheet-trees')), findsNothing);
+    // Downstream trees are counted and the downstream network highlights.
+    expect(find.byKey(const Key('valve-sheet-trees')), findsOneWidget);
+    expect(
+      find.textContaining('Feeds submains:'),
+      findsOneWidget,
+    );
     final painter =
         tester.widget<CustomPaint>(canvasFinder).painter! as FarmMapPainter;
-    expect(painter.selectedZoneValveId, isolation.valve.assetId);
-    expect(painter.selectedZoneUuid, isNull);
+    expect(painter.selectedValveId, isolation.valve.assetId);
+    expect(painter.highlightZoneUuids, isNotEmpty);
+    expect(painter.highlightLine, isNotNull);
+    expect(painter.highlightLine!.length, greaterThanOrEqualTo(2));
   });
 
   testWidgets('zone sheet is fully localized in Arabic', (tester) async {

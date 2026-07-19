@@ -31,7 +31,7 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
   final _transformation = TransformationController();
   String? _section;
   FarmTree? _selectedTree;
-  NetworkValve? _selectedZoneValve;
+  NetworkValve? _selectedValve;
   bool _trees = true;
   bool _irrigation = true;
   bool _utilities = true;
@@ -80,12 +80,27 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
             return LayoutBuilder(
               builder: (BuildContext context, BoxConstraints constraints) {
                 final wide = constraints.maxWidth >= AppBreakpoints.tablet;
+                final selectedValve = _selectedValve;
+                final highlightZones = selectedValve == null
+                    ? null
+                    : _zonesFor(map, selectedValve);
+                final highlightLine = selectedValve == null ||
+                        selectedValve.isZoneControl
+                    ? null
+                    : map.valves
+                        .firstWhere(
+                          (projected) =>
+                              projected.valve.assetId == selectedValve.assetId,
+                        )
+                        .downstreamPoints;
                 final canvas = _MapPanel(
                   map: map,
                   transformation: _transformation,
                   section: _section,
                   selectedTree: _selectedTree,
-                  selectedZoneValve: _selectedZoneValve,
+                  selectedValveId: selectedValve?.assetId,
+                  highlightZones: highlightZones,
+                  highlightLine: highlightLine,
                   showTrees: _trees,
                   showIrrigation: _irrigation,
                   showUtilities: _utilities,
@@ -93,10 +108,10 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
                   showFlushValves: _flushValves,
                   showWaterSupply: _waterSupply,
                   onTapTree: (tree) => _selectTree(tree),
-                  onTapValve: (valve) => _selectZoneValve(map, valve),
+                  onTapValve: (valve) => _selectValve(map, valve),
                   onTapMiss: () {
-                    if (_selectedZoneValve != null) {
-                      setState(() => _selectedZoneValve = null);
+                    if (_selectedValve != null) {
+                      setState(() => _selectedValve = null);
                     }
                   },
                 );
@@ -268,11 +283,30 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
     );
   }
 
-  void _selectZoneValve(ProjectedFarmMap map, NetworkValve valve) {
-    setState(() => _selectedZoneValve = valve);
-    final actualTrees = valve.zoneUuid == null
-        ? 0
-        : map.data.trees.where((tree) => tree.zoneId == valve.zoneUuid).length;
+  /// The live-zone uuids a valve controls: its own zone for a zone control
+  /// valve, every zone on its downstream submains for an isolation valve.
+  Set<String>? _zonesFor(ProjectedFarmMap map, NetworkValve valve) {
+    if (valve.isZoneControl) {
+      final zone = valve.zoneUuid;
+      return zone == null ? null : <String>{zone};
+    }
+    final submains = valve.downstreamSubmains;
+    if (submains == null || submains.isEmpty) return null;
+    final zones = <String>{
+      for (final candidate in map.data.valves)
+        if (candidate.isZoneControl &&
+            candidate.zoneUuid != null &&
+            submains.contains(candidate.submain))
+          candidate.zoneUuid!,
+    };
+    return zones.isEmpty ? null : zones;
+  }
+
+  void _selectValve(ProjectedFarmMap map, NetworkValve valve) {
+    setState(() => _selectedValve = valve);
+    final zones = _zonesFor(map, valve) ?? const <String>{};
+    final actualTrees =
+        map.data.trees.where((tree) => zones.contains(tree.zoneId)).length;
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
@@ -383,6 +417,18 @@ class _ZoneSheet extends StatelessWidget {
                 ),
                 if (valve.zoneTreeCount != null)
                   Text(l10n.mapZoneTreesPlanned(valve.zoneTreeCount!)),
+              ] else if (valve.downstreamSubmains?.isNotEmpty ??
+                  false) ...<Widget>[
+                const SizedBox(height: 10),
+                Text(
+                  l10n.mapValveTreeCount(actualTrees),
+                  key: const Key('valve-sheet-trees'),
+                ),
+                Text(
+                  l10n.mapValveDownstream(
+                    valve.downstreamSubmains!.join(', '),
+                  ),
+                ),
               ],
               const SizedBox(height: 8),
               Text(
@@ -454,7 +500,9 @@ class _MapPanel extends StatefulWidget {
     required this.transformation,
     required this.section,
     required this.selectedTree,
-    required this.selectedZoneValve,
+    required this.selectedValveId,
+    required this.highlightZones,
+    required this.highlightLine,
     required this.showTrees,
     required this.showIrrigation,
     required this.showUtilities,
@@ -469,7 +517,9 @@ class _MapPanel extends StatefulWidget {
   final TransformationController transformation;
   final String? section;
   final FarmTree? selectedTree;
-  final NetworkValve? selectedZoneValve;
+  final String? selectedValveId;
+  final Set<String>? highlightZones;
+  final List<Offset>? highlightLine;
   final bool showTrees;
   final bool showIrrigation;
   final bool showUtilities;
@@ -587,9 +637,9 @@ class _MapPanelState extends State<_MapPanel> {
                           showValves: widget.showValves,
                           showFlushValves: widget.showFlushValves,
                           showWaterSupply: widget.showWaterSupply,
-                          selectedZoneValveId:
-                              widget.selectedZoneValve?.assetId,
-                          selectedZoneUuid: widget.selectedZoneValve?.zoneUuid,
+                          selectedValveId: widget.selectedValveId,
+                          highlightZoneUuids: widget.highlightZones,
+                          highlightLine: widget.highlightLine,
                         ),
                       ),
                     ),

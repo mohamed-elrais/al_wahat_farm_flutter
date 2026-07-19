@@ -70,6 +70,27 @@ void main() {
       expect(data.waterSupply.lines, hasLength(12));
     });
 
+    test('mainline isolation valves carry derived downstream topology', () {
+      final isolation = data.valves
+          .where((valve) => valve.assetId.contains('-IV-ML-'))
+          .toList(growable: false);
+      expect(isolation, hasLength(10));
+      for (final valve in isolation) {
+        expect(valve.downstreamSubmains, isNotNull,
+            reason: '${valve.assetId} lacks downstream submains');
+        expect(valve.downstreamLine, isNotNull,
+            reason: '${valve.assetId} lacks a downstream line');
+      }
+      // The valve nearest the pump cuts off the most submains; the terminal
+      // valve cuts off none. Downstream sets shrink along the line.
+      final bySubmainCount = <String, int>{
+        for (final valve in isolation)
+          valve.assetId: valve.downstreamSubmains!.length,
+      };
+      expect(bySubmainCount['IRR-IV-ML-01'], 9);
+      expect(bySubmainCount['IRR-IV-ML-10'], 0);
+    });
+
     test('zone control valves cover every tree zone by uuid', () {
       final valveZones = data.valves
           .map((valve) => valve.zoneUuid)

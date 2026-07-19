@@ -63,6 +63,30 @@ void main() {
     );
   });
 
+  testWidgets('map with a highlighted mainline isolation valve at 430 by 932',
+      (tester) async {
+    final map = await pumpMap(tester);
+    final canvasFinder = find.byWidgetPredicate(
+      (widget) => widget is CustomPaint && widget.painter is FarmMapPainter,
+    );
+    final canvasBox = tester.renderObject<RenderBox>(canvasFinder);
+    final viewerRect =
+        tester.getRect(find.byType(InteractiveViewer)).deflate(24);
+    final isolation = map.valves.firstWhere(
+      (projected) =>
+          !projected.valve.isZoneControl &&
+          (projected.valve.downstreamSubmains?.contains('05') ?? false) &&
+          viewerRect.contains(canvasBox.localToGlobal(projected.point)),
+    );
+    await tester.tapAt(canvasBox.localToGlobal(isolation.point));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('zone-sheet')), findsOneWidget);
+    await expectLater(
+      find.byType(MaterialApp),
+      matchesGoldenFile('../goldens/map_isolation_highlight_430x932.png'),
+    );
+  });
+
   testWidgets('map with a highlighted irrigation zone at 430 by 932',
       (tester) async {
     final map = await pumpMap(tester);
