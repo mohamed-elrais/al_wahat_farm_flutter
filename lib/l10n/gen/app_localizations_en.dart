@@ -1173,6 +1173,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mapLayerWaterSupply => 'Water supply';
 
   @override
+  String get mapZoneSheetTitle => 'Irrigation zone';
+
+  @override
+  String mapZoneTreeCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count trees irrigated by this valve',
+      one: '1 tree irrigated by this valve',
+      zero: 'No trees mapped to this zone',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String mapZoneTreesPlanned(int count) {
+    return 'Planned capacity: $count trees';
+  }
+
+  @override
+  String get mapZoneHighlightHint =>
+      'The zone\'s lines and trees are highlighted on the map. Tap empty map space to clear.';
+
+  @override
   String get mapAllSections => 'All 12 sections';
 
   @override

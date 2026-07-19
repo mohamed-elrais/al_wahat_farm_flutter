@@ -31,6 +31,7 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
   final _transformation = TransformationController();
   String? _section;
   FarmTree? _selectedTree;
+  NetworkValve? _selectedZoneValve;
   bool _trees = true;
   bool _irrigation = true;
   bool _utilities = true;
@@ -84,6 +85,7 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
                   transformation: _transformation,
                   section: _section,
                   selectedTree: _selectedTree,
+                  selectedZoneValve: _selectedZoneValve,
                   showTrees: _trees,
                   showIrrigation: _irrigation,
                   showUtilities: _utilities,
@@ -91,6 +93,12 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
                   showFlushValves: _flushValves,
                   showWaterSupply: _waterSupply,
                   onTapTree: (tree) => _selectTree(tree),
+                  onTapValve: (valve) => _selectZoneValve(map, valve),
+                  onTapMiss: () {
+                    if (_selectedZoneValve != null) {
+                      setState(() => _selectedZoneValve = null);
+                    }
+                  },
                 );
                 return Padding(
                   padding: EdgeInsets.fromLTRB(
@@ -260,6 +268,21 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
     );
   }
 
+  void _selectZoneValve(ProjectedFarmMap map, NetworkValve valve) {
+    setState(() => _selectedZoneValve = valve);
+    final actualTrees = valve.zoneUuid == null
+        ? 0
+        : map.data.trees.where((tree) => tree.zoneId == valve.zoneUuid).length;
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => _ZoneSheet(
+        valve: valve,
+        actualTrees: actualTrees,
+      ),
+    );
+  }
+
   void _zoom(double factor) {
     final matrix = _transformation.value.clone();
     final scale = matrix.getMaxScaleOnAxis();
@@ -282,6 +305,74 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
         (available.height - rect.height * scale) / 2 - rect.top * scale,
       )
       ..scale(scale);
+  }
+}
+
+/// Bottom sheet for a tapped zone control valve. Dismissing it keeps the zone
+/// highlighted on the canvas; tapping empty map space clears the highlight.
+class _ZoneSheet extends StatelessWidget {
+  const _ZoneSheet({required this.valve, required this.actualTrees});
+
+  final NetworkValve valve;
+  final int actualTrees;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+        child: WahatCard(
+          key: const Key('zone-sheet'),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Row(
+                children: <Widget>[
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: valve.color ?? AppColors.waterMain,
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: Colors.white, width: 2),
+                    ),
+                    child: const SizedBox.square(dimension: 22),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Eyebrow(l10n.mapZoneSheetTitle),
+                        Text(
+                          valve.name,
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Text(
+                l10n.mapZoneTreeCount(actualTrees),
+                key: const Key('zone-sheet-trees'),
+              ),
+              if (valve.zoneTreeCount != null)
+                Text(l10n.mapZoneTreesPlanned(valve.zoneTreeCount!)),
+              const SizedBox(height: 8),
+              Text(
+                l10n.mapZoneHighlightHint,
+                style: Theme.of(context)
+                    .textTheme
+                    .bodySmall
+                    ?.copyWith(color: AppColors.muted),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -339,6 +430,7 @@ class _MapPanel extends StatefulWidget {
     required this.transformation,
     required this.section,
     required this.selectedTree,
+    required this.selectedZoneValve,
     required this.showTrees,
     required this.showIrrigation,
     required this.showUtilities,
@@ -346,11 +438,14 @@ class _MapPanel extends StatefulWidget {
     required this.showFlushValves,
     required this.showWaterSupply,
     required this.onTapTree,
+    required this.onTapValve,
+    required this.onTapMiss,
   });
   final ProjectedFarmMap map;
   final TransformationController transformation;
   final String? section;
   final FarmTree? selectedTree;
+  final NetworkValve? selectedZoneValve;
   final bool showTrees;
   final bool showIrrigation;
   final bool showUtilities;
@@ -358,6 +453,8 @@ class _MapPanel extends StatefulWidget {
   final bool showFlushValves;
   final bool showWaterSupply;
   final ValueChanged<FarmTree> onTapTree;
+  final ValueChanged<NetworkValve> onTapValve;
+  final VoidCallback onTapMiss;
 
   @override
   State<_MapPanel> createState() => _MapPanelState();
@@ -365,6 +462,21 @@ class _MapPanel extends StatefulWidget {
 
 class _MapPanelState extends State<_MapPanel> {
   bool _fitted = false;
+
+  /// The closest tappable zone control valve within [tolerance] canvas units.
+  NetworkValve? _nearestZoneValve(Offset point, double tolerance) {
+    NetworkValve? best;
+    var bestDistance = tolerance;
+    for (final projected in widget.map.valves) {
+      if (!projected.valve.isZoneControl) continue;
+      final distance = (projected.point - point).distance;
+      if (distance <= bestDistance) {
+        bestDistance = distance;
+        best = projected.valve;
+      }
+    }
+    return best;
+  }
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
@@ -396,25 +508,36 @@ class _MapPanelState extends State<_MapPanel> {
               color: AppColors.sand,
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
-                onTapUp: widget.showTrees
-                    ? (details) {
-                        final inverse = Matrix4.inverted(
-                          widget.transformation.value,
-                        );
-                        final point = MatrixUtils.transformPoint(
-                          inverse,
-                          details.localPosition,
-                        );
-                        final scale =
-                            widget.transformation.value.getMaxScaleOnAxis();
-                        final nearest = widget.map.treeIndex.nearest(
-                          point,
-                          tolerance: 44 / scale,
-                          section: widget.section,
-                        );
-                        if (nearest != null) widget.onTapTree(nearest.tree);
-                      }
-                    : null,
+                onTapUp: (details) {
+                  final inverse = Matrix4.inverted(
+                    widget.transformation.value,
+                  );
+                  final point = MatrixUtils.transformPoint(
+                    inverse,
+                    details.localPosition,
+                  );
+                  final scale = widget.transformation.value.getMaxScaleOnAxis();
+                  // Zone valves sit above trees, so they win the tap.
+                  if (widget.showValves) {
+                    final valve = _nearestZoneValve(point, 30 / scale);
+                    if (valve != null) {
+                      widget.onTapValve(valve);
+                      return;
+                    }
+                  }
+                  if (widget.showTrees) {
+                    final nearest = widget.map.treeIndex.nearest(
+                      point,
+                      tolerance: 44 / scale,
+                      section: widget.section,
+                    );
+                    if (nearest != null) {
+                      widget.onTapTree(nearest.tree);
+                      return;
+                    }
+                  }
+                  widget.onTapMiss();
+                },
                 // North-up geographic canvas uses absolute projected pixel
                 // coordinates, so it must never be mirrored in RTL locales.
                 // Only this map subtree is locked to LTR; the surrounding
@@ -440,6 +563,9 @@ class _MapPanelState extends State<_MapPanel> {
                           showValves: widget.showValves,
                           showFlushValves: widget.showFlushValves,
                           showWaterSupply: widget.showWaterSupply,
+                          selectedZoneValveId:
+                              widget.selectedZoneValve?.assetId,
+                          selectedZoneUuid: widget.selectedZoneValve?.zoneUuid,
                         ),
                       ),
                     ),

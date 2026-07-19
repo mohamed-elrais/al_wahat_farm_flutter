@@ -2214,6 +2214,30 @@ abstract class AppLocalizations {
   /// **'Water supply'**
   String get mapLayerWaterSupply;
 
+  /// No description provided for @mapZoneSheetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Irrigation zone'**
+  String get mapZoneSheetTitle;
+
+  /// No description provided for @mapZoneTreeCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No trees mapped to this zone} =1{1 tree irrigated by this valve} other{{count} trees irrigated by this valve}}'**
+  String mapZoneTreeCount(int count);
+
+  /// No description provided for @mapZoneTreesPlanned.
+  ///
+  /// In en, this message translates to:
+  /// **'Planned capacity: {count} trees'**
+  String mapZoneTreesPlanned(int count);
+
+  /// No description provided for @mapZoneHighlightHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The zone\'s lines and trees are highlighted on the map. Tap empty map space to clear.'**
+  String get mapZoneHighlightHint;
+
   /// No description provided for @mapAllSections.
   ///
   /// In en, this message translates to:

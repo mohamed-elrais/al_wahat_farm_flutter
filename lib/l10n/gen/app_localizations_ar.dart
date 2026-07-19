@@ -1163,6 +1163,30 @@ class AppLocalizationsAr extends AppLocalizations {
   String get mapLayerWaterSupply => 'إمداد المياه';
 
   @override
+  String get mapZoneSheetTitle => 'منطقة الري';
+
+  @override
+  String mapZoneTreeCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count أشجار تُروى من هذا المحبس',
+      one: 'شجرة واحدة تُروى من هذا المحبس',
+      zero: 'لا توجد أشجار مرتبطة بهذه المنطقة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String mapZoneTreesPlanned(int count) {
+    return 'السعة المخططة: $count شجرة';
+  }
+
+  @override
+  String get mapZoneHighlightHint =>
+      'خطوط المنطقة وأشجارها مميزة على الخريطة. اضغط على مساحة فارغة من الخريطة للإزالة.';
+
+  @override
   String get mapAllSections => 'جميع الأقسام الـ 12';
 
   @override

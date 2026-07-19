@@ -16,6 +16,8 @@ class FarmMapPainter extends CustomPainter {
     this.showValves = true,
     this.showFlushValves = false,
     this.showWaterSupply = false,
+    this.selectedZoneValveId,
+    this.selectedZoneUuid,
   });
 
   final ProjectedFarmMap map;
@@ -27,6 +29,11 @@ class FarmMapPainter extends CustomPainter {
   final bool showValves;
   final bool showFlushValves;
   final bool showWaterSupply;
+
+  /// Asset id of the tapped zone control valve and the live-zone uuid it
+  /// controls: its branch lines and trees highlight, everything else recedes.
+  final String? selectedZoneValveId;
+  final String? selectedZoneUuid;
 
   static const overviewTreeRadius = 2.7;
   static const sectionTreeRadius = 4.4;
@@ -131,16 +138,23 @@ class FarmMapPainter extends CustomPainter {
     }
     // Branch lines in their zone color, so each zone's reach is visible.
     for (final branch in map.branchLines) {
-      final dim = _dimmed(branch.line.section);
+      final inZone = selectedZoneValveId != null &&
+          branch.line.zoneId == selectedZoneValveId;
+      final dim =
+          selectedZoneValveId != null ? !inZone : _dimmed(branch.line.section);
       canvas.drawPoints(
         PointMode.polygon,
         branch.points,
         Paint()
-          ..color = (branch.line.color ?? AppColors.waterSubmain)
-              .withOpacity(dim ? 0.15 : 0.8)
+          ..color =
+              (branch.line.color ?? AppColors.waterSubmain).withOpacity(dim
+                  ? 0.12
+                  : inZone
+                      ? 1
+                      : 0.8)
           ..style = PaintingStyle.stroke
           ..strokeCap = StrokeCap.round
-          ..strokeWidth = 1.1,
+          ..strokeWidth = inZone ? 2.4 : 1.1,
       );
     }
     for (final riser in map.risers) {
@@ -196,12 +210,23 @@ class FarmMapPainter extends CustomPainter {
   void _drawValves(Canvas canvas) {
     for (final projected in map.valves) {
       final valve = projected.valve;
-      final dim = _dimmed(valve.section);
+      final selected =
+          selectedZoneValveId != null && valve.assetId == selectedZoneValveId;
+      final dim =
+          selectedZoneValveId != null ? !selected : _dimmed(valve.section);
       final zone = valve.isZoneControl;
       final fill =
           zone ? (valve.color ?? AppColors.waterMain) : const Color(0xFF32424E);
-      final radius = zone ? valveRadius : valveRadius - 0.7;
+      final radius =
+          (zone ? valveRadius : valveRadius - 0.7) + (selected ? 2.2 : 0);
       final center = projected.point;
+      if (selected) {
+        canvas.drawCircle(
+          center,
+          radius + 3.4,
+          Paint()..color = Colors.white,
+        );
+      }
       final diamond = Path()
         ..moveTo(center.dx, center.dy - radius)
         ..lineTo(center.dx + radius, center.dy)
@@ -286,6 +311,8 @@ class FarmMapPainter extends CustomPainter {
         continue;
       }
       final selected = projected.tree.id == selectedTreeId;
+      final outsideZone =
+          selectedZoneUuid != null && projected.tree.zoneId != selectedZoneUuid;
       final radius = selected
           ? selectedTreeRadius
           : selectedSection == null
@@ -301,7 +328,10 @@ class FarmMapPainter extends CustomPainter {
       canvas.drawCircle(
         projected.point,
         radius,
-        Paint()..color = projected.tree.color,
+        Paint()
+          ..color = outsideZone
+              ? projected.tree.color.withOpacity(0.15)
+              : projected.tree.color,
       );
       if (!selected) {
         canvas.drawCircle(
@@ -365,5 +395,7 @@ class FarmMapPainter extends CustomPainter {
       oldDelegate.showUtilities != showUtilities ||
       oldDelegate.showValves != showValves ||
       oldDelegate.showFlushValves != showFlushValves ||
-      oldDelegate.showWaterSupply != showWaterSupply;
+      oldDelegate.showWaterSupply != showWaterSupply ||
+      oldDelegate.selectedZoneValveId != selectedZoneValveId ||
+      oldDelegate.selectedZoneUuid != selectedZoneUuid;
 }
