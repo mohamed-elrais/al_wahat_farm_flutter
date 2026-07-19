@@ -20,6 +20,25 @@ class AlWahatApp extends StatefulWidget {
   static const minTextScale = 0.85;
   static const maxTextScale = 1.3;
 
+  /// The narrowest layout width the design is tuned for. Vendor "display
+  /// size" zoom (e.g. Realme's density override) can shrink a phone to a
+  /// ~320dp-wide canvas; text is scaled down proportionally on such devices
+  /// so it occupies the same fraction of the screen as on a normal phone.
+  static const designMinWidth = 360.0;
+
+  /// The text scale actually applied: the system factor bounded to
+  /// [minTextScale, maxTextScale], then normalized for zoomed-density
+  /// devices narrower than [designMinWidth] (never reduced below
+  /// [minTextScale] overall).
+  static double effectiveTextScale(MediaQueryData media) {
+    final bounded =
+        media.textScaleFactor.clamp(minTextScale, maxTextScale).toDouble();
+    final shortestSide = media.size.shortestSide;
+    if (shortestSide <= 0 || shortestSide >= designMinWidth) return bounded;
+    final compensated = bounded * (shortestSide / designMinWidth);
+    return compensated < minTextScale ? minTextScale : compensated;
+  }
+
   final AppConfig config;
 
   /// Process-wide services. When omitted (widget tests), an isolated in-memory
@@ -60,10 +79,7 @@ class _AlWahatAppState extends State<AlWahatApp> {
             final media = MediaQuery.of(context);
             return MediaQuery(
               data: media.copyWith(
-                textScaleFactor: media.textScaleFactor.clamp(
-                  AlWahatApp.minTextScale,
-                  AlWahatApp.maxTextScale,
-                ),
+                textScaleFactor: AlWahatApp.effectiveTextScale(media),
               ),
               child: AppServicesScope(
                 services: _services,
