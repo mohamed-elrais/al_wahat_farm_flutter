@@ -73,37 +73,48 @@ RLS SELECT-only on workflow tables (writes via RPC); pgTAP tests with
 | Task → map | New `/map?focus=` param + existing painter highlight primitives |
 | Same-category DB rule | New trigger on `task_targets` (existing CHECKs can't compare across rows) |
 
-## 3. Open decisions (need confirmation — recommendations marked ✦)
+## 3. Decisions (CONFIRMED by owner, 2026-07-19)
 
-1. **Zone-area basis**: zones have no `area_m2`. For per-area rates on zone targets:
-   ✦ use **per-tree basis for zones** (tree counts exist) and per-area only for
-   sections/farm; optionally add `irrigation_zones.area_m2` later. OK?
-2. **Insufficient stock at generation**: block task generation vs. generate + warn.
-   ✦ **Generate the task anyway, stamp `inventory_shortage` in instructions +
-   generation log + schedule screen warning** (field work must not silently vanish).
-3. **Insufficient stock at completion**: block completion vs. clamp. ✦ **Deduct
-   `min(required, available)`, record the shortfall** in the transaction note +
-   activity metadata (completion must never be blocked in the field; the chemical was
-   physically used).
-4. **Worker visibility of inventory**: ✦ items/categories **readable by all
-   operational members** (workers see stock names/levels on their tasks);
-   transactions + mutations **manager-only**.
-5. **Navigation placement**: 5 nav tabs are fixed. ✦ Inventory + Schedules live under
-   **More** (`/more/inventory`, `/more/schedules`) initially; promote later if used daily.
-6. **New chemical type names**: ✦ add `pest_control` (insecticides) and
-   `disease_control` (fungicides) to both `task_type` and `operation_plan_type`
-   (herbicides = existing `harmful_weed_control`).
-7. **Units**: ✦ fixed enum `inventory_unit` = `gram, kilogram, liter, milliliter,
-   piece, meter` (extendable by migration). Category-specific specs (pipe diameter/
-   length, joint angle/compatible diameters, dripper flow) go in `attributes jsonb`,
-   not columns.
-8. **Rate basis for "acre"**: farm data is metric (`area_m2`). ✦ store rate basis as
-   `per_hectare | per_acre | per_tree | absolute` and convert from `area_m2`.
-9. **Plan-generated tasks stay one-task-per-target** (existing model; granular worker
-   completion + per-target consumption). Multi-target tasks (feature 6) apply to
-   manually created tasks. Confirm this split is acceptable.
-10. **Reversal semantics**: only `review_task(returned_for_correction)` auto-restores
-    consumed stock, plus an explicit manager RPC for manual correction. Confirm.
+1. **Area basis = tree count**: zone targets use the trees fed by the target's ZCV;
+   **60 trees = 1 acre** is the farm's conversion rule, so
+   `acres(target) = active_tree_count(target) / farms.trees_per_acre` (new farm
+   column, default 60, owner-configurable). Applied uniformly to per-acre rates.
+2. **Insufficient stock at generation → BLOCK**: the task is *not* created; the run
+   row stays task-less so the hourly cron auto-generates it once stock is added.
+   The UI must show **how many applications the current stock covers**
+   (`floor(available / required_per_occurrence)`) at plan save time and on the
+   schedules screen whenever generation is being blocked.
+3. **Insufficient stock at completion → deduct available + record shortfall**
+   (completion is never blocked in the field).
+4. **Workers see inventory read-only** (items/categories); transactions + all
+   mutations manager-only.
+5. **Placement**: Inventory + Schedules under **More**. Inventory editing =
+   owner/engineer only; Schedules visible to owner/engineer only (workers see only
+   the generated tasks — matches existing plan RLS).
+6. **Enum names**: `pest_control` (insecticides), `disease_control` (fungicides);
+   herbicides remain `harmful_weed_control`. Confirmed.
+7. **Units**: fixed enum `inventory_unit` = `gram, kilogram, liter, milliliter,
+   piece, meter`; category-specific specs live in `attributes jsonb`.
+8. **Rate bases**: `per_acre | per_tree | absolute` (per-hectare dropped; acreage
+   derives from tree count per decision 1, so surveyed `area_m2` is not used for
+   dosing). Open sub-question: UI label "acre" vs "feddan" (see §3.1).
+9. **Plan-generated tasks stay one-task-per-target**; multi-target applies to
+   manually created tasks. Confirmed.
+10. **Reversal semantics** (unobjected recommendation): `review_task(
+    returned_for_correction)` auto-restores consumed stock; explicit
+    `reverse_task_inventory` RPC for manual corrections.
+
+### 3.1 Remaining questions (small, non-blocking for M0–M2)
+
+- **"Acre" or "feddan"?** Egyptian practice usually doses per feddan (فدان). The
+  conversion rule (60 trees = 1 unit) works identically either way — this only
+  affects the UI label and ARB translation. Which word should the app show?
+- **Section/farm-wide per-acre targets**: with decision 1, per-acre math uses tree
+  counts everywhere (a section's acreage = its tree count / 60). Unplanted sections
+  therefore compute to zero product — assumed correct (nothing to spray). Confirm.
+- **Blocked-generation catch-up**: when stock arrives, the next hourly cron run
+  creates the previously blocked task automatically (same-day or next-day tasks
+  only, per the existing today/tomorrow generation window). Assumed desired.
 
 ## 4. Database changes
 
@@ -119,7 +130,10 @@ create type public.inventory_unit as enum
 create type public.inventory_transaction_type as enum
   ('addition','consumption','adjustment','reversal');
 create type public.application_rate_basis as enum
-  ('per_hectare','per_acre','per_tree','absolute');
+  ('per_acre','per_tree','absolute');   -- label (acre vs feddan) is a UI concern, §3.1
+-- and the farm-level conversion rule (decision 1):
+alter table public.farms
+  add column trees_per_acre numeric(6,2) not null default 60 check (trees_per_acre > 0);
 ```
 
 ### 4.2 Inventory tables
@@ -235,16 +249,25 @@ warn when insufficient") before/after saving a plan.
 ### 4.5 Generator upgrades (`generate_operation_tasks_for_date` re-created)
 
 Per generated task, additionally:
-1. **Quantity calculation** — `required = application_rate × basis_factor(target)`:
-   - `per_hectare` / `per_acre`: section → `farm_sections.area_m2` (÷10 000 / ÷4046.86);
-     farm-wide → `farms.total_area_m2`; zone/tree targets **rejected at plan validation**
-     for area bases (decision 1).
-   - `per_tree`: count of active trees in target scope.
-   - `absolute`: rate as-is.
+1. **Quantity calculation** — `required = application_rate × basis_factor(target)`,
+   with tree count as the universal measure (decision 1):
+   - `per_acre`: `active_tree_count(target) / farms.trees_per_acre` acres —
+     zone → trees whose `irrigation_zone_id` matches (the ZCV's trees);
+     section → trees in the section; tree → 1/trees_per_acre; farm-wide → all
+     active trees. Unplanted scopes compute to zero (nothing to treat).
+   - `per_tree`: `active_tree_count(target)`.
+   - `absolute`: rate as-is per occurrence.
    Stamped into task `instructions`: `inventory_item_id`, `required_quantity`,
    `required_unit`, `application_method`, plus existing plan/target/run ids.
-2. **Availability check** — `item.quantity < required` ⇒ stamp
-   `"inventory_shortage": true` + warning row in generation metadata (decision 2).
+2. **Availability gate (decision 2 — BLOCK)** — computed inside the same row-locked
+   transaction: if `item.quantity < required`, the run row is upserted but **no task
+   is created** (`generated_task_id` stays null) and a shortage entry is written to
+   the generation log metadata (`required`, `available`, plan/target). Because the
+   existing upsert guard fills task-less runs on later passes, the hourly cron
+   **auto-recovers as soon as stock is added** — no manual retrigger needed.
+   `check_operation_plan_inventory` returns per-occurrence `required`, `available`,
+   and `applications_covered = floor(available / required)` so the UI can say
+   "current stock covers N applications" at save time and on blocked schedules.
 3. **Assignment** — if `default_assignee_profile_ids <> '{}'`: insert
    `task_assignments`, status `assigned` (not `draft`), log `assigned` (reuses the
    exact insert pattern from `create_farm_task`).
@@ -252,7 +275,8 @@ Per generated task, additionally:
    `authenticated` (cron remains the primary driver).
 
 Dedup is untouched — the `(plan, target, date)` run key plus `generated_task_id`
-guard already make generation idempotent under cron + manual invocation racing.
+guard already make generation idempotent under cron + manual invocation racing, and
+now double as the blocked-run retry mechanism.
 
 ### 4.6 Multi-target tasks
 
@@ -393,13 +417,17 @@ Acceptance: manager CRUD round-trip on device; worker sees read-only. Deps: M1.
 Scope: §4.4 plan columns + RPC params, §4.5 generator upgrades (quantity calc,
 shortage stamp, auto-assign), `check_operation_plan_inventory`, consumption on
 `complete_task`, reversal on `review_task` + `reverse_task_inventory`.
-Validation & edge cases: rate-basis vs target-kind rejection; unit mismatch; plan
-edits not touching generated tasks; net-zero re-consumption; clamp+shortfall path;
-cron + manual generation race. Tests: pgTAP — generation math per basis, assignment
-insertion, shortage stamping, consumption idempotency under dblink concurrency,
-reversal→re-complete cycle. Acceptance: example flows "100 g/acre every Friday 8:00
-Aug 1–Oct 31" and "daily 16:00, 30 min irrigation" generate correct, deduplicated,
-assigned tasks with correct quantities. Deps: M1 (items), M0.
+Validation & edge cases: unit mismatch; tree-count acreage math (zone via ZCV trees,
+trees_per_acre configurable); plan edits not touching generated tasks; net-zero
+re-consumption; clamp+shortfall at completion; **blocked generation + automatic
+catch-up after restock**; cron + manual generation race. Tests: pgTAP — generation
+math per basis, assignment insertion, shortage blocking then restock-recovery,
+applications_covered math, consumption idempotency under dblink concurrency,
+reversal→re-complete cycle. Acceptance: "100 g of calcium per acre every Friday
+8:00, Aug 1–Oct 31" over a 30-tree zone generates a task requiring 50 g
+(30/60 acre), blocks when stock is short with "covers N applications" surfaced,
+and auto-generates after restock; "daily 16:00, 30 min irrigation" generates
+deduplicated assigned tasks. Deps: M1 (items), M0.
 Risk: `complete_task`/`review_task` re-creation — keep signatures identical; pgTAP
 regression suite from `op_id_idempotency.test.sql` must stay green.
 
@@ -478,4 +506,5 @@ pgTAP green) before their Flutter counterparts — proven pattern from the offli
 [ ] M8  i18n/a11y/golden certification + docs      (both)
 ```
 
-Confirmations needed before M0: decisions **1, 2, 3, 4, 5, 6, 9** in §3.
+All §3 decisions are confirmed; only the small §3.1 items (acre-vs-feddan label,
+unplanted-section zero-dose, blocked-run auto-catch-up) remain — none block M0-M2.
