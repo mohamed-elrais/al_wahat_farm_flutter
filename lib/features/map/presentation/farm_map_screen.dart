@@ -308,8 +308,22 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
   }
 }
 
-/// Bottom sheet for a tapped zone control valve. Dismissing it keeps the zone
-/// highlighted on the canvas; tapping empty map space clears the highlight.
+/// Localized display name for a network valve, built from its structured
+/// fields (the raw asset [NetworkValve.name] is English survey data).
+String valveDisplayName(AppLocalizations l10n, NetworkValve valve) {
+  final number = valve.assetId.split('-').last;
+  if (!valve.isZoneControl) return l10n.mapValveNameIsolation(number);
+  final section = valve.section;
+  final submain = valve.submain;
+  if (section != null && submain != null) {
+    return l10n.mapValveNameZone(section, submain, number);
+  }
+  return valve.name;
+}
+
+/// Bottom sheet for a tapped valve: a zone control valve shows its zone and
+/// tree counts, a mainline isolation valve just identifies itself. Dismissing
+/// it keeps the map highlight; tapping empty map space clears it.
 class _ZoneSheet extends StatelessWidget {
   const _ZoneSheet({required this.valve, required this.actualTrees});
 
@@ -319,6 +333,7 @@ class _ZoneSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final zone = valve.isZoneControl;
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
@@ -332,7 +347,10 @@ class _ZoneSheet extends StatelessWidget {
                 children: <Widget>[
                   DecoratedBox(
                     decoration: BoxDecoration(
-                      color: valve.color ?? AppColors.waterMain,
+                      color: valve.color ??
+                          (zone
+                              ? AppColors.waterMain
+                              : const Color(0xFF32424E)),
                       borderRadius: BorderRadius.circular(6),
                       border: Border.all(color: Colors.white, width: 2),
                     ),
@@ -343,9 +361,13 @@ class _ZoneSheet extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        Eyebrow(l10n.mapZoneSheetTitle),
+                        Eyebrow(
+                          zone
+                              ? l10n.mapZoneSheetTitle
+                              : l10n.mapIsolationSheetTitle,
+                        ),
                         Text(
-                          valve.name,
+                          valveDisplayName(l10n, valve),
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                       ],
@@ -353,16 +375,18 @@ class _ZoneSheet extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
-              Text(
-                l10n.mapZoneTreeCount(actualTrees),
-                key: const Key('zone-sheet-trees'),
-              ),
-              if (valve.zoneTreeCount != null)
-                Text(l10n.mapZoneTreesPlanned(valve.zoneTreeCount!)),
+              if (zone) ...<Widget>[
+                const SizedBox(height: 10),
+                Text(
+                  l10n.mapZoneTreeCount(actualTrees),
+                  key: const Key('zone-sheet-trees'),
+                ),
+                if (valve.zoneTreeCount != null)
+                  Text(l10n.mapZoneTreesPlanned(valve.zoneTreeCount!)),
+              ],
               const SizedBox(height: 8),
               Text(
-                l10n.mapZoneHighlightHint,
+                zone ? l10n.mapZoneHighlightHint : l10n.mapValveHighlightHint,
                 style: Theme.of(context)
                     .textTheme
                     .bodySmall
@@ -463,12 +487,12 @@ class _MapPanel extends StatefulWidget {
 class _MapPanelState extends State<_MapPanel> {
   bool _fitted = false;
 
-  /// The closest tappable zone control valve within [tolerance] canvas units.
-  NetworkValve? _nearestZoneValve(Offset point, double tolerance) {
+  /// The closest tappable valve (zone control or mainline isolation) within
+  /// [tolerance] canvas units.
+  NetworkValve? _nearestValve(Offset point, double tolerance) {
     NetworkValve? best;
     var bestDistance = tolerance;
     for (final projected in widget.map.valves) {
-      if (!projected.valve.isZoneControl) continue;
       final distance = (projected.point - point).distance;
       if (distance <= bestDistance) {
         bestDistance = distance;
@@ -517,9 +541,9 @@ class _MapPanelState extends State<_MapPanel> {
                     details.localPosition,
                   );
                   final scale = widget.transformation.value.getMaxScaleOnAxis();
-                  // Zone valves sit above trees, so they win the tap.
+                  // Valves sit above trees, so they win the tap.
                   if (widget.showValves) {
-                    final valve = _nearestZoneValve(point, 30 / scale);
+                    final valve = _nearestValve(point, 30 / scale);
                     if (valve != null) {
                       widget.onTapValve(valve);
                       return;
@@ -629,7 +653,7 @@ class _MapHeader extends StatelessWidget {
               Text(
                 selected == null
                     ? context.l10n.homeFarmOverview
-                    : '${selected.name} · ${selected.treeCount == 0 ? context.l10n.mapSectionUnplanted : selected.treeCount}',
+                    : '${context.l10n.mapSectionName(selected.id)} · ${selected.treeCount == 0 ? context.l10n.mapSectionUnplanted : selected.treeCount}',
                 style: Theme.of(context).textTheme.titleLarge,
               ),
             ],
@@ -745,7 +769,7 @@ class _SectionFilter extends StatelessWidget {
               label: Text(
                 section == null
                     ? context.l10n.mapAllSections
-                    : '${section.name}  ${section.treeCount == 0 ? context.l10n.mapSectionEmpty : section.treeCount}',
+                    : '${context.l10n.mapSectionName(section.id)}  ${section.treeCount == 0 ? context.l10n.mapSectionEmpty : section.treeCount}',
               ),
             );
           },

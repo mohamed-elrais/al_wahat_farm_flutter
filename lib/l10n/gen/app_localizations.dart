@@ -2211,6 +2211,36 @@ abstract class AppLocalizations {
   /// **'Water supply'**
   String get mapLayerWaterSupply;
 
+  /// No description provided for @mapSectionName.
+  ///
+  /// In en, this message translates to:
+  /// **'Section {id}'**
+  String mapSectionName(String id);
+
+  /// No description provided for @mapValveNameZone.
+  ///
+  /// In en, this message translates to:
+  /// **'Section {section} — Submain {submain} — Zone Control Valve {number}'**
+  String mapValveNameZone(String section, String submain, String number);
+
+  /// No description provided for @mapValveNameIsolation.
+  ///
+  /// In en, this message translates to:
+  /// **'Mainline Isolation Valve {number}'**
+  String mapValveNameIsolation(String number);
+
+  /// No description provided for @mapIsolationSheetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Mainline valve'**
+  String get mapIsolationSheetTitle;
+
+  /// No description provided for @mapValveHighlightHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The valve is highlighted on the map. Tap empty map space to clear.'**
+  String get mapValveHighlightHint;
+
   /// No description provided for @mapZoneSheetTitle.
   ///
   /// In en, this message translates to:

@@ -1130,6 +1130,27 @@ class AppLocalizationsAr extends AppLocalizations {
   String get mapLayerWaterSupply => 'إمداد المياه';
 
   @override
+  String mapSectionName(String id) {
+    return 'القسم $id';
+  }
+
+  @override
+  String mapValveNameZone(String section, String submain, String number) {
+    return 'القسم $section — الخط الفرعي $submain — محبس المنطقة $number';
+  }
+
+  @override
+  String mapValveNameIsolation(String number) {
+    return 'محبس عزل الخط الرئيسي $number';
+  }
+
+  @override
+  String get mapIsolationSheetTitle => 'محبس الخط الرئيسي';
+
+  @override
+  String get mapValveHighlightHint => 'المحبس مميز على الخريطة. اضغط على مساحة فارغة من الخريطة للإزالة.';
+
+  @override
   String get mapZoneSheetTitle => 'منطقة الري';
 
   @override

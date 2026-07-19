@@ -137,11 +137,12 @@ class FarmMapPainter extends CustomPainter {
       }
     }
     // Branch lines in their zone color, so each zone's reach is visible.
+    // Zone-recede mode only applies when a zone (not just a valve) is
+    // selected: an isolation-valve selection keeps the network visible.
+    final zoneMode = selectedZoneUuid != null;
     for (final branch in map.branchLines) {
-      final inZone = selectedZoneValveId != null &&
-          branch.line.zoneId == selectedZoneValveId;
-      final dim =
-          selectedZoneValveId != null ? !inZone : _dimmed(branch.line.section);
+      final inZone = zoneMode && branch.line.zoneId == selectedZoneValveId;
+      final dim = zoneMode ? !inZone : _dimmed(branch.line.section);
       canvas.drawPoints(
         PointMode.polygon,
         branch.points,
@@ -212,8 +213,7 @@ class FarmMapPainter extends CustomPainter {
       final valve = projected.valve;
       final selected =
           selectedZoneValveId != null && valve.assetId == selectedZoneValveId;
-      final dim =
-          selectedZoneValveId != null ? !selected : _dimmed(valve.section);
+      final dim = selectedZoneUuid != null ? !selected : _dimmed(valve.section);
       final zone = valve.isZoneControl;
       final fill =
           zone ? (valve.color ?? AppColors.waterMain) : const Color(0xFF32424E);

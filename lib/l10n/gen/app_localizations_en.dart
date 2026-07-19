@@ -1130,6 +1130,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mapLayerWaterSupply => 'Water supply';
 
   @override
+  String mapSectionName(String id) {
+    return 'Section $id';
+  }
+
+  @override
+  String mapValveNameZone(String section, String submain, String number) {
+    return 'Section $section — Submain $submain — Zone Control Valve $number';
+  }
+
+  @override
+  String mapValveNameIsolation(String number) {
+    return 'Mainline Isolation Valve $number';
+  }
+
+  @override
+  String get mapIsolationSheetTitle => 'Mainline valve';
+
+  @override
+  String get mapValveHighlightHint => 'The valve is highlighted on the map. Tap empty map space to clear.';
+
+  @override
   String get mapZoneSheetTitle => 'Irrigation zone';
 
   @override
