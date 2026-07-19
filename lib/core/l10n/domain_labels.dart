@@ -1,4 +1,5 @@
 import 'package:al_wahat_farm_flutter/l10n/gen/app_localizations.dart';
+import 'package:al_wahat_farm_flutter/features/inventory/domain/inventory_models.dart';
 import 'package:al_wahat_farm_flutter/features/issues/domain/tree_issue_draft.dart';
 import 'package:al_wahat_farm_flutter/features/reviews/domain/engineer_review.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/farm_task.dart';
@@ -113,5 +114,42 @@ extension EngineerReviewDecisionL10n on EngineerReviewDecision {
         EngineerReviewDecision.approved => l10n.reviewActionApprove,
         EngineerReviewDecision.returnedForCorrection => l10n.reviewActionReturn,
         EngineerReviewDecision.followUpRequired => l10n.reviewActionFollowUp,
+      };
+}
+
+extension InventoryUnitL10n on InventoryUnit {
+  String localizedLabel(AppLocalizations l10n) => switch (this) {
+        InventoryUnit.gram => l10n.unitGram,
+        InventoryUnit.kilogram => l10n.unitKilogram,
+        InventoryUnit.liter => l10n.unitLiter,
+        InventoryUnit.milliliter => l10n.unitMilliliter,
+        InventoryUnit.piece => l10n.unitPiece,
+        InventoryUnit.meter => l10n.unitMeter,
+      };
+}
+
+extension InventoryTransactionTypeL10n on InventoryTransactionType {
+  String localizedLabel(AppLocalizations l10n) => switch (this) {
+        InventoryTransactionType.addition => l10n.txnAddition,
+        InventoryTransactionType.consumption => l10n.txnConsumption,
+        InventoryTransactionType.adjustment => l10n.txnAdjustment,
+        InventoryTransactionType.reversal => l10n.txnReversal,
+      };
+}
+
+extension InventoryCategoryL10n on InventoryCategory {
+  /// Localized label for the seeded default categories; custom categories
+  /// created by managers show their stored name as-is.
+  String localizedLabel(AppLocalizations l10n) => switch (code) {
+        'pipe' => l10n.categoryPipe,
+        'pipe_joint' => l10n.categoryPipeJoint,
+        'fertilizer' => l10n.categoryFertilizer,
+        'dripper' => l10n.categoryDripper,
+        'insecticide' => l10n.categoryInsecticide,
+        'herbicide' => l10n.categoryHerbicide,
+        'fungicide' => l10n.categoryFungicide,
+        'tool' => l10n.categoryTool,
+        'other' => l10n.categoryOther,
+        _ => name,
       };
 }

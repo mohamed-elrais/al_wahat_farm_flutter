@@ -1266,4 +1266,203 @@ class AppLocalizationsAr extends AppLocalizations {
     );
     return '$_temp0\n$summary';
   }
+
+  @override
+  String get inventoryTitle => 'المخزون';
+
+  @override
+  String get inventoryEyebrow => 'مستلزمات المزرعة';
+
+  @override
+  String get inventorySearchHint => 'ابحث في الأصناف';
+
+  @override
+  String get inventoryAllCategories => 'الكل';
+
+  @override
+  String get inventoryEmptyTitle => 'لا توجد أصناف في المخزون';
+
+  @override
+  String get inventoryEmptyManager => 'أضف أول صنف بالزر أدناه.';
+
+  @override
+  String get inventoryEmptyWorker => 'لم تتم إضافة أصناف بعد.';
+
+  @override
+  String get inventoryLowStock => 'مخزون منخفض';
+
+  @override
+  String inventoryLowStockCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count أصناف دون الحد الأدنى للمخزون',
+      one: 'صنف واحد دون الحد الأدنى للمخزون',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get inventoryQuantityLabel => 'المتوفر';
+
+  @override
+  String get inventoryMinimumLabel => 'الحد الأدنى';
+
+  @override
+  String get inventoryAddItem => 'إضافة صنف';
+
+  @override
+  String get inventoryEditItem => 'تعديل الصنف';
+
+  @override
+  String get inventoryItemName => 'اسم الصنف';
+
+  @override
+  String get inventoryItemNameRequired => 'أدخل اسم الصنف';
+
+  @override
+  String get inventoryCategoryField => 'الفئة';
+
+  @override
+  String get inventoryUnitField => 'الوحدة';
+
+  @override
+  String get inventoryDescriptionField => 'الوصف';
+
+  @override
+  String get inventoryMinimumStockField => 'الحد الأدنى للمخزون (تنبيه)';
+
+  @override
+  String get inventoryInitialQuantityField => 'الكمية الابتدائية';
+
+  @override
+  String get inventoryInvalidNumber => 'أدخل رقماً صحيحاً';
+
+  @override
+  String get inventoryAttributesTitle => 'المواصفات';
+
+  @override
+  String get inventoryAttributeName => 'الاسم';
+
+  @override
+  String get inventoryAttributeValue => 'القيمة';
+
+  @override
+  String get inventoryAddAttribute => 'إضافة مواصفة';
+
+  @override
+  String get inventorySaveItem => 'حفظ الصنف';
+
+  @override
+  String get inventorySaving => 'جارٍ الحفظ…';
+
+  @override
+  String get inventoryAddStock => 'إضافة مخزون';
+
+  @override
+  String get inventoryAdjust => 'تسوية';
+
+  @override
+  String get inventoryAdjustHint => 'قيمة موجبة تضيف وسالبة تخصم';
+
+  @override
+  String get inventoryQuantityField => 'الكمية';
+
+  @override
+  String get inventoryNoteField => 'ملاحظة';
+
+  @override
+  String get inventoryRecord => 'تسجيل';
+
+  @override
+  String get inventoryHistoryTitle => 'سجل الحركات';
+
+  @override
+  String get inventoryHistoryEmpty => 'لا توجد حركات بعد.';
+
+  @override
+  String get inventoryDeactivate => 'إلغاء تفعيل الصنف';
+
+  @override
+  String get inventoryDeactivateConfirmTitle => 'إلغاء تفعيل هذا الصنف؟';
+
+  @override
+  String get inventoryDeactivateConfirmMessage =>
+      'سيُخفى الصنف من المخزون مع الاحتفاظ بسجله.';
+
+  @override
+  String get inventoryOffline =>
+      'تعديلات المخزون تتطلب اتصالاً بالإنترنت. تُعرض البيانات المحفوظة.';
+
+  @override
+  String get inventoryMsgItemCreated => 'تمت إضافة الصنف إلى المخزون.';
+
+  @override
+  String get inventoryMsgItemUpdated => 'تم تحديث الصنف.';
+
+  @override
+  String get inventoryMsgStockRecorded => 'تم تسجيل حركة المخزون.';
+
+  @override
+  String get inventoryErrGeneric => 'تعذر حفظ إجراء المخزون.';
+
+  @override
+  String get inventoryLoadFailed => 'تعذر تحميل المخزون.';
+
+  @override
+  String get unitGram => 'جرام';
+
+  @override
+  String get unitKilogram => 'كيلوجرام';
+
+  @override
+  String get unitLiter => 'لتر';
+
+  @override
+  String get unitMilliliter => 'مليلتر';
+
+  @override
+  String get unitPiece => 'قطعة';
+
+  @override
+  String get unitMeter => 'متر';
+
+  @override
+  String get txnAddition => 'إضافة مخزون';
+
+  @override
+  String get txnConsumption => 'استهلاك بواسطة مهمة';
+
+  @override
+  String get txnAdjustment => 'تسوية';
+
+  @override
+  String get txnReversal => 'استرجاع استهلاك';
+
+  @override
+  String get categoryPipe => 'مواسير';
+
+  @override
+  String get categoryPipeJoint => 'وصلات مواسير';
+
+  @override
+  String get categoryFertilizer => 'أسمدة';
+
+  @override
+  String get categoryDripper => 'نقاطات';
+
+  @override
+  String get categoryInsecticide => 'مبيدات حشرية';
+
+  @override
+  String get categoryHerbicide => 'مبيدات أعشاب';
+
+  @override
+  String get categoryFungicide => 'مبيدات فطرية';
+
+  @override
+  String get categoryTool => 'أدوات زراعية';
+
+  @override
+  String get categoryOther => 'أخرى';
 }

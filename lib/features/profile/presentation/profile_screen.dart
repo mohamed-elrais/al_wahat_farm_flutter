@@ -59,6 +59,18 @@ class ProfileScreen extends StatelessWidget {
                   _LanguageSelector(controller: services.locale),
                   const Divider(height: 32),
                 ],
+                if (membership?.role.isOperational ?? false) ...<Widget>[
+                  ListTile(
+                    key: const Key('inventory-entry-tile'),
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.inventory_2_outlined,
+                        color: AppColors.green),
+                    title: Text(l10n.inventoryTitle),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => context.go('/more/inventory'),
+                  ),
+                  const Divider(height: 24),
+                ],
                 _SyncStatusTile(connectivity: services?.connectivity),
                 const _SyncCenter(),
                 const SizedBox(height: 8),

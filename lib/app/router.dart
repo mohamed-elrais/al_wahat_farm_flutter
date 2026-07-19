@@ -5,6 +5,9 @@ import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/features/auth/presentation/authenticated_gate.dart';
 import 'package:al_wahat_farm_flutter/features/auth/presentation/login_screen.dart';
 import 'package:al_wahat_farm_flutter/features/home/presentation/home_screen.dart';
+import 'package:al_wahat_farm_flutter/features/inventory/presentation/inventory_item_form_screen.dart';
+import 'package:al_wahat_farm_flutter/features/inventory/presentation/inventory_item_screen.dart';
+import 'package:al_wahat_farm_flutter/features/inventory/presentation/inventory_screen.dart';
 import 'package:al_wahat_farm_flutter/features/issues/presentation/issue_report_screen.dart';
 import 'package:al_wahat_farm_flutter/features/map/presentation/farm_map_screen.dart';
 import 'package:al_wahat_farm_flutter/features/map/presentation/scanner_screen.dart';
@@ -129,6 +132,30 @@ GoRouter createRouter(AppConfig config) {
                   GoRoute(
                     path: 'failed-ops',
                     builder: (_, __) => const FailedOpsScreen(),
+                  ),
+                  GoRoute(
+                    path: 'inventory',
+                    builder: (_, __) => const InventoryScreen(),
+                    routes: <RouteBase>[
+                      GoRoute(
+                        path: 'new',
+                        builder: (_, __) => const InventoryItemFormScreen(),
+                      ),
+                      GoRoute(
+                        path: 'item/:itemId',
+                        builder: (_, state) => InventoryItemScreen(
+                          itemId: state.pathParameters['itemId']!,
+                        ),
+                        routes: <RouteBase>[
+                          GoRoute(
+                            path: 'edit',
+                            builder: (_, state) => InventoryItemFormScreen(
+                              itemId: state.pathParameters['itemId'],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ],
               ),

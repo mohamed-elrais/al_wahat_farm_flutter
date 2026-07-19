@@ -2339,6 +2339,384 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{Farm data check · 1 difference} other{Farm data check · {count} differences}}\n{summary}'**
   String mapDiscrepancy(int count, String summary);
+
+  /// No description provided for @inventoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Inventory'**
+  String get inventoryTitle;
+
+  /// No description provided for @inventoryEyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Farm supplies'**
+  String get inventoryEyebrow;
+
+  /// No description provided for @inventorySearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search items'**
+  String get inventorySearchHint;
+
+  /// No description provided for @inventoryAllCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get inventoryAllCategories;
+
+  /// No description provided for @inventoryEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No inventory items'**
+  String get inventoryEmptyTitle;
+
+  /// No description provided for @inventoryEmptyManager.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your first item with the button below.'**
+  String get inventoryEmptyManager;
+
+  /// No description provided for @inventoryEmptyWorker.
+  ///
+  /// In en, this message translates to:
+  /// **'No items have been added yet.'**
+  String get inventoryEmptyWorker;
+
+  /// No description provided for @inventoryLowStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Low stock'**
+  String get inventoryLowStock;
+
+  /// No description provided for @inventoryLowStockCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 item below minimum stock} other{{count} items below minimum stock}}'**
+  String inventoryLowStockCount(int count);
+
+  /// No description provided for @inventoryQuantityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'In stock'**
+  String get inventoryQuantityLabel;
+
+  /// No description provided for @inventoryMinimumLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimum'**
+  String get inventoryMinimumLabel;
+
+  /// No description provided for @inventoryAddItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Add item'**
+  String get inventoryAddItem;
+
+  /// No description provided for @inventoryEditItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit item'**
+  String get inventoryEditItem;
+
+  /// No description provided for @inventoryItemName.
+  ///
+  /// In en, this message translates to:
+  /// **'Item name'**
+  String get inventoryItemName;
+
+  /// No description provided for @inventoryItemNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter an item name'**
+  String get inventoryItemNameRequired;
+
+  /// No description provided for @inventoryCategoryField.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get inventoryCategoryField;
+
+  /// No description provided for @inventoryUnitField.
+  ///
+  /// In en, this message translates to:
+  /// **'Unit'**
+  String get inventoryUnitField;
+
+  /// No description provided for @inventoryDescriptionField.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get inventoryDescriptionField;
+
+  /// No description provided for @inventoryMinimumStockField.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimum stock (alert threshold)'**
+  String get inventoryMinimumStockField;
+
+  /// No description provided for @inventoryInitialQuantityField.
+  ///
+  /// In en, this message translates to:
+  /// **'Initial quantity'**
+  String get inventoryInitialQuantityField;
+
+  /// No description provided for @inventoryInvalidNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid number'**
+  String get inventoryInvalidNumber;
+
+  /// No description provided for @inventoryAttributesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Specifications'**
+  String get inventoryAttributesTitle;
+
+  /// No description provided for @inventoryAttributeName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get inventoryAttributeName;
+
+  /// No description provided for @inventoryAttributeValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Value'**
+  String get inventoryAttributeValue;
+
+  /// No description provided for @inventoryAddAttribute.
+  ///
+  /// In en, this message translates to:
+  /// **'Add specification'**
+  String get inventoryAddAttribute;
+
+  /// No description provided for @inventorySaveItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Save item'**
+  String get inventorySaveItem;
+
+  /// No description provided for @inventorySaving.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving…'**
+  String get inventorySaving;
+
+  /// No description provided for @inventoryAddStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Add stock'**
+  String get inventoryAddStock;
+
+  /// No description provided for @inventoryAdjust.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust'**
+  String get inventoryAdjust;
+
+  /// No description provided for @inventoryAdjustHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Positive adds, negative removes'**
+  String get inventoryAdjustHint;
+
+  /// No description provided for @inventoryQuantityField.
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity'**
+  String get inventoryQuantityField;
+
+  /// No description provided for @inventoryNoteField.
+  ///
+  /// In en, this message translates to:
+  /// **'Note'**
+  String get inventoryNoteField;
+
+  /// No description provided for @inventoryRecord.
+  ///
+  /// In en, this message translates to:
+  /// **'Record'**
+  String get inventoryRecord;
+
+  /// No description provided for @inventoryHistoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction history'**
+  String get inventoryHistoryTitle;
+
+  /// No description provided for @inventoryHistoryEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No transactions yet.'**
+  String get inventoryHistoryEmpty;
+
+  /// No description provided for @inventoryDeactivate.
+  ///
+  /// In en, this message translates to:
+  /// **'Deactivate item'**
+  String get inventoryDeactivate;
+
+  /// No description provided for @inventoryDeactivateConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Deactivate this item?'**
+  String get inventoryDeactivateConfirmTitle;
+
+  /// No description provided for @inventoryDeactivateConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'The item is hidden from the inventory but its history is kept.'**
+  String get inventoryDeactivateConfirmMessage;
+
+  /// No description provided for @inventoryOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Inventory changes need a connection. Showing saved data.'**
+  String get inventoryOffline;
+
+  /// No description provided for @inventoryMsgItemCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Item added to the inventory.'**
+  String get inventoryMsgItemCreated;
+
+  /// No description provided for @inventoryMsgItemUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Item updated.'**
+  String get inventoryMsgItemUpdated;
+
+  /// No description provided for @inventoryMsgStockRecorded.
+  ///
+  /// In en, this message translates to:
+  /// **'Stock movement recorded.'**
+  String get inventoryMsgStockRecorded;
+
+  /// No description provided for @inventoryErrGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'The inventory action could not be saved.'**
+  String get inventoryErrGeneric;
+
+  /// No description provided for @inventoryLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The inventory could not be loaded.'**
+  String get inventoryLoadFailed;
+
+  /// No description provided for @unitGram.
+  ///
+  /// In en, this message translates to:
+  /// **'Grams'**
+  String get unitGram;
+
+  /// No description provided for @unitKilogram.
+  ///
+  /// In en, this message translates to:
+  /// **'Kilograms'**
+  String get unitKilogram;
+
+  /// No description provided for @unitLiter.
+  ///
+  /// In en, this message translates to:
+  /// **'Liters'**
+  String get unitLiter;
+
+  /// No description provided for @unitMilliliter.
+  ///
+  /// In en, this message translates to:
+  /// **'Milliliters'**
+  String get unitMilliliter;
+
+  /// No description provided for @unitPiece.
+  ///
+  /// In en, this message translates to:
+  /// **'Pieces'**
+  String get unitPiece;
+
+  /// No description provided for @unitMeter.
+  ///
+  /// In en, this message translates to:
+  /// **'Meters'**
+  String get unitMeter;
+
+  /// No description provided for @txnAddition.
+  ///
+  /// In en, this message translates to:
+  /// **'Stock added'**
+  String get txnAddition;
+
+  /// No description provided for @txnConsumption.
+  ///
+  /// In en, this message translates to:
+  /// **'Consumed by task'**
+  String get txnConsumption;
+
+  /// No description provided for @txnAdjustment.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjustment'**
+  String get txnAdjustment;
+
+  /// No description provided for @txnReversal.
+  ///
+  /// In en, this message translates to:
+  /// **'Consumption reversed'**
+  String get txnReversal;
+
+  /// No description provided for @categoryPipe.
+  ///
+  /// In en, this message translates to:
+  /// **'Pipes'**
+  String get categoryPipe;
+
+  /// No description provided for @categoryPipeJoint.
+  ///
+  /// In en, this message translates to:
+  /// **'Pipe joints'**
+  String get categoryPipeJoint;
+
+  /// No description provided for @categoryFertilizer.
+  ///
+  /// In en, this message translates to:
+  /// **'Fertilizers'**
+  String get categoryFertilizer;
+
+  /// No description provided for @categoryDripper.
+  ///
+  /// In en, this message translates to:
+  /// **'Drippers'**
+  String get categoryDripper;
+
+  /// No description provided for @categoryInsecticide.
+  ///
+  /// In en, this message translates to:
+  /// **'Insecticides'**
+  String get categoryInsecticide;
+
+  /// No description provided for @categoryHerbicide.
+  ///
+  /// In en, this message translates to:
+  /// **'Herbicides'**
+  String get categoryHerbicide;
+
+  /// No description provided for @categoryFungicide.
+  ///
+  /// In en, this message translates to:
+  /// **'Fungicides'**
+  String get categoryFungicide;
+
+  /// No description provided for @categoryTool.
+  ///
+  /// In en, this message translates to:
+  /// **'Farm tools'**
+  String get categoryTool;
+
+  /// No description provided for @categoryOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get categoryOther;
 }
 
 class _AppLocalizationsDelegate

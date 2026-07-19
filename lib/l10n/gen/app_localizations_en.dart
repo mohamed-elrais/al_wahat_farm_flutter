@@ -1276,4 +1276,204 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0\n$summary';
   }
+
+  @override
+  String get inventoryTitle => 'Inventory';
+
+  @override
+  String get inventoryEyebrow => 'Farm supplies';
+
+  @override
+  String get inventorySearchHint => 'Search items';
+
+  @override
+  String get inventoryAllCategories => 'All';
+
+  @override
+  String get inventoryEmptyTitle => 'No inventory items';
+
+  @override
+  String get inventoryEmptyManager =>
+      'Add your first item with the button below.';
+
+  @override
+  String get inventoryEmptyWorker => 'No items have been added yet.';
+
+  @override
+  String get inventoryLowStock => 'Low stock';
+
+  @override
+  String inventoryLowStockCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items below minimum stock',
+      one: '1 item below minimum stock',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get inventoryQuantityLabel => 'In stock';
+
+  @override
+  String get inventoryMinimumLabel => 'Minimum';
+
+  @override
+  String get inventoryAddItem => 'Add item';
+
+  @override
+  String get inventoryEditItem => 'Edit item';
+
+  @override
+  String get inventoryItemName => 'Item name';
+
+  @override
+  String get inventoryItemNameRequired => 'Enter an item name';
+
+  @override
+  String get inventoryCategoryField => 'Category';
+
+  @override
+  String get inventoryUnitField => 'Unit';
+
+  @override
+  String get inventoryDescriptionField => 'Description';
+
+  @override
+  String get inventoryMinimumStockField => 'Minimum stock (alert threshold)';
+
+  @override
+  String get inventoryInitialQuantityField => 'Initial quantity';
+
+  @override
+  String get inventoryInvalidNumber => 'Enter a valid number';
+
+  @override
+  String get inventoryAttributesTitle => 'Specifications';
+
+  @override
+  String get inventoryAttributeName => 'Name';
+
+  @override
+  String get inventoryAttributeValue => 'Value';
+
+  @override
+  String get inventoryAddAttribute => 'Add specification';
+
+  @override
+  String get inventorySaveItem => 'Save item';
+
+  @override
+  String get inventorySaving => 'Saving…';
+
+  @override
+  String get inventoryAddStock => 'Add stock';
+
+  @override
+  String get inventoryAdjust => 'Adjust';
+
+  @override
+  String get inventoryAdjustHint => 'Positive adds, negative removes';
+
+  @override
+  String get inventoryQuantityField => 'Quantity';
+
+  @override
+  String get inventoryNoteField => 'Note';
+
+  @override
+  String get inventoryRecord => 'Record';
+
+  @override
+  String get inventoryHistoryTitle => 'Transaction history';
+
+  @override
+  String get inventoryHistoryEmpty => 'No transactions yet.';
+
+  @override
+  String get inventoryDeactivate => 'Deactivate item';
+
+  @override
+  String get inventoryDeactivateConfirmTitle => 'Deactivate this item?';
+
+  @override
+  String get inventoryDeactivateConfirmMessage =>
+      'The item is hidden from the inventory but its history is kept.';
+
+  @override
+  String get inventoryOffline =>
+      'Inventory changes need a connection. Showing saved data.';
+
+  @override
+  String get inventoryMsgItemCreated => 'Item added to the inventory.';
+
+  @override
+  String get inventoryMsgItemUpdated => 'Item updated.';
+
+  @override
+  String get inventoryMsgStockRecorded => 'Stock movement recorded.';
+
+  @override
+  String get inventoryErrGeneric => 'The inventory action could not be saved.';
+
+  @override
+  String get inventoryLoadFailed => 'The inventory could not be loaded.';
+
+  @override
+  String get unitGram => 'Grams';
+
+  @override
+  String get unitKilogram => 'Kilograms';
+
+  @override
+  String get unitLiter => 'Liters';
+
+  @override
+  String get unitMilliliter => 'Milliliters';
+
+  @override
+  String get unitPiece => 'Pieces';
+
+  @override
+  String get unitMeter => 'Meters';
+
+  @override
+  String get txnAddition => 'Stock added';
+
+  @override
+  String get txnConsumption => 'Consumed by task';
+
+  @override
+  String get txnAdjustment => 'Adjustment';
+
+  @override
+  String get txnReversal => 'Consumption reversed';
+
+  @override
+  String get categoryPipe => 'Pipes';
+
+  @override
+  String get categoryPipeJoint => 'Pipe joints';
+
+  @override
+  String get categoryFertilizer => 'Fertilizers';
+
+  @override
+  String get categoryDripper => 'Drippers';
+
+  @override
+  String get categoryInsecticide => 'Insecticides';
+
+  @override
+  String get categoryHerbicide => 'Herbicides';
+
+  @override
+  String get categoryFungicide => 'Fungicides';
+
+  @override
+  String get categoryTool => 'Farm tools';
+
+  @override
+  String get categoryOther => 'Other';
 }
