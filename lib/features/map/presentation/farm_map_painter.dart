@@ -13,6 +13,9 @@ class FarmMapPainter extends CustomPainter {
     required this.showTrees,
     required this.showIrrigation,
     required this.showUtilities,
+    this.showValves = true,
+    this.showFlushValves = false,
+    this.showWaterSupply = false,
   });
 
   final ProjectedFarmMap map;
@@ -21,10 +24,16 @@ class FarmMapPainter extends CustomPainter {
   final bool showTrees;
   final bool showIrrigation;
   final bool showUtilities;
+  final bool showValves;
+  final bool showFlushValves;
+  final bool showWaterSupply;
 
   static const overviewTreeRadius = 2.7;
   static const sectionTreeRadius = 4.4;
   static const selectedTreeRadius = 6.8;
+  static const valveRadius = 4.2;
+  static const riserRadius = 1.9;
+  static const flushValveRadius = 2.6;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -32,9 +41,12 @@ class FarmMapPainter extends CustomPainter {
     _drawLayout(canvas);
     _drawSections(canvas);
     if (showIrrigation) _drawIrrigation(canvas);
+    if (showWaterSupply) _drawWaterSupply(canvas);
     if (showUtilities) _drawUtilities(canvas);
     _drawLabels(canvas);
+    if (showFlushValves) _drawFlushValves(canvas);
     if (showTrees) _drawTrees(canvas);
+    if (showValves) _drawValves(canvas);
   }
 
   void _drawGround(Canvas canvas, Size size) {
@@ -117,7 +129,103 @@ class FarmMapPainter extends CustomPainter {
         _drawDashedPolyline(canvas, line.points, paint);
       }
     }
+    // Branch lines in their zone color, so each zone's reach is visible.
+    for (final branch in map.branchLines) {
+      final dim = _dimmed(branch.line.section);
+      canvas.drawPoints(
+        PointMode.polygon,
+        branch.points,
+        Paint()
+          ..color = (branch.line.color ?? AppColors.waterSubmain)
+              .withOpacity(dim ? 0.15 : 0.8)
+          ..style = PaintingStyle.stroke
+          ..strokeCap = StrokeCap.round
+          ..strokeWidth = 1.1,
+      );
+    }
+    for (final riser in map.risers) {
+      final dim = _dimmed(riser.feature.section);
+      canvas.drawRect(
+        Rect.fromCircle(center: riser.point, radius: riserRadius),
+        Paint()..color = AppColors.waterMain.withOpacity(dim ? 0.2 : 1),
+      );
+    }
   }
+
+  void _drawWaterSupply(Canvas canvas) {
+    final linePaint = Paint()
+      ..color = const Color(0xFF3E7C96)
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 2;
+    for (final line in map.supplyLines) {
+      _drawDashedPolyline(canvas, line.points, linePaint);
+    }
+    for (final point in map.supplyPoints) {
+      canvas.drawCircle(
+        point.point,
+        3.4,
+        Paint()..color = const Color(0xFF2E5E73),
+      );
+      canvas.drawCircle(
+        point.point,
+        3.4,
+        Paint()
+          ..color = Colors.white
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1,
+      );
+    }
+  }
+
+  void _drawFlushValves(Canvas canvas) {
+    for (final flush in map.flushValves) {
+      final dim = _dimmed(flush.feature.section);
+      final paint = Paint()
+        ..color = const Color(0xFF8A6D4F).withOpacity(dim ? 0.2 : 0.95);
+      final center = flush.point;
+      final path = Path()
+        ..moveTo(center.dx, center.dy - flushValveRadius)
+        ..lineTo(center.dx + flushValveRadius, center.dy + flushValveRadius)
+        ..lineTo(center.dx - flushValveRadius, center.dy + flushValveRadius)
+        ..close();
+      canvas.drawPath(path, paint);
+    }
+  }
+
+  void _drawValves(Canvas canvas) {
+    for (final projected in map.valves) {
+      final valve = projected.valve;
+      final dim = _dimmed(valve.section);
+      final zone = valve.isZoneControl;
+      final fill =
+          zone ? (valve.color ?? AppColors.waterMain) : const Color(0xFF32424E);
+      final radius = zone ? valveRadius : valveRadius - 0.7;
+      final center = projected.point;
+      final diamond = Path()
+        ..moveTo(center.dx, center.dy - radius)
+        ..lineTo(center.dx + radius, center.dy)
+        ..lineTo(center.dx, center.dy + radius)
+        ..lineTo(center.dx - radius, center.dy)
+        ..close();
+      canvas.drawPath(
+        diamond,
+        Paint()..color = fill.withOpacity(dim ? 0.2 : 1),
+      );
+      canvas.drawPath(
+        diamond,
+        Paint()
+          ..color = Colors.white.withOpacity(dim ? 0.25 : 0.95)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1,
+      );
+    }
+  }
+
+  /// Section-scoped dimming for network features (features with no section,
+  /// like mainline hardware, stay visible when a section is selected).
+  bool _dimmed(String? section) =>
+      selectedSection != null && section != null && section != selectedSection;
 
   void _drawUtilities(Canvas canvas) {
     for (final utility in map.utilities) {
@@ -254,5 +362,8 @@ class FarmMapPainter extends CustomPainter {
       oldDelegate.selectedTreeId != selectedTreeId ||
       oldDelegate.showTrees != showTrees ||
       oldDelegate.showIrrigation != showIrrigation ||
-      oldDelegate.showUtilities != showUtilities;
+      oldDelegate.showUtilities != showUtilities ||
+      oldDelegate.showValves != showValves ||
+      oldDelegate.showFlushValves != showFlushValves ||
+      oldDelegate.showWaterSupply != showWaterSupply;
 }

@@ -1154,6 +1154,15 @@ class AppLocalizationsAr extends AppLocalizations {
   String get mapLayerUtilities => 'المباني والمرافق';
 
   @override
+  String get mapLayerValves => 'محابس المناطق';
+
+  @override
+  String get mapLayerFlushValves => 'محابس الغسيل';
+
+  @override
+  String get mapLayerWaterSupply => 'إمداد المياه';
+
+  @override
   String get mapAllSections => 'جميع الأقسام الـ 12';
 
   @override

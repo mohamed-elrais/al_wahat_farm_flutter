@@ -2196,6 +2196,24 @@ abstract class AppLocalizations {
   /// **'Buildings & utilities'**
   String get mapLayerUtilities;
 
+  /// No description provided for @mapLayerValves.
+  ///
+  /// In en, this message translates to:
+  /// **'Zone valves'**
+  String get mapLayerValves;
+
+  /// No description provided for @mapLayerFlushValves.
+  ///
+  /// In en, this message translates to:
+  /// **'Flush valves'**
+  String get mapLayerFlushValves;
+
+  /// No description provided for @mapLayerWaterSupply.
+  ///
+  /// In en, this message translates to:
+  /// **'Water supply'**
+  String get mapLayerWaterSupply;
+
   /// No description provided for @mapAllSections.
   ///
   /// In en, this message translates to:

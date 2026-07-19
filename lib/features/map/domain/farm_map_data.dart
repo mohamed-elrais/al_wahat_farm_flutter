@@ -121,6 +121,187 @@ class GeoShape {
       );
 }
 
+/// A single-coordinate irrigation-network feature: flush valve, distribution
+/// riser, pump, well, pipe bend/takeoff.
+class NetworkPoint {
+  const NetworkPoint({
+    required this.assetId,
+    required this.name,
+    required this.type,
+    required this.latitude,
+    required this.longitude,
+    this.section,
+    this.submain,
+    this.status,
+  });
+
+  final String assetId;
+  final String name;
+  final String type;
+  final double latitude;
+  final double longitude;
+  final String? section;
+  final String? submain;
+  final String? status;
+
+  factory NetworkPoint.fromJson(Map<String, Object?> json) => NetworkPoint(
+        assetId: json['assetId']! as String,
+        name: json['name']! as String,
+        type: json['type']! as String,
+        latitude: (json['lat']! as num).toDouble(),
+        longitude: (json['lng']! as num).toDouble(),
+        section: json['section'] as String?,
+        submain: json['submain'] as String?,
+        status: json['status'] as String?,
+      );
+}
+
+/// A zone control valve or mainline isolation valve. Zone control valves are
+/// the irrigation-zone markers: [zoneUuid] matches the live zone id carried by
+/// the trees they irrigate, and [color] matches those trees' zone color.
+class NetworkValve {
+  const NetworkValve({
+    required this.assetId,
+    required this.name,
+    required this.type,
+    required this.latitude,
+    required this.longitude,
+    this.section,
+    this.submain,
+    this.zoneId,
+    this.zoneUuid,
+    this.color,
+    this.zoneTreeCount,
+    this.status,
+  });
+
+  final String assetId;
+  final String name;
+  final String type;
+  final double latitude;
+  final double longitude;
+  final String? section;
+  final String? submain;
+  final String? zoneId;
+  final String? zoneUuid;
+  final Color? color;
+  final int? zoneTreeCount;
+  final String? status;
+
+  bool get isZoneControl => type == 'zone_control_valve';
+
+  factory NetworkValve.fromJson(Map<String, Object?> json) => NetworkValve(
+        assetId: json['assetId']! as String,
+        name: json['name']! as String,
+        type: json['type']! as String,
+        latitude: (json['lat']! as num).toDouble(),
+        longitude: (json['lng']! as num).toDouble(),
+        section: json['section'] as String?,
+        submain: json['submain'] as String?,
+        zoneId: json['zoneId'] as String?,
+        zoneUuid: json['zoneUuid'] as String?,
+        color: json['color'] == null
+            ? null
+            : _parseColor(json['color']! as String),
+        zoneTreeCount: (json['zoneTreeCount'] as num?)?.toInt(),
+        status: json['status'] as String?,
+      );
+}
+
+/// An irrigation branch line, colored and keyed by the zone (ZCV) feeding it.
+class BranchLine {
+  const BranchLine({
+    required this.assetId,
+    required this.name,
+    required this.section,
+    required this.submain,
+    required this.coordinates,
+    this.zoneId,
+    this.zoneUuid,
+    this.color,
+    this.status,
+  });
+
+  final String assetId;
+  final String name;
+  final String section;
+  final String submain;
+  final List<GeoCoordinate> coordinates;
+  final String? zoneId;
+  final String? zoneUuid;
+  final Color? color;
+  final String? status;
+
+  factory BranchLine.fromJson(Map<String, Object?> json) => BranchLine(
+        assetId: json['assetId']! as String,
+        name: json['name']! as String,
+        section: json['section']! as String,
+        submain: json['submain']! as String,
+        coordinates: _coordinates(json['coordinates']),
+        zoneId: json['zoneId'] as String?,
+        zoneUuid: json['zoneUuid'] as String?,
+        color: json['color'] == null
+            ? null
+            : _parseColor(json['color']! as String),
+        status: json['status'] as String?,
+      );
+}
+
+/// A water-supply line (tank transfer, well/tank discharge, mosque supply).
+class SupplyLine {
+  const SupplyLine({
+    required this.assetId,
+    required this.name,
+    required this.type,
+    required this.coordinates,
+    this.diameterIn,
+    this.status,
+  });
+
+  final String assetId;
+  final String name;
+  final String type;
+  final List<GeoCoordinate> coordinates;
+  final double? diameterIn;
+  final String? status;
+
+  factory SupplyLine.fromJson(Map<String, Object?> json) => SupplyLine(
+        assetId: json['assetId']! as String,
+        name: json['name']! as String,
+        type: json['type']! as String,
+        coordinates: _coordinates(json['coordinates']),
+        diameterIn: (json['diameterIn'] as num?)?.toDouble(),
+        status: json['status'] as String?,
+      );
+}
+
+/// The water source & supply layer: well/pumps/bends as points, transfer and
+/// discharge pipes as lines (tank/mainline shapes already live in the legacy
+/// utilities/waterLines layers).
+class WaterSupply {
+  const WaterSupply({
+    this.points = const <NetworkPoint>[],
+    this.lines = const <SupplyLine>[],
+    this.polygons = const <SupplyLine>[],
+  });
+
+  final List<NetworkPoint> points;
+  final List<SupplyLine> lines;
+  final List<SupplyLine> polygons;
+
+  factory WaterSupply.fromJson(Map<String, Object?> json) => WaterSupply(
+        points: _objectList(
+          json['points'] ?? const <Object?>[],
+        ).map(NetworkPoint.fromJson).toList(growable: false),
+        lines: _objectList(
+          json['lines'] ?? const <Object?>[],
+        ).map(SupplyLine.fromJson).toList(growable: false),
+        polygons: _objectList(
+          json['polygons'] ?? const <Object?>[],
+        ).map(SupplyLine.fromJson).toList(growable: false),
+      );
+}
+
 class FarmMapData {
   const FarmMapData({
     required this.generatedFrom,
@@ -130,6 +311,11 @@ class FarmMapData {
     required this.layout,
     required this.utilities,
     required this.waterLines,
+    this.branchLines = const <BranchLine>[],
+    this.valves = const <NetworkValve>[],
+    this.flushValves = const <NetworkPoint>[],
+    this.risers = const <NetworkPoint>[],
+    this.waterSupply = const WaterSupply(),
   });
 
   final String generatedFrom;
@@ -139,6 +325,11 @@ class FarmMapData {
   final List<GeoShape> layout;
   final List<GeoShape> utilities;
   final List<GeoShape> waterLines;
+  final List<BranchLine> branchLines;
+  final List<NetworkValve> valves;
+  final List<NetworkPoint> flushValves;
+  final List<NetworkPoint> risers;
+  final WaterSupply waterSupply;
 
   factory FarmMapData.fromJson(Map<String, Object?> json) {
     final data = FarmMapData(
@@ -159,6 +350,21 @@ class FarmMapData {
       waterLines: _objectList(
         json['waterLines'],
       ).map(GeoShape.fromJson).toList(growable: false),
+      branchLines: _objectList(
+        json['branchLines'] ?? const <Object?>[],
+      ).map(BranchLine.fromJson).toList(growable: false),
+      valves: _objectList(
+        json['valves'] ?? const <Object?>[],
+      ).map(NetworkValve.fromJson).toList(growable: false),
+      flushValves: _objectList(
+        json['flushValves'] ?? const <Object?>[],
+      ).map(NetworkPoint.fromJson).toList(growable: false),
+      risers: _objectList(
+        json['risers'] ?? const <Object?>[],
+      ).map(NetworkPoint.fromJson).toList(growable: false),
+      waterSupply: json['waterSupply'] == null
+          ? const WaterSupply()
+          : WaterSupply.fromJson(json['waterSupply']! as Map<String, Object?>),
     );
     data.validateReferenceContract();
     return data;

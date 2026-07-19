@@ -27,11 +27,71 @@ class ProjectedSection {
   final Rect bounds;
 }
 
+class ProjectedBranchLine {
+  const ProjectedBranchLine({required this.line, required this.points});
+  final BranchLine line;
+  final List<Offset> points;
+}
+
+class ProjectedValve {
+  const ProjectedValve({required this.valve, required this.point});
+  final NetworkValve valve;
+  final Offset point;
+}
+
+class ProjectedNetworkPoint {
+  const ProjectedNetworkPoint({required this.feature, required this.point});
+  final NetworkPoint feature;
+  final Offset point;
+}
+
+class ProjectedSupplyLine {
+  const ProjectedSupplyLine({required this.line, required this.points});
+  final SupplyLine line;
+  final List<Offset> points;
+}
+
 class ProjectedFarmMap {
   ProjectedFarmMap(this.data) : projection = MapProjection(data.bounds) {
     layout = data.layout.map(_shape).toList(growable: false);
     utilities = data.utilities.map(_shape).toList(growable: false);
     waterLines = data.waterLines.map(_shape).toList(growable: false);
+    branchLines = data.branchLines
+        .map(
+          (line) => ProjectedBranchLine(
+            line: line,
+            points: line.coordinates
+                .map(projection.project)
+                .toList(growable: false),
+          ),
+        )
+        .toList(growable: false);
+    valves = data.valves
+        .map(
+          (valve) => ProjectedValve(
+            valve: valve,
+            point: projection.project(
+              GeoCoordinate(
+                longitude: valve.longitude,
+                latitude: valve.latitude,
+              ),
+            ),
+          ),
+        )
+        .toList(growable: false);
+    flushValves = data.flushValves.map(_point).toList(growable: false);
+    risers = data.risers.map(_point).toList(growable: false);
+    supplyPoints = data.waterSupply.points.map(_point).toList(growable: false);
+    supplyLines = data.waterSupply.lines
+        .map(
+          (line) => ProjectedSupplyLine(
+            line: line,
+            points: line.coordinates
+                .map(projection.project)
+                .toList(growable: false),
+          ),
+        )
+        .toList(growable: false);
     sections = data.sections.map((section) {
       final points =
           section.polygon.map(projection.project).toList(growable: false);
@@ -60,6 +120,12 @@ class ProjectedFarmMap {
   late final List<ProjectedShape> layout;
   late final List<ProjectedShape> utilities;
   late final List<ProjectedShape> waterLines;
+  late final List<ProjectedBranchLine> branchLines;
+  late final List<ProjectedValve> valves;
+  late final List<ProjectedNetworkPoint> flushValves;
+  late final List<ProjectedNetworkPoint> risers;
+  late final List<ProjectedNetworkPoint> supplyPoints;
+  late final List<ProjectedSupplyLine> supplyLines;
   late final List<ProjectedSection> sections;
   late final List<ProjectedTree> trees;
   late final ProjectedTreeIndex treeIndex;
@@ -73,6 +139,16 @@ class ProjectedFarmMap {
       points: points,
     );
   }
+
+  ProjectedNetworkPoint _point(NetworkPoint feature) => ProjectedNetworkPoint(
+        feature: feature,
+        point: projection.project(
+          GeoCoordinate(
+            longitude: feature.longitude,
+            latitude: feature.latitude,
+          ),
+        ),
+      );
 }
 
 Path _closedPath(List<Offset> points) {

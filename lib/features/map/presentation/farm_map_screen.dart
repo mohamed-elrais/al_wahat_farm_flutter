@@ -34,6 +34,9 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
   bool _trees = true;
   bool _irrigation = true;
   bool _utilities = true;
+  bool _valves = true;
+  bool _flushValves = false;
+  bool _waterSupply = false;
   ProjectedFarmMap? _lastAssetMap;
   FarmHierarchy? _lastLiveHierarchy;
   ProjectedFarmMap? _lastReconciledMap;
@@ -84,6 +87,9 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
                   showTrees: _trees,
                   showIrrigation: _irrigation,
                   showUtilities: _utilities,
+                  showValves: _valves,
+                  showFlushValves: _flushValves,
+                  showWaterSupply: _waterSupply,
                   onTapTree: (tree) => _selectTree(tree),
                 );
                 return Padding(
@@ -101,6 +107,9 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
                         trees: _trees,
                         irrigation: _irrigation,
                         utilities: _utilities,
+                        valves: _valves,
+                        flushValves: _flushValves,
+                        waterSupply: _waterSupply,
                         onReset: () => _fit(map, null, constraints.biggest),
                         onZoom: _zoom,
                         onTrees: (value) => setState(() => _trees = value),
@@ -108,6 +117,11 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
                             setState(() => _irrigation = value),
                         onUtilities: (value) =>
                             setState(() => _utilities = value),
+                        onValves: (value) => setState(() => _valves = value),
+                        onFlushValves: (value) =>
+                            setState(() => _flushValves = value),
+                        onWaterSupply: (value) =>
+                            setState(() => _waterSupply = value),
                       ),
                       const SizedBox(height: 8),
                       _SectionFilter(
@@ -178,6 +192,11 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
       layout: assetMap.data.layout,
       utilities: assetMap.data.utilities,
       waterLines: assetMap.data.waterLines,
+      branchLines: assetMap.data.branchLines,
+      valves: assetMap.data.valves,
+      flushValves: assetMap.data.flushValves,
+      risers: assetMap.data.risers,
+      waterSupply: assetMap.data.waterSupply,
     );
     final reconciledMap = ProjectedFarmMap(reconciledData);
     _lastAssetMap = assetMap;
@@ -323,6 +342,9 @@ class _MapPanel extends StatefulWidget {
     required this.showTrees,
     required this.showIrrigation,
     required this.showUtilities,
+    required this.showValves,
+    required this.showFlushValves,
+    required this.showWaterSupply,
     required this.onTapTree,
   });
   final ProjectedFarmMap map;
@@ -332,6 +354,9 @@ class _MapPanel extends StatefulWidget {
   final bool showTrees;
   final bool showIrrigation;
   final bool showUtilities;
+  final bool showValves;
+  final bool showFlushValves;
+  final bool showWaterSupply;
   final ValueChanged<FarmTree> onTapTree;
 
   @override
@@ -412,6 +437,9 @@ class _MapPanelState extends State<_MapPanel> {
                           showTrees: widget.showTrees,
                           showIrrigation: widget.showIrrigation,
                           showUtilities: widget.showUtilities,
+                          showValves: widget.showValves,
+                          showFlushValves: widget.showFlushValves,
+                          showWaterSupply: widget.showWaterSupply,
                         ),
                       ),
                     ),
@@ -431,22 +459,34 @@ class _MapHeader extends StatelessWidget {
     required this.trees,
     required this.irrigation,
     required this.utilities,
+    required this.valves,
+    required this.flushValves,
+    required this.waterSupply,
     required this.onReset,
     required this.onZoom,
     required this.onTrees,
     required this.onIrrigation,
     required this.onUtilities,
+    required this.onValves,
+    required this.onFlushValves,
+    required this.onWaterSupply,
   });
   final ProjectedFarmMap map;
   final String? section;
   final bool trees;
   final bool irrigation;
   final bool utilities;
+  final bool valves;
+  final bool flushValves;
+  final bool waterSupply;
   final VoidCallback onReset;
   final ValueChanged<double> onZoom;
   final ValueChanged<bool> onTrees;
   final ValueChanged<bool> onIrrigation;
   final ValueChanged<bool> onUtilities;
+  final ValueChanged<bool> onValves;
+  final ValueChanged<bool> onFlushValves;
+  final ValueChanged<bool> onWaterSupply;
 
   @override
   Widget build(BuildContext context) {
@@ -503,11 +543,29 @@ class _MapHeader extends StatelessWidget {
               checked: utilities,
               child: Text(context.l10n.mapLayerUtilities),
             ),
+            CheckedPopupMenuItem(
+              value: 'valves',
+              checked: valves,
+              child: Text(context.l10n.mapLayerValves),
+            ),
+            CheckedPopupMenuItem(
+              value: 'flushValves',
+              checked: flushValves,
+              child: Text(context.l10n.mapLayerFlushValves),
+            ),
+            CheckedPopupMenuItem(
+              value: 'waterSupply',
+              checked: waterSupply,
+              child: Text(context.l10n.mapLayerWaterSupply),
+            ),
           ],
           onSelected: (value) {
             if (value == 'trees') onTrees(!trees);
             if (value == 'irrigation') onIrrigation(!irrigation);
             if (value == 'utilities') onUtilities(!utilities);
+            if (value == 'valves') onValves(!valves);
+            if (value == 'flushValves') onFlushValves(!flushValves);
+            if (value == 'waterSupply') onWaterSupply(!waterSupply);
           },
         ),
       ],

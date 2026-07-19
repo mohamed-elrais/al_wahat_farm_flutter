@@ -56,5 +56,38 @@ void main() {
     test('records the asset-only irrigation-zone discrepancy', () {
       expect(data.trees.map((tree) => tree.zoneId).toSet(), hasLength(56));
     });
+
+    test('contains every irrigation-network layer', () {
+      expect(data.branchLines, hasLength(121));
+      expect(data.valves, hasLength(133));
+      expect(
+        data.valves.where((valve) => valve.isZoneControl),
+        hasLength(122),
+      );
+      expect(data.flushValves, hasLength(131));
+      expect(data.risers, hasLength(66));
+      expect(data.waterSupply.points, hasLength(7));
+      expect(data.waterSupply.lines, hasLength(12));
+    });
+
+    test('zone control valves cover every tree zone by uuid', () {
+      final valveZones = data.valves
+          .map((valve) => valve.zoneUuid)
+          .whereType<String>()
+          .toSet();
+      final treeZones = data.trees.map((tree) => tree.zoneId).toSet();
+      expect(valveZones, hasLength(56));
+      expect(treeZones.difference(valveZones), isEmpty);
+      // Zone colors on valves match the trees they irrigate.
+      final treeColorByZone = <String, Object?>{
+        for (final tree in data.trees) tree.zoneId: tree.color,
+      };
+      for (final valve in data.valves) {
+        final zone = valve.zoneUuid;
+        if (zone == null) continue;
+        expect(valve.color, treeColorByZone[zone],
+            reason: 'zone color mismatch for ${valve.assetId}');
+      }
+    });
   });
 }

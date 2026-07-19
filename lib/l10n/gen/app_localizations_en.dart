@@ -1164,6 +1164,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mapLayerUtilities => 'Buildings & utilities';
 
   @override
+  String get mapLayerValves => 'Zone valves';
+
+  @override
+  String get mapLayerFlushValves => 'Flush valves';
+
+  @override
+  String get mapLayerWaterSupply => 'Water supply';
+
+  @override
   String get mapAllSections => 'All 12 sections';
 
   @override
