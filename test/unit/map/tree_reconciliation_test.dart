@@ -101,6 +101,28 @@ void main() {
       1,
     );
   });
+
+  test('6-decimal backend rounding is within tolerance (no false drift)', () {
+    final original = live.trees.first;
+    // Rounding an 8-decimal asset value to the backend's 6 decimals shifts it by
+    // up to 5e-7 (~7 cm) — this must NOT be reported as coordinate drift.
+    final rounded = _copyTree(
+      original,
+      latitude: original.latitude! + 0.0000005,
+      longitude: original.longitude! - 0.0000005,
+    );
+    final hierarchy = _copyHierarchy(
+      live,
+      trees: <FarmTreeRecord>[rounded, ...live.trees.skip(1)],
+    );
+
+    final result = const TreeReconciler().reconcile(asset, hierarchy);
+
+    expect(
+      result.discrepancyCounts[TreeDiscrepancyType.coordinateMismatch],
+      isNull,
+    );
+  });
 }
 
 FarmHierarchy _copyHierarchy(
@@ -119,6 +141,7 @@ FarmTreeRecord _copyTree(
   String? id,
   String? treeCode,
   double? latitude,
+  double? longitude,
   TreeHealthStatus? healthStatus,
   String? type,
 }) =>
@@ -132,7 +155,7 @@ FarmTreeRecord _copyTree(
       treeNumber: source.treeNumber,
       plantedOn: source.plantedOn,
       latitude: latitude ?? source.latitude,
-      longitude: source.longitude,
+      longitude: longitude ?? source.longitude,
       healthStatus: healthStatus ?? source.healthStatus,
       type: type ?? source.type,
       notes: source.notes,

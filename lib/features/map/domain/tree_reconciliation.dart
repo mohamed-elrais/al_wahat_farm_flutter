@@ -58,7 +58,12 @@ class TreeReconciliationResult {
 }
 
 class TreeReconciler {
-  const TreeReconciler({this.coordinateTolerance = 0.0000001});
+  // The backend stores tree latitude/longitude at 6-decimal precision, so a
+  // value can differ from the higher-precision reference asset by up to 5e-7°
+  // (~7 cm) purely from rounding. The tolerance sits above that (1e-6° ≈ 11 cm)
+  // so rounding is not reported as drift, while a real misplacement — which is
+  // at least a tree slot away (metres) — still is.
+  const TreeReconciler({this.coordinateTolerance = 0.000001});
 
   final double coordinateTolerance;
 
