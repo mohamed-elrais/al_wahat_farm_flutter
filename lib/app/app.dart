@@ -13,6 +13,13 @@ import 'package:flutter/material.dart';
 class AlWahatApp extends StatefulWidget {
   const AlWahatApp({required this.config, this.services, super.key});
 
+  /// System text-scale bounds. Some Android vendors (e.g. Realme/ColorOS)
+  /// default to a large font scale, which blows up the fixed-chrome layouts
+  /// far beyond the iOS rendering. Accessibility scaling still works — it is
+  /// just bounded so the UI cannot break.
+  static const minTextScale = 0.85;
+  static const maxTextScale = 1.3;
+
   final AppConfig config;
 
   /// Process-wide services. When omitted (widget tests), an isolated in-memory
@@ -49,10 +56,21 @@ class _AlWahatAppState extends State<AlWahatApp> {
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           routerConfig: router,
-          builder: (context, child) => AppServicesScope(
-            services: _services,
-            child: child ?? const SizedBox.shrink(),
-          ),
+          builder: (context, child) {
+            final media = MediaQuery.of(context);
+            return MediaQuery(
+              data: media.copyWith(
+                textScaleFactor: media.textScaleFactor.clamp(
+                  AlWahatApp.minTextScale,
+                  AlWahatApp.maxTextScale,
+                ),
+              ),
+              child: AppServicesScope(
+                services: _services,
+                child: child ?? const SizedBox.shrink(),
+              ),
+            );
+          },
         ),
       );
 }
