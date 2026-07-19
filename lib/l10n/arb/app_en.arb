@@ -129,6 +129,8 @@
   "taskTypeIrrigation": "Irrigation",
   "taskTypeFertilization": "Fertilization",
   "taskTypeHarmfulWeedControl": "Harmful weed control",
+  "taskTypePestControl": "Pest control",
+  "taskTypeDiseaseControl": "Disease control",
   "taskTypeDripperMaintenance": "Dripper maintenance",
   "taskTypeTreeInspection": "Tree inspection",
   "taskTypeEngineerReview": "Engineer review",

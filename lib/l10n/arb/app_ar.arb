@@ -129,6 +129,8 @@
   "taskTypeIrrigation": "الري",
   "taskTypeFertilization": "التسميد",
   "taskTypeHarmfulWeedControl": "مكافحة الأعشاب الضارة",
+  "taskTypePestControl": "مكافحة الحشرات",
+  "taskTypeDiseaseControl": "مكافحة الأمراض الفطرية",
   "taskTypeDripperMaintenance": "صيانة النقّاطات",
   "taskTypeTreeInspection": "فحص الأشجار",
   "taskTypeEngineerReview": "مراجعة المهندس الزراعي",

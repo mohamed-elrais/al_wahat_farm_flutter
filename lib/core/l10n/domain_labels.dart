@@ -35,6 +35,8 @@ extension TaskTypeL10n on TaskType {
         TaskType.irrigation => l10n.taskTypeIrrigation,
         TaskType.fertilization => l10n.taskTypeFertilization,
         TaskType.harmfulWeedControl => l10n.taskTypeHarmfulWeedControl,
+        TaskType.pestControl => l10n.taskTypePestControl,
+        TaskType.diseaseControl => l10n.taskTypeDiseaseControl,
         TaskType.dripperMaintenance => l10n.taskTypeDripperMaintenance,
         TaskType.treeInspection => l10n.taskTypeTreeInspection,
         TaskType.engineerReview => l10n.taskTypeEngineerReview,

@@ -768,6 +768,18 @@ abstract class AppLocalizations {
   /// **'Harmful weed control'**
   String get taskTypeHarmfulWeedControl;
 
+  /// No description provided for @taskTypePestControl.
+  ///
+  /// In en, this message translates to:
+  /// **'Pest control'**
+  String get taskTypePestControl;
+
+  /// No description provided for @taskTypeDiseaseControl.
+  ///
+  /// In en, this message translates to:
+  /// **'Disease control'**
+  String get taskTypeDiseaseControl;
+
   /// No description provided for @taskTypeDripperMaintenance.
   ///
   /// In en, this message translates to:

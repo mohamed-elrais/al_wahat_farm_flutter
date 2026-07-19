@@ -372,6 +372,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get taskTypeHarmfulWeedControl => 'مكافحة الأعشاب الضارة';
 
   @override
+  String get taskTypePestControl => 'مكافحة الحشرات';
+
+  @override
+  String get taskTypeDiseaseControl => 'مكافحة الأمراض الفطرية';
+
+  @override
   String get taskTypeDripperMaintenance => 'صيانة النقّاطات';
 
   @override

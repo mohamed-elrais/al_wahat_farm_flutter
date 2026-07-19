@@ -374,6 +374,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get taskTypeHarmfulWeedControl => 'Harmful weed control';
 
   @override
+  String get taskTypePestControl => 'Pest control';
+
+  @override
+  String get taskTypeDiseaseControl => 'Disease control';
+
+  @override
   String get taskTypeDripperMaintenance => 'Dripper maintenance';
 
   @override

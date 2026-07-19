@@ -23,6 +23,15 @@ enum FarmRole {
   bool get canManageTasks => this == owner || this == agriculturalEngineer;
   bool get canReview => canManageTasks;
 
+  /// Inventory items/categories are readable by every operational member;
+  /// editing them (and the transaction ledger) is manager-only. Kept separate
+  /// from [canManageTasks] so the sets can diverge later.
+  bool get canManageInventory => this == owner || this == agriculturalEngineer;
+
+  /// Operation schedules are visible to and editable by managers only
+  /// (workers only ever see the generated tasks).
+  bool get canManageSchedules => this == owner || this == agriculturalEngineer;
+
   String get label => switch (this) {
         owner => 'Owner',
         agriculturalEngineer => 'Agricultural engineer',

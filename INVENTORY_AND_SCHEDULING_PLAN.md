@@ -491,7 +491,7 @@ then **M4**, then **M5 → M6 → M7 → M8**. Backend milestones always land (d
 pgTAP green) before their Flutter counterparts — proven pattern from the offline phase.
 
 ```
-[ ] M0  enums + role getters                       (backend + tiny Flutter)
+[x] M0  enums + role getters                       (backend + tiny Flutter)
 [ ] M1  inventory tables/RPCs/RLS/pgTAP            (backend)
 [ ] M2  inventory Flutter module                   (app)
 [ ] M3  plan product/rate/assignees + generator +  (backend)
