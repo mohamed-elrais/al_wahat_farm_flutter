@@ -110,14 +110,34 @@ class FarmTree {
 }
 
 class GeoShape {
-  const GeoShape({required this.name, required this.coordinates});
+  const GeoShape({
+    required this.name,
+    required this.coordinates,
+    this.type,
+    this.fillColor,
+    this.strokeColor,
+  });
 
   final String name;
   final List<GeoCoordinate> coordinates;
 
+  /// Surveyed asset type and style colors (utilities layer: water_tank,
+  /// building, worker_house, solar_array, gate ...). Absent on layers that
+  /// are styled by the painter itself.
+  final String? type;
+  final Color? fillColor;
+  final Color? strokeColor;
+
   factory GeoShape.fromJson(Map<String, Object?> json) => GeoShape(
         name: json['name']! as String,
         coordinates: _coordinates(json['coordinates']),
+        type: json['type'] as String?,
+        fillColor: json['fillColor'] == null
+            ? null
+            : _parseColor(json['fillColor']! as String),
+        strokeColor: json['strokeColor'] == null
+            ? null
+            : _parseColor(json['strokeColor']! as String),
       );
 }
 

@@ -303,11 +303,32 @@ class FarmMapPainter extends CustomPainter {
 
   void _drawUtilities(Canvas canvas) {
     for (final utility in map.utilities) {
-      canvas.drawPath(utility.path, Paint()..color = const Color(0xFF8B8065));
+      // Gates are short surveyed line features, not buildings.
+      if (utility.type == 'gate') {
+        canvas.drawPoints(
+          PointMode.polygon,
+          utility.points,
+          Paint()
+            ..color = utility.strokeColor ?? const Color(0xFF263238)
+            ..style = PaintingStyle.stroke
+            ..strokeCap = StrokeCap.round
+            ..strokeWidth = 3,
+        );
+        continue;
+      }
+      // Surveyed style colors: water tanks blue, houses/mosque tan, solar
+      // arrays indigo, pump room steel, warehouse brown. Fallback keeps the
+      // legacy uniform building color for untyped shapes.
       canvas.drawPath(
         utility.path,
         Paint()
-          ..color = const Color(0xFFFFF5DF)
+          ..color =
+              (utility.fillColor ?? const Color(0xFF8B8065)).withOpacity(0.85),
+      );
+      canvas.drawPath(
+        utility.path,
+        Paint()
+          ..color = utility.strokeColor ?? const Color(0xFFFFF5DF)
           ..style = PaintingStyle.stroke
           ..strokeWidth = 1.2,
       );

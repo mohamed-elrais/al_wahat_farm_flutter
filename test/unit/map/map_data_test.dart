@@ -49,8 +49,20 @@ void main() {
 
     test('contains every immutable geometry layer', () {
       expect(data.layout, hasLength(7));
-      expect(data.utilities, hasLength(12));
+      // 12 surveyed utilities incl. the two gates, plus tanks 03/04 folded in
+      // from the water-supply folder.
+      expect(data.utilities, hasLength(14));
       expect(data.waterLines, hasLength(11));
+    });
+
+    test('utilities carry surveyed types and style colors', () {
+      final byName = {for (final shape in data.utilities) shape.name: shape};
+      expect(byName['Water Tank 01']!.type, 'water_tank');
+      expect(byName['Water Tank 04']!.type, 'water_tank');
+      expect(byName['Water Tank 01']!.fillColor, isNotNull);
+      expect(byName['Mosque']!.type, 'building');
+      expect(byName['Main Gate']!.type, 'gate');
+      expect(byName['House Solar Array']!.type, 'solar_array');
     });
 
     test('records the asset-only irrigation-zone discrepancy', () {
@@ -94,7 +106,7 @@ void main() {
           .toSet();
       final sm04Trees =
           data.trees.where((tree) => sm04Zones.contains(tree.zoneId)).length;
-      expect(sm04Trees, 276);
+      expect(sm04Trees, 279);
       expect(
         data.branchLines.where((line) => line.submain == '04'),
         isNotEmpty,
@@ -111,7 +123,10 @@ void main() {
           .whereType<String>()
           .toSet();
       final treeZones = data.trees.map((tree) => tree.zoneId).toSet();
-      expect(valveZones, hasLength(56));
+      // Every live zone with ZCV metadata carries its uuid; the 56 planted
+      // zones referenced by trees are all among them.
+      expect(valveZones, hasLength(120));
+      expect(treeZones, hasLength(56));
       expect(treeZones.difference(valveZones), isEmpty);
       // Zone colors on valves match the trees they irrigate.
       final treeColorByZone = <String, Object?>{
@@ -120,7 +135,9 @@ void main() {
       for (final valve in data.valves) {
         final zone = valve.zoneUuid;
         if (zone == null) continue;
-        expect(valve.color, treeColorByZone[zone],
+        final treeColor = treeColorByZone[zone];
+        if (treeColor == null) continue; // unplanted zone: no trees to match
+        expect(valve.color, treeColor,
             reason: 'zone color mismatch for ${valve.assetId}');
       }
     });

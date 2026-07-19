@@ -8,10 +8,16 @@ class ProjectedShape {
     required this.name,
     required this.path,
     required this.points,
+    this.type,
+    this.fillColor,
+    this.strokeColor,
   });
   final String name;
   final Path path;
   final List<Offset> points;
+  final String? type;
+  final Color? fillColor;
+  final Color? strokeColor;
 }
 
 class ProjectedSection {
@@ -147,6 +153,9 @@ class ProjectedFarmMap {
       name: shape.name,
       path: _closedPath(points),
       points: points,
+      type: shape.type,
+      fillColor: shape.fillColor,
+      strokeColor: shape.strokeColor,
     );
   }
 

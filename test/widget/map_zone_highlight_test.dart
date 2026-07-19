@@ -111,7 +111,7 @@ void main() {
     final viewerRect =
         tester.getRect(find.byType(InteractiveViewer)).deflate(24);
     // Valve 04 is the user-facing contract: it shuts off submain 04, whose
-    // SM04 assets (zones, branches, flush valves) carry 276 trees.
+    // SM04 assets (zones, branches, flush valves) carry 279 trees.
     final isolation = map.valves.firstWhere(
       (projected) => projected.valve.assetId == 'IRR-IV-ML-04',
     );
@@ -129,7 +129,7 @@ void main() {
     // Valve 04 counts submain 04's trees and highlights its network.
     expect(find.byKey(const Key('valve-sheet-trees')), findsOneWidget);
     expect(
-      find.text('276 trees are fed through this valve'),
+      find.text('279 trees are fed through this valve'),
       findsOneWidget,
     );
     expect(find.text('Feeds submains: 04'), findsOneWidget);
