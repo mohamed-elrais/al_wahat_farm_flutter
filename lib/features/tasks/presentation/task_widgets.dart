@@ -3,6 +3,7 @@ import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/features/farm/domain/farm_hierarchy.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/farm_task.dart';
+import 'package:al_wahat_farm_flutter/features/tasks/domain/task_draft.dart';
 import 'package:flutter/material.dart';
 
 class TaskStatusBadge extends StatelessWidget {
@@ -55,6 +56,41 @@ String taskTargetLabel(
   }
   if (task.sectionId != null) {
     final section = hierarchy?.sectionById(task.sectionId!);
+    return section == null
+        ? l10n.targetSectionGeneric
+        : l10n.targetSection(section.code);
+  }
+  return l10n.targetWholeFarm;
+}
+
+/// Label for one target row of a multi-target task, e.g. "Tree TREE-A-001".
+String taskTargetChipLabel(
+  AppLocalizations l10n,
+  TaskTarget target,
+  FarmHierarchy? hierarchy,
+) {
+  if (target.treeId != null) {
+    final tree = hierarchy == null
+        ? null
+        : _firstWhereOrNull(
+            hierarchy.trees,
+            (item) => item.id == target.treeId,
+          );
+    return tree == null
+        ? l10n.targetTreeGeneric
+        : l10n.targetTree(tree.treeCode);
+  }
+  if (target.irrigationZoneId != null) {
+    final zone = hierarchy == null
+        ? null
+        : _firstWhereOrNull(
+            hierarchy.zones,
+            (item) => item.id == target.irrigationZoneId,
+          );
+    return zone == null ? l10n.targetZoneGeneric : l10n.targetZone(zone.code);
+  }
+  if (target.sectionId != null) {
+    final section = hierarchy?.sectionById(target.sectionId!);
     return section == null
         ? l10n.targetSectionGeneric
         : l10n.targetSection(section.code);

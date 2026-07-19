@@ -360,6 +360,7 @@
   "createTaskButton": "إنشاء مهمة",
   "chooseTargetSnack": "اختر هدفًا لهذه المهمة.",
   "chooseTargetValidator": "اختر هدفًا",
+  "addAnotherTarget": "أضف هدفًا آخر",
   "createUnavailableRole": "لا يسمح دورك في المزرعة بإنشاء المهام أو إسنادها.",
   "createUnavailableWorkspace": "مساحة عمل مهام المزرعة غير جاهزة.",
   "msgTaskCreated": "تم إنشاء المهمة وإسنادها.",

@@ -217,8 +217,37 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               _DetailRow(
                 icon: Icons.place_outlined,
                 label: context.l10n.detailTarget,
-                value: taskTargetLabel(context.l10n, task, _hierarchy),
+                value: details.targets.length > 1
+                    ? context.l10n.scheduleTargetCount(details.targets.length)
+                    : taskTargetLabel(context.l10n, task, _hierarchy),
               ),
+              if (details.targets.length > 1)
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(
+                    start: 30,
+                    bottom: 6,
+                  ),
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: <Widget>[
+                      for (final target in details.targets)
+                        Chip(
+                          key: Key(
+                            'task-target-${target.entityId ?? 'farm'}',
+                          ),
+                          visualDensity: VisualDensity.compact,
+                          label: Text(
+                            taskTargetChipLabel(
+                              context.l10n,
+                              target,
+                              _hierarchy,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
               _DetailRow(
                 icon: Icons.event_outlined,
                 label: context.l10n.detailSchedule,

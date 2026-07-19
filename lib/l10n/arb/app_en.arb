@@ -360,6 +360,7 @@
   "createTaskButton": "Create task",
   "chooseTargetSnack": "Choose a target for this task.",
   "chooseTargetValidator": "Choose a target",
+  "addAnotherTarget": "Add another target",
   "createUnavailableRole": "Your farm role cannot create or assign tasks.",
   "createUnavailableWorkspace": "The farm task workspace is not ready.",
   "msgTaskCreated": "Task created and assigned.",

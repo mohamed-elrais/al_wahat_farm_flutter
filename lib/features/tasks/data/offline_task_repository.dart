@@ -213,9 +213,15 @@ class OfflineTaskRepository implements TaskRepository {
       createdByProfileId: '',
       createdAt: now,
       updatedAt: now,
-      sectionId: draft.sectionId,
-      irrigationZoneId: draft.irrigationZoneId,
-      treeId: draft.treeId,
+      // The provisional row mirrors the first target the way the backend
+      // will (legacy columns = primary target).
+      sectionId: draft.targets.isEmpty
+          ? draft.sectionId
+          : draft.targets.first.sectionId,
+      irrigationZoneId: draft.targets.isEmpty
+          ? draft.irrigationZoneId
+          : draft.targets.first.irrigationZoneId,
+      treeId: draft.targets.isEmpty ? draft.treeId : draft.targets.first.treeId,
       relatedTreeIssueId: draft.relatedTreeIssueId,
       description: draft.description,
       scheduledFor: draft.scheduledFor,

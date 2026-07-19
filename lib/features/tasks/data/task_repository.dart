@@ -63,6 +63,8 @@ class SupabaseTaskRepository implements TaskRepository {
       'uploaded_by_profile_id, taken_at, created_at';
   static const assignableMemberColumns =
       'profile_id, role, profiles!inner(full_name, is_active)';
+  static const taskTargetColumns =
+      'section_id, irrigation_zone_id, tree_id, created_at';
 
   final SupabaseClient _client;
 
@@ -107,6 +109,11 @@ class SupabaseTaskRepository implements TaskRepository {
             .select(photoColumns)
             .eq('task_id', taskId)
             .order('created_at');
+        final targetsJson = await _client
+            .from('task_targets')
+            .select(taskTargetColumns)
+            .eq('task_id', taskId)
+            .order('created_at');
         return TaskDetails(
           task: FarmTask.fromJson(taskJson),
           assignments: assignmentsJson
@@ -115,6 +122,7 @@ class SupabaseTaskRepository implements TaskRepository {
           activity:
               activityJson.map(TaskActivity.fromJson).toList(growable: false),
           photos: photosJson.map(TaskPhoto.fromJson).toList(growable: false),
+          targets: targetsJson.map(TaskTarget.fromJson).toList(growable: false),
         );
       });
 
@@ -218,14 +226,21 @@ class TaskDetails {
     required List<TaskAssignment> assignments,
     required List<TaskActivity> activity,
     required List<TaskPhoto> photos,
+    List<TaskTarget> targets = const <TaskTarget>[],
   })  : assignments = List<TaskAssignment>.unmodifiable(assignments),
         activity = List<TaskActivity>.unmodifiable(activity),
-        photos = List<TaskPhoto>.unmodifiable(photos);
+        photos = List<TaskPhoto>.unmodifiable(photos),
+        targets = List<TaskTarget>.unmodifiable(targets);
 
   final FarmTask task;
   final List<TaskAssignment> assignments;
   final List<TaskActivity> activity;
   final List<TaskPhoto> photos;
+
+  /// All targets of the task (one per section/zone/tree); empty for
+  /// farm-wide tasks. The first one matches the task's legacy single-target
+  /// columns.
+  final List<TaskTarget> targets;
 
   bool hasPhotoPath(String path) =>
       photos.any((photo) => photo.storagePath == path);
@@ -237,6 +252,7 @@ class TaskDetails {
         'activity':
             activity.map((item) => item.toJson()).toList(growable: false),
         'photos': photos.map((item) => item.toJson()).toList(growable: false),
+        'targets': targets.map((item) => item.toJson()).toList(growable: false),
       };
 
   factory TaskDetails.fromCacheJson(Map<String, Object?> json) => TaskDetails(
@@ -254,6 +270,12 @@ class TaskDetails {
             .toList(growable: false),
         photos: (json['photos']! as List<Object?>)
             .map((row) => TaskPhoto.fromJson(
+                  Map<String, Object?>.from(row! as Map),
+                ))
+            .toList(growable: false),
+        // Absent in caches written before multi-target support.
+        targets: ((json['targets'] as List<Object?>?) ?? const <Object?>[])
+            .map((row) => TaskTarget.fromJson(
                   Map<String, Object?>.from(row! as Map),
                 ))
             .toList(growable: false),

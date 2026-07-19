@@ -30,6 +30,7 @@ class InMemoryTaskStore {
   final Map<String, List<TaskActivity>> activity =
       <String, List<TaskActivity>>{};
   final Map<String, List<TaskPhoto>> photos = <String, List<TaskPhoto>>{};
+  final Map<String, List<TaskTarget>> targets = <String, List<TaskTarget>>{};
   final Map<String, List<EngineerReview>> reviews =
       <String, List<EngineerReview>>{};
   final List<TaskAssignee> members;
@@ -56,6 +57,7 @@ class FakeTaskRepository implements TaskRepository {
   int completeFailuresRemaining = 0;
   int createCalls = 0;
   String? lastCreateOpId;
+  TaskDraft? lastCreateDraft;
   String? lastStartOpId;
   String? lastCompleteOpId;
   String? lastSetAssignmentsOpId;
@@ -90,6 +92,7 @@ class FakeTaskRepository implements TaskRepository {
         store.activity[taskId] ?? const <TaskActivity>[],
       ).reversed.toList(growable: false),
       photos: store.photos[taskId] ?? const <TaskPhoto>[],
+      targets: store.targets[taskId] ?? const <TaskTarget>[],
     );
   }
 
@@ -108,14 +111,19 @@ class FakeTaskRepository implements TaskRepository {
     }
     createCalls++;
     lastCreateOpId = opId;
+    lastCreateDraft = draft;
     final taskId = store.nextId('task');
     final createdAt = store.now;
+    // Like the backend, the first list target is mirrored onto the legacy
+    // single-target columns.
+    final primary = draft.targets.isEmpty ? null : draft.targets.first;
     final task = FarmTask(
       id: taskId,
       farmId: draft.farmId,
-      sectionId: draft.sectionId,
-      irrigationZoneId: draft.irrigationZoneId,
-      treeId: draft.treeId,
+      sectionId: primary == null ? draft.sectionId : primary.sectionId,
+      irrigationZoneId:
+          primary == null ? draft.irrigationZoneId : primary.irrigationZoneId,
+      treeId: primary == null ? draft.treeId : primary.treeId,
       relatedTreeIssueId: draft.relatedTreeIssueId,
       type: draft.type,
       title: draft.title.trim(),
@@ -135,6 +143,19 @@ class FakeTaskRepository implements TaskRepository {
       updatedAt: createdAt,
     );
     store.tasks[taskId] = task;
+    if (draft.targets.isNotEmpty) {
+      store.targets[taskId] = List<TaskTarget>.of(draft.targets);
+    } else if (task.sectionId != null ||
+        task.irrigationZoneId != null ||
+        task.treeId != null) {
+      store.targets[taskId] = <TaskTarget>[
+        TaskTarget(
+          sectionId: task.sectionId,
+          irrigationZoneId: task.irrigationZoneId,
+          treeId: task.treeId,
+        ),
+      ];
+    }
     store.assignments[taskId] = <TaskAssignment>[
       for (final profileId in draft.assigneeProfileIds)
         TaskAssignment(

@@ -66,8 +66,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get offlineBanner => 'غير متصل · عرض بيانات المزرعة والمهام المخزّنة';
 
   @override
-  String get offlineBannerSemantics =>
-      'أنت غير متصل. يتم عرض بيانات المزرعة والمهام المخزّنة.';
+  String get offlineBannerSemantics => 'أنت غير متصل. يتم عرض بيانات المزرعة والمهام المخزّنة.';
 
   @override
   String get languageLabel => 'اللغة';
@@ -103,8 +102,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get loginSignInButton => 'تسجيل الدخول';
 
   @override
-  String get loginNotConfigured =>
-      'لم يتم إعداد Supabase. شغّل التطبيق باستخدام --dart-define-from-file=config.json.';
+  String get loginNotConfigured => 'لم يتم إعداد Supabase. شغّل التطبيق باستخدام --dart-define-from-file=config.json.';
 
   @override
   String get loginInvalidEmail => 'أدخل عنوان بريد إلكتروني صالحًا';
@@ -122,8 +120,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get homeHeroTitle => 'مزرعتك.\nشجرةً شجرة.';
 
   @override
-  String get homeHeroLede =>
-      'عمليات ميدانية قائمة على كل شجرة ومنطقة ري مُدرجة على الخريطة.';
+  String get homeHeroLede => 'عمليات ميدانية قائمة على كل شجرة ومنطقة ري مُدرجة على الخريطة.';
 
   @override
   String get homeScanTreeQr => 'مسح رمز QR للشجرة';
@@ -182,12 +179,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get syncOffline => 'غير متصل';
 
   @override
-  String get syncOnlineSubtitle =>
-      'متصل · يتم تحديث بيانات العمليات من Supabase';
+  String get syncOnlineSubtitle => 'متصل · يتم تحديث بيانات العمليات من Supabase';
 
   @override
-  String get syncOfflineSubtitle =>
-      'غير متصل · عرض بيانات المزرعة والمهام المخزّنة';
+  String get syncOfflineSubtitle => 'غير متصل · عرض بيانات المزرعة والمهام المخزّنة';
 
   @override
   String get syncStatusOnlineSemantics => 'حالة المزامنة: متصل';
@@ -251,8 +246,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get failedOpsTitle => 'التغييرات الفاشلة';
 
   @override
-  String get failedOpsIntro =>
-      'تعذّرت مزامنة هذه التغييرات مع المزرعة. أعد المحاولة، أو تجاهل ما لم تعد بحاجة إليه.';
+  String get failedOpsIntro => 'تعذّرت مزامنة هذه التغييرات مع المزرعة. أعد المحاولة، أو تجاهل ما لم تعد بحاجة إليه.';
 
   @override
   String get failedOpsUnavailable => 'المزامنة غير متاحة حالياً.';
@@ -261,8 +255,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get failedOpsEmptyTitle => 'لا توجد تغييرات فاشلة';
 
   @override
-  String get failedOpsEmptyMessage =>
-      'تمت مزامنة كل شيء أو أنه لا يزال بانتظار المزامنة.';
+  String get failedOpsEmptyMessage => 'تمت مزامنة كل شيء أو أنه لا يزال بانتظار المزامنة.';
 
   @override
   String get failedOpsRetryAll => 'إعادة محاولة الكل';
@@ -277,8 +270,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get failedOpsDiscardConfirmTitle => 'تجاهل هذا التغيير؟';
 
   @override
-  String get failedOpsDiscardConfirmMessage =>
-      'سيُحذف هذا التغيير ولن يُرسل إلى المزرعة. لا يمكن التراجع عن ذلك.';
+  String get failedOpsDiscardConfirmMessage => 'سيُحذف هذا التغيير ولن يُرسل إلى المزرعة. لا يمكن التراجع عن ذلك.';
 
   @override
   String get failedOpsKindStartTask => 'بدء المهمة';
@@ -323,8 +315,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get hierarchyFailedTitle => 'تعذّر تحميل بيانات المزرعة';
 
   @override
-  String get hierarchyFailedMessage =>
-      'تحقق من اتصالك ومن صلاحية وصولك إلى المزرعة، ثم حاول مرة أخرى.';
+  String get hierarchyFailedMessage => 'تحقق من اتصالك ومن صلاحية وصولك إلى المزرعة، ثم حاول مرة أخرى.';
 
   @override
   String get roleOwner => 'المالك';
@@ -509,15 +500,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get tasksLoadingTitle => 'جارٍ تحميل مهام المزرعة';
 
   @override
-  String get tasksLoadingMessage =>
-      'جارٍ التحقق من قائمة مهامك المصفّاة حسب دورك…';
+  String get tasksLoadingMessage => 'جارٍ التحقق من قائمة مهامك المصفّاة حسب دورك…';
 
   @override
   String get tasksLoadFailedTitle => 'تعذّر تحميل المهام';
 
   @override
-  String get tasksFailureDefault =>
-      'تعذّر تحميل مهام المزرعة. تحقق من اتصالك وحاول مرة أخرى.';
+  String get tasksFailureDefault => 'تعذّر تحميل مهام المزرعة. تحقق من اتصالك وحاول مرة أخرى.';
 
   @override
   String get tasksEmptyTodayTitle => 'لا توجد مهام مجدولة اليوم';
@@ -526,8 +515,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get tasksEmptyAllTitle => 'لا توجد مهام مرئية';
 
   @override
-  String get tasksEmptyManager =>
-      'أنشئ مهمة أو غيّر التاريخ والإسناد في Supabase.';
+  String get tasksEmptyManager => 'أنشئ مهمة أو غيّر التاريخ والإسناد في Supabase.';
 
   @override
   String get tasksEmptyWorker => 'تظهر هنا فقط المهام النشطة المُسندة إليك.';
@@ -743,15 +731,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get msgTaskEvidenceSaved => 'تم حفظ دليل المهمة.';
 
   @override
-  String get msgEvidenceQueuedOffline =>
-      'تم حفظ الدليل دون اتصال. سيُرفع عند عودة الاتصال بالإنترنت.';
+  String get msgEvidenceQueuedOffline => 'تم حفظ الدليل دون اتصال. سيُرفع عند عودة الاتصال بالإنترنت.';
 
   @override
   String get msgTaskCompleted => 'اكتملت المهمة.';
 
   @override
-  String get msgTaskCompletedReview =>
-      'اكتملت المهمة وأُرسلت لمراجعة المهندس الزراعي.';
+  String get msgTaskCompletedReview => 'اكتملت المهمة وأُرسلت لمراجعة المهندس الزراعي.';
 
   @override
   String get errTaskStart => 'تعذّر بدء المهمة.';
@@ -763,15 +749,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get errEvidencePrepare => 'تعذّر تجهيز صورة الدليل تلك.';
 
   @override
-  String get errEvidenceRegister =>
-      'لم يتم تأكيد تسجيل الدليل. يمكنك إعادة المحاولة بأمان.';
+  String get errEvidenceRegister => 'لم يتم تأكيد تسجيل الدليل. يمكنك إعادة المحاولة بأمان.';
 
   @override
   String get errTaskComplete => 'تعذّر إكمال المهمة.';
 
   @override
-  String get errCompletionUnconfirmed =>
-      'تم حفظ الدليل، لكن لم يتم تأكيد إكمال المهمة. أعد محاولة الإكمال دون الرفع مرة أخرى.';
+  String get errCompletionUnconfirmed => 'تم حفظ الدليل، لكن لم يتم تأكيد إكمال المهمة. أعد محاولة الإكمال دون الرفع مرة أخرى.';
 
   @override
   String get createEyebrow => 'التخطيط للعمل الميداني';
@@ -855,8 +839,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get chooseTargetValidator => 'اختر هدفًا';
 
   @override
-  String get createUnavailableRole =>
-      'لا يسمح دورك في المزرعة بإنشاء المهام أو إسنادها.';
+  String get addAnotherTarget => 'أضف هدفًا آخر';
+
+  @override
+  String get createUnavailableRole => 'لا يسمح دورك في المزرعة بإنشاء المهام أو إسنادها.';
 
   @override
   String get createUnavailableWorkspace => 'مساحة عمل مهام المزرعة غير جاهزة.';
@@ -865,8 +851,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get msgTaskCreated => 'تم إنشاء المهمة وإسنادها.';
 
   @override
-  String get msgTaskCreatedOffline =>
-      'تم حفظ المهمة دون اتصال. سيتم إنشاؤها في المزرعة عند عودة الاتصال بالإنترنت.';
+  String get msgTaskCreatedOffline => 'تم حفظ المهمة دون اتصال. سيتم إنشاؤها في المزرعة عند عودة الاتصال بالإنترنت.';
 
   @override
   String get errTaskCreate => 'تعذّر إنشاء المهمة.';
@@ -901,8 +886,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get reviewQueueLoadingTitle => 'جارٍ تحميل قائمة انتظار المراجعة';
 
   @override
-  String get reviewQueueLoadingMessage =>
-      'جارٍ التحقق من المهام المحوّلة لمراجعة المهندس الزراعي…';
+  String get reviewQueueLoadingMessage => 'جارٍ التحقق من المهام المحوّلة لمراجعة المهندس الزراعي…';
 
   @override
   String get reviewQueueFailedTitle => 'تعذّر تحميل قائمة الانتظار';
@@ -911,22 +895,19 @@ class AppLocalizationsAr extends AppLocalizations {
   String get reviewQueueEmptyTitle => 'لا توجد مهام قيد الانتظار';
 
   @override
-  String get reviewQueueEmptyMessage =>
-      'سيظهر هنا العمل المكتمل المُرسل للمراجعة.';
+  String get reviewQueueEmptyMessage => 'سيظهر هنا العمل المكتمل المُرسل للمراجعة.';
 
   @override
   String get reviewQueueUnavailableTitle => 'مساحة عمل المراجعة غير متاحة';
 
   @override
-  String get reviewQueueUnavailableMessage =>
-      'أعد فتح التطبيق لاستعادة قائمة انتظار مراجعة المزرعة.';
+  String get reviewQueueUnavailableMessage => 'أعد فتح التطبيق لاستعادة قائمة انتظار مراجعة المزرعة.';
 
   @override
   String get reviewDeniedTitle => 'المراجعات مقيّدة';
 
   @override
-  String get reviewDeniedMessage =>
-      'يمكن للمالك أو المهندس الزراعي فقط مراجعة العمل المكتمل.';
+  String get reviewDeniedMessage => 'يمكن للمالك أو المهندس الزراعي فقط مراجعة العمل المكتمل.';
 
   @override
   String get backToReviewQueue => 'العودة إلى قائمة انتظار المراجعة';
@@ -989,12 +970,10 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get msgReviewRecordedOffline =>
-      'تم حفظ المراجعة دون اتصال. سيتم تسجيلها في المزرعة عند عودة الاتصال بالإنترنت.';
+  String get msgReviewRecordedOffline => 'تم حفظ المراجعة دون اتصال. سيتم تسجيلها في المزرعة عند عودة الاتصال بالإنترنت.';
 
   @override
-  String get errReviewPhotoUnconfirmed =>
-      'تم رفع صورة المراجعة، لكن لم يتم تأكيد القرار. أعد المحاولة دون الرفع مرة أخرى.';
+  String get errReviewPhotoUnconfirmed => 'تم رفع صورة المراجعة، لكن لم يتم تأكيد القرار. أعد المحاولة دون الرفع مرة أخرى.';
 
   @override
   String get errReviewRecord => 'تعذّر تسجيل قرار المراجعة.';
@@ -1055,23 +1034,19 @@ class AppLocalizationsAr extends AppLocalizations {
   String get issueErrPhotoPrepare => 'تعذّر تجهيز تلك الصورة.';
 
   @override
-  String get issueMsgReported =>
-      'تم الإبلاغ عن المشكلة وإنشاء مهمة مراجعة للمهندس الزراعي.';
+  String get issueMsgReported => 'تم الإبلاغ عن المشكلة وإنشاء مهمة مراجعة للمهندس الزراعي.';
 
   @override
-  String get issueMsgReportedOffline =>
-      'تم حفظ المشكلة دون اتصال. سيتم الإبلاغ عنها إلى المزرعة عند عودة الاتصال بالإنترنت.';
+  String get issueMsgReportedOffline => 'تم حفظ المشكلة دون اتصال. سيتم الإبلاغ عنها إلى المزرعة عند عودة الاتصال بالإنترنت.';
 
   @override
   String get issueErrReport => 'تعذّر الإبلاغ عن المشكلة. تحقق من اتصالك.';
 
   @override
-  String get issueMsgReportedWithPhoto =>
-      'تم حفظ المشكلة ومهمة المراجعة ودليل الصورة.';
+  String get issueMsgReportedWithPhoto => 'تم حفظ المشكلة ومهمة المراجعة ودليل الصورة.';
 
   @override
-  String get issueErrPartialPrefix =>
-      'تم حفظ المشكلة ومهمة المراجعة، لكن لم يتم تأكيد تسجيل الصورة. ';
+  String get issueErrPartialPrefix => 'تم حفظ المشكلة ومهمة المراجعة، لكن لم يتم تأكيد تسجيل الصورة. ';
 
   @override
   String get issueMsgRetryPhoto => 'يمكنك إعادة محاولة رفع الصورة بأمان.';
@@ -1086,8 +1061,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get reportAnIssue => 'الإبلاغ عن مشكلة';
 
   @override
-  String get treeUnavailableActions =>
-      'نقطة الإحداثيات هذه غير متوفرة في بيانات المزرعة المباشرة، لذا فإن الإجراءات التشغيلية معطّلة.';
+  String get treeUnavailableActions => 'نقطة الإحداثيات هذه غير متوفرة في بيانات المزرعة المباشرة، لذا فإن الإجراءات التشغيلية معطّلة.';
 
   @override
   String get treeDetailSection => 'القسم';
@@ -1108,8 +1082,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get treeUnavailableTitle => 'الشجرة غير متاحة';
 
   @override
-  String get treeUnavailableMessage =>
-      'هذه الشجرة غير نشطة أو لم تعد مرئية لمزرعتك.';
+  String get treeUnavailableMessage => 'هذه الشجرة غير نشطة أو لم تعد مرئية لمزرعتك.';
 
   @override
   String get goBack => 'العودة';
@@ -1118,8 +1091,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get scanQrInactive => 'رمز QR هذا غير نشط أو غير مرئي لمزرعتك.';
 
   @override
-  String get scanOffline =>
-      'تعذّر المسح أثناء عدم الاتصال. حاول مرة أخرى عند الاتصال.';
+  String get scanOffline => 'تعذّر المسح أثناء عدم الاتصال. حاول مرة أخرى عند الاتصال.';
 
   @override
   String get scanLookingUp => 'جارٍ البحث عن الشجرة…';
@@ -1128,12 +1100,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get scanPointCamera => 'وجّه الكاميرا نحو ملصق QR الخاص بالشجرة.';
 
   @override
-  String get scanCameraOff =>
-      'الوصول إلى الكاميرا معطّل. فعّله في الإعدادات لمسح ملصقات الأشجار.';
+  String get scanCameraOff => 'الوصول إلى الكاميرا معطّل. فعّله في الإعدادات لمسح ملصقات الأشجار.';
 
   @override
-  String get scanCameraUnavailable =>
-      'الكاميرا غير متاحة. يمكنك المحاولة مرة أخرى بعد التحقق من الأذونات.';
+  String get scanCameraUnavailable => 'الكاميرا غير متاحة. يمكنك المحاولة مرة أخرى بعد التحقق من الأذونات.';
 
   @override
   String get mapEyebrow => 'خريطة ثنائية الأبعاد دقيقة الإحداثيات';
@@ -1204,8 +1174,7 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get mapValveHighlightHint =>
-      'الخط اللاحق ومناطقه مميزة على الخريطة. اضغط على مساحة فارغة من الخريطة للإزالة.';
+  String get mapValveHighlightHint => 'الخط اللاحق ومناطقه مميزة على الخريطة. اضغط على مساحة فارغة من الخريطة للإزالة.';
 
   @override
   String get mapZoneSheetTitle => 'منطقة الري';
@@ -1228,8 +1197,7 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get mapZoneHighlightHint =>
-      'خطوط المنطقة وأشجارها مميزة على الخريطة. اضغط على مساحة فارغة من الخريطة للإزالة.';
+  String get mapZoneHighlightHint => 'خطوط المنطقة وأشجارها مميزة على الخريطة. اضغط على مساحة فارغة من الخريطة للإزالة.';
 
   @override
   String get mapAllSections => 'جميع الأقسام الـ 12';
@@ -1387,12 +1355,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get inventoryDeactivateConfirmTitle => 'إلغاء تفعيل هذا الصنف؟';
 
   @override
-  String get inventoryDeactivateConfirmMessage =>
-      'سيُخفى الصنف من المخزون مع الاحتفاظ بسجله.';
+  String get inventoryDeactivateConfirmMessage => 'سيُخفى الصنف من المخزون مع الاحتفاظ بسجله.';
 
   @override
-  String get inventoryOffline =>
-      'تعديلات المخزون تتطلب اتصالاً بالإنترنت. تُعرض البيانات المحفوظة.';
+  String get inventoryOffline => 'تعديلات المخزون تتطلب اتصالاً بالإنترنت. تُعرض البيانات المحفوظة.';
 
   @override
   String get inventoryMsgItemCreated => 'تمت إضافة الصنف إلى المخزون.';
@@ -1479,8 +1445,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get schedulesEmptyTitle => 'لا توجد جداول بعد';
 
   @override
-  String get schedulesEmptyMessage =>
-      'أنشئ خطة متكررة للري أو التسميد أو الرش.';
+  String get schedulesEmptyMessage => 'أنشئ خطة متكررة للري أو التسميد أو الرش.';
 
   @override
   String get schedulesLoadFailed => 'تعذر تحميل الجداول.';
@@ -1605,8 +1570,7 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get scheduleInsufficient =>
-      'المخزون غير كافٍ — لن تُنشأ المهام حتى تعيد التخزين.';
+  String get scheduleInsufficient => 'المخزون غير كافٍ — لن تُنشأ المهام حتى تعيد التخزين.';
 
   @override
   String get scheduleAssigneesTitle => 'العمال المكلفون';

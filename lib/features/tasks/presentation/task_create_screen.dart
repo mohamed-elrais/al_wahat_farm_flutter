@@ -56,7 +56,8 @@ class _TaskCreateScreenState extends State<TaskCreateScreen> {
   TaskType _type = TaskType.general;
   TaskPriority _priority = TaskPriority.medium;
   _TaskScope _scope = _TaskScope.farm;
-  String? _targetId;
+  // Insertion-ordered: the first selection becomes the primary target.
+  final List<String> _targetIds = <String>[];
   DateTime? _scheduledFor;
   TimeOfDay? _plannedStart;
   DateTime? _dueDate;
@@ -96,7 +97,7 @@ class _TaskCreateScreenState extends State<TaskCreateScreen> {
       _initialTargetApplied = true;
       if (hierarchy.trees.any((tree) => tree.id == treeId)) {
         _scope = _TaskScope.tree;
-        _targetId = treeId;
+        _targetIds.add(treeId);
       }
     }
   }
@@ -284,8 +285,10 @@ class _TaskCreateScreenState extends State<TaskCreateScreen> {
                   onChanged: controller.isSubmitting
                       ? null
                       : (value) => setState(() {
+                            // Changing the kind resets the selection — all
+                            // targets of one task share a single kind.
                             _scope = value ?? _scope;
-                            _targetId = null;
+                            _targetIds.clear();
                           }),
                 ),
                 if (_scope != _TaskScope.farm) ...<Widget>[
@@ -293,10 +296,39 @@ class _TaskCreateScreenState extends State<TaskCreateScreen> {
                   _TargetField(
                     scope: _scope,
                     hierarchy: hierarchy,
-                    value: _targetId,
+                    selectedIds: _targetIds,
                     enabled: !controller.isSubmitting,
-                    onChanged: (value) => setState(() => _targetId = value),
+                    onAdded: (value) => setState(() {
+                      if (value != null && !_targetIds.contains(value)) {
+                        _targetIds.add(value);
+                      }
+                    }),
                   ),
+                  if (_targetIds.isNotEmpty) ...<Widget>[
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: <Widget>[
+                        for (final id in _targetIds)
+                          InputChip(
+                            key: Key('task-target-chip-$id'),
+                            label: Text(
+                              _targetChipLabel(hierarchy, _scope, id),
+                            ),
+                            onDeleted: controller.isSubmitting
+                                ? null
+                                : () => setState(() => _targetIds.remove(id)),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      context.l10n.scheduleTargetCount(_targetIds.length),
+                      key: const Key('task-target-count'),
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
                 ],
               ],
             ),
@@ -480,9 +512,20 @@ class _TaskCreateScreenState extends State<TaskCreateScreen> {
     );
   }
 
+  String _targetChipLabel(
+    FarmHierarchy hierarchy,
+    _TaskScope scope,
+    String id,
+  ) {
+    for (final entry in _targetEntries(hierarchy, scope)) {
+      if (entry.key == id) return entry.value;
+    }
+    return id;
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    if (_scope != _TaskScope.farm && _targetId == null) {
+    if (_scope != _TaskScope.farm && _targetIds.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(context.l10n.chooseTargetSnack)),
       );
@@ -494,9 +537,17 @@ class _TaskCreateScreenState extends State<TaskCreateScreen> {
       type: _type,
       title: _titleController.text,
       description: _optionalText(_descriptionController.text),
-      sectionId: _scope == _TaskScope.section ? _targetId : null,
-      irrigationZoneId: _scope == _TaskScope.zone ? _targetId : null,
-      treeId: _scope == _TaskScope.tree ? _targetId : null,
+      targets: _scope == _TaskScope.farm
+          ? const <TaskTarget>[]
+          : List<TaskTarget>.unmodifiable(
+              _targetIds.map(
+                (id) => TaskTarget(
+                  sectionId: _scope == _TaskScope.section ? id : null,
+                  irrigationZoneId: _scope == _TaskScope.zone ? id : null,
+                  treeId: _scope == _TaskScope.tree ? id : null,
+                ),
+              ),
+            ),
       scheduledFor: _scheduledFor,
       plannedStartTime:
           _plannedStart == null ? null : _databaseTime(_plannedStart!),
@@ -567,37 +618,38 @@ class _TaskCreateScreenState extends State<TaskCreateScreen> {
   }
 }
 
+/// Add-one-more picker for the target list: already-selected entities are
+/// hidden, and picking an entry appends it (the dropdown resets so another
+/// can be added).
 class _TargetField extends StatelessWidget {
   const _TargetField({
     required this.scope,
     required this.hierarchy,
-    required this.value,
+    required this.selectedIds,
     required this.enabled,
-    required this.onChanged,
+    required this.onAdded,
   });
 
   final _TaskScope scope;
   final FarmHierarchy hierarchy;
-  final String? value;
+  final List<String> selectedIds;
   final bool enabled;
-  final ValueChanged<String?> onChanged;
+  final ValueChanged<String?> onAdded;
 
   @override
   Widget build(BuildContext context) {
-    final items = switch (scope) {
-      _TaskScope.section => hierarchy.sections
-          .map((item) => MapEntry(item.id, '${item.code} · ${item.name}')),
-      _TaskScope.zone => hierarchy.zones
-          .map((item) => MapEntry(item.id, '${item.code} · ${item.name}')),
-      _TaskScope.tree =>
-        hierarchy.trees.map((item) => MapEntry(item.id, item.treeCode)),
-      _TaskScope.farm => const Iterable<MapEntry<String, String>>.empty(),
-    };
+    final items = _targetEntries(hierarchy, scope)
+        .where((entry) => !selectedIds.contains(entry.key));
     return DropdownButtonFormField<String>(
-      key: const Key('task-target-field'),
-      value: value,
+      // Recreated after every add so the picker clears for the next one.
+      key: ValueKey<String>('task-target-field-${selectedIds.length}'),
+      value: null,
       isExpanded: true,
-      decoration: InputDecoration(labelText: _scopeLabel(context.l10n, scope)),
+      decoration: InputDecoration(
+        labelText: selectedIds.isEmpty
+            ? _scopeLabel(context.l10n, scope)
+            : context.l10n.addAnotherTarget,
+      ),
       items: items
           .map(
             (entry) => DropdownMenuItem<String>(
@@ -606,12 +658,26 @@ class _TargetField extends StatelessWidget {
             ),
           )
           .toList(growable: false),
-      onChanged: enabled ? onChanged : null,
-      validator: (selected) =>
-          selected == null ? context.l10n.chooseTargetValidator : null,
+      onChanged: enabled ? onAdded : null,
+      validator: (_) =>
+          selectedIds.isEmpty ? context.l10n.chooseTargetValidator : null,
     );
   }
 }
+
+Iterable<MapEntry<String, String>> _targetEntries(
+  FarmHierarchy hierarchy,
+  _TaskScope scope,
+) =>
+    switch (scope) {
+      _TaskScope.section => hierarchy.sections
+          .map((item) => MapEntry(item.id, '${item.code} · ${item.name}')),
+      _TaskScope.zone => hierarchy.zones
+          .map((item) => MapEntry(item.id, '${item.code} · ${item.name}')),
+      _TaskScope.tree =>
+        hierarchy.trees.map((item) => MapEntry(item.id, item.treeCode)),
+      _TaskScope.farm => const Iterable<MapEntry<String, String>>.empty(),
+    };
 
 class _CreateUnavailable extends StatelessWidget {
   const _CreateUnavailable({required this.message});

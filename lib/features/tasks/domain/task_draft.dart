@@ -67,6 +67,45 @@ enum TaskPriority {
       };
 }
 
+/// One concrete target of a task (exactly one scope id set), mirroring a
+/// `task_targets` row. All targets of one task must share the same kind —
+/// the backend enforces this with a 23514.
+class TaskTarget {
+  const TaskTarget({this.sectionId, this.irrigationZoneId, this.treeId});
+
+  final String? sectionId;
+  final String? irrigationZoneId;
+  final String? treeId;
+
+  /// 'section' | 'zone' | 'tree' | null (null = invalid/empty target).
+  String? get kind {
+    if (sectionId != null) return 'section';
+    if (irrigationZoneId != null) return 'zone';
+    if (treeId != null) return 'tree';
+    return null;
+  }
+
+  String? get entityId => sectionId ?? irrigationZoneId ?? treeId;
+
+  bool get isValid =>
+      <String?>[sectionId, irrigationZoneId, treeId]
+          .where((id) => id != null)
+          .length ==
+      1;
+
+  factory TaskTarget.fromJson(Map<String, Object?> json) => TaskTarget(
+        sectionId: json['section_id'] as String?,
+        irrigationZoneId: json['irrigation_zone_id'] as String?,
+        treeId: json['tree_id'] as String?,
+      );
+
+  Map<String, Object?> toJson() => <String, Object?>{
+        if (sectionId != null) 'section_id': sectionId,
+        if (irrigationZoneId != null) 'irrigation_zone_id': irrigationZoneId,
+        if (treeId != null) 'tree_id': treeId,
+      };
+}
+
 class TaskDraft {
   const TaskDraft({
     required this.farmId,
@@ -76,6 +115,7 @@ class TaskDraft {
     this.sectionId,
     this.irrigationZoneId,
     this.treeId,
+    this.targets = const <TaskTarget>[],
     this.scheduledFor,
     this.plannedStartTime,
     this.plannedDurationMinutes,
@@ -94,6 +134,12 @@ class TaskDraft {
   final String? sectionId;
   final String? irrigationZoneId;
   final String? treeId;
+
+  /// Multi-target list. When non-empty it is the task's target set (and the
+  /// legacy single-target fields above must stay null); the backend mirrors
+  /// the first entry onto the legacy columns.
+  final List<TaskTarget> targets;
+
   final DateTime? scheduledFor;
   final String? plannedStartTime;
   final int? plannedDurationMinutes;
@@ -115,6 +161,21 @@ class TaskDraft {
         1) {
       return 'Choose only one specific target';
     }
+    if (targets.isNotEmpty) {
+      if (sectionId != null || irrigationZoneId != null || treeId != null) {
+        return 'Use either the single target or the target list, not both';
+      }
+      if (targets.any((target) => !target.isValid)) {
+        return 'Every target needs exactly one scope';
+      }
+      if (targets.map((target) => target.kind).toSet().length > 1) {
+        return 'All targets must be of the same kind';
+      }
+      if (targets.map((target) => target.entityId).toSet().length !=
+          targets.length) {
+        return 'Targets must not repeat';
+      }
+    }
     if (plannedDurationMinutes != null && plannedDurationMinutes! <= 0) {
       return 'Planned duration must be positive';
     }
@@ -135,6 +196,8 @@ class TaskDraft {
         'section_id': sectionId,
         'irrigation_zone_id': irrigationZoneId,
         'tree_id': treeId,
+        'targets':
+            targets.map((target) => target.toJson()).toList(growable: false),
         'scheduled_for': scheduledFor?.toIso8601String(),
         'planned_start_time': plannedStartTime,
         'planned_duration_minutes': plannedDurationMinutes,
@@ -154,6 +217,10 @@ class TaskDraft {
         sectionId: json['section_id'] as String?,
         irrigationZoneId: json['irrigation_zone_id'] as String?,
         treeId: json['tree_id'] as String?,
+        targets: ((json['targets'] as List<Object?>?) ?? const <Object?>[])
+            .map((row) =>
+                TaskTarget.fromJson(Map<String, Object?>.from(row! as Map)))
+            .toList(growable: false),
         scheduledFor: json['scheduled_for'] == null
             ? null
             : DateTime.parse(json['scheduled_for']! as String),
@@ -175,14 +242,24 @@ class TaskDraft {
             .cast<String>(),
       );
 
+  /// A single-entry target list collapses to the legacy scalar params (works
+  /// against a backend that predates `p_targets`); two or more entries are
+  /// sent as `p_targets` and the backend mirrors the first onto the legacy
+  /// columns.
   Map<String, Object?> toRpcParameters() => <String, Object?>{
         'p_farm_id': farmId,
         'p_task_type': type.wireValue,
         'p_title': title.trim(),
         'p_description': description,
-        'p_section_id': sectionId,
-        'p_irrigation_zone_id': irrigationZoneId,
-        'p_tree_id': treeId,
+        'p_section_id':
+            targets.length == 1 ? targets.first.sectionId : sectionId,
+        'p_irrigation_zone_id': targets.length == 1
+            ? targets.first.irrigationZoneId
+            : irrigationZoneId,
+        'p_tree_id': targets.length == 1 ? targets.first.treeId : treeId,
+        if (targets.length > 1)
+          'p_targets':
+              targets.map((target) => target.toJson()).toList(growable: false),
         'p_scheduled_for': scheduledFor == null ? null : _date(scheduledFor!),
         'p_planned_start_time': plannedStartTime,
         'p_planned_duration_minutes': plannedDurationMinutes,

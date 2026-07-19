@@ -131,6 +131,47 @@ void main() {
     expect(rows.single['id'], isNot(startsWith(localTaskIdPrefix)));
   });
 
+  test('offline multi-target create survives the outbox round trip', () async {
+    final connectivity = await _connectivity(NetworkStatus.offline);
+    addTearDown(connectivity.dispose);
+    final h = _harness(connectivity);
+
+    const draft = TaskDraft(
+      farmId: 'farm-id',
+      type: TaskType.fertilization,
+      title: 'Feed two zones',
+      targets: <TaskTarget>[
+        TaskTarget(irrigationZoneId: 'zone-1'),
+        TaskTarget(irrigationZoneId: 'zone-2'),
+      ],
+    );
+    final tempId = await h.repository.create(draft);
+
+    // The provisional row mirrors the first target like the backend will.
+    final rawList =
+        await h.cache.read(CachingTaskRepository.listKeyFor('farm-id'));
+    final rows = (jsonDecode(rawList!) as List<Object?>)
+        .map((row) => Map<String, Object?>.from(row! as Map))
+        .toList();
+    expect(rows.single['id'], tempId);
+    expect(rows.single['irrigation_zone_id'], 'zone-1');
+
+    final op = (await h.outbox.pending()).single;
+    final executor = TaskMutationExecutor(h.caching, cache: h.cache);
+    await executor.execute(op);
+
+    final replayed = h.base.lastCreateDraft!;
+    expect(
+      replayed.targets.map((target) => target.irrigationZoneId),
+      <String>['zone-1', 'zone-2'],
+    );
+    expect(replayed.toRpcParameters()['p_targets'], <Map<String, Object?>>[
+      <String, Object?>{'irrigation_zone_id': 'zone-1'},
+      <String, Object?>{'irrigation_zone_id': 'zone-2'},
+    ]);
+    expect(h.base.store.tasks.values.single.irrigationZoneId, 'zone-1');
+  });
+
   test('online create passes through without an op id or a queued mutation',
       () async {
     final connectivity = await _connectivity(NetworkStatus.online);

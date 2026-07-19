@@ -81,11 +81,104 @@ void main() {
     expect(find.text('Work started'), findsOneWidget);
     expect(find.byKey(const Key('task-edit-assignments-button')), findsNothing);
   });
+
+  testWidgets('multi-target task lists every target as a chip', (tester) async {
+    tester.view.physicalSize = const Size(430, 1200);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final store = InMemoryTaskStore();
+    final manager = FakeTaskRepository(
+      store: store,
+      viewerProfileId: 'manager-id',
+      canManage: true,
+    );
+    final taskId = await manager.create(
+      const TaskDraft(
+        farmId: 'farm-id',
+        type: TaskType.fertilization,
+        title: 'Feed both zones',
+        targets: <TaskTarget>[
+          TaskTarget(irrigationZoneId: 'zone-1'),
+          TaskTarget(irrigationZoneId: 'zone-2'),
+        ],
+      ),
+    );
+    final controller = TaskDetailController(
+      repository: manager,
+      evidencePicker: FakeTaskEvidencePicker(),
+      evidenceStorage: FakeTaskEvidenceStorage(),
+      taskId: taskId,
+      farmId: 'farm-id',
+      userId: 'manager-id',
+    );
+    addTearDown(controller.dispose);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: TaskDetailScreen(
+          taskId: taskId,
+          controller: controller,
+          hierarchy: _zonedHierarchy,
+          role: FarmRole.owner,
+          userId: 'manager-id',
+          farmId: 'farm-id',
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('2 targets'), findsOneWidget);
+    expect(find.byKey(const Key('task-target-zone-1')), findsOneWidget);
+    expect(find.byKey(const Key('task-target-zone-2')), findsOneWidget);
+    expect(find.text('Zone Z1'), findsOneWidget);
+    expect(find.text('Zone Z2'), findsOneWidget);
+  });
 }
 
 final _hierarchy = FarmHierarchy(
   farmId: 'farm-id',
   sections: const <FarmSection>[],
   zones: const <IrrigationZone>[],
+  trees: const <FarmTreeRecord>[],
+);
+
+final _epoch = DateTime(2026);
+
+final _zonedHierarchy = FarmHierarchy(
+  farmId: 'farm-id',
+  sections: <FarmSection>[
+    FarmSection(
+      id: 'section-1',
+      farmId: 'farm-id',
+      code: 'S1',
+      name: 'Section One',
+      sortOrder: 1,
+      isActive: true,
+      createdAt: _epoch,
+      updatedAt: _epoch,
+    ),
+  ],
+  zones: <IrrigationZone>[
+    IrrigationZone(
+      id: 'zone-1',
+      sectionId: 'section-1',
+      code: 'Z1',
+      name: 'Zone One',
+      isActive: true,
+      createdAt: _epoch,
+      updatedAt: _epoch,
+    ),
+    IrrigationZone(
+      id: 'zone-2',
+      sectionId: 'section-1',
+      code: 'Z2',
+      name: 'Zone Two',
+      isActive: true,
+      createdAt: _epoch,
+      updatedAt: _epoch,
+    ),
+  ],
   trees: const <FarmTreeRecord>[],
 );
