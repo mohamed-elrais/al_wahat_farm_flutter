@@ -4,6 +4,7 @@ import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
 import 'package:al_wahat_farm_flutter/features/auth/presentation/authenticated_gate.dart';
+import 'package:al_wahat_farm_flutter/features/farm/domain/farm_hierarchy.dart';
 import 'package:al_wahat_farm_flutter/features/farm/presentation/farm_hierarchy_gate.dart';
 import 'package:al_wahat_farm_flutter/features/inventory/domain/inventory_models.dart';
 import 'package:al_wahat_farm_flutter/features/inventory/presentation/inventory_controller.dart';
@@ -11,6 +12,7 @@ import 'package:al_wahat_farm_flutter/features/inventory/presentation/inventory_
 import 'package:al_wahat_farm_flutter/features/schedules/domain/schedule_models.dart';
 import 'package:al_wahat_farm_flutter/features/schedules/presentation/schedules_controller.dart';
 import 'package:al_wahat_farm_flutter/features/schedules/presentation/schedules_screen.dart';
+import 'package:al_wahat_farm_flutter/features/tasks/domain/farm_task.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_workspace_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -46,7 +48,7 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
   OperationPlanType _type = OperationPlanType.irrigation;
   PlanScheduleType _recurrence = PlanScheduleType.daily;
   final Set<int> _weekdays = <int>{};
-  DateTime _startsOn = DateTime.now();
+  DateTime _startsOn = DateUtils.dateOnly(DateTime.now());
   DateTime? _endsOn;
   TimeOfDay? _time;
   _TargetMode _targetMode = _TargetMode.farm;
@@ -56,6 +58,7 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
   String? _productItemId;
   RateBasis _basis = RateBasis.perFeddan;
   ApplicationMethod? _method;
+  TaskGrouping _grouping = TaskGrouping.perTarget;
 
   @override
   void didChangeDependencies() {
@@ -105,6 +108,44 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
     if (_productItemId == null) return null;
     return _inventory?.itemById(_productItemId!);
   }
+
+  /// Every date the schedule will run for the current form values, start
+  /// and end inclusive (empty until an end date is chosen, except `once`).
+  List<DateTime> get _occurrences => planOccurrences(
+        scheduleType: _recurrence,
+        startsOn: _startsOn,
+        endsOn: _recurrence == PlanScheduleType.once
+            ? (_endsOn ?? _startsOn)
+            : _endsOn,
+        daysOfWeek: _recurrence == PlanScheduleType.weekly
+            ? (_weekdays.toList()..sort())
+            : null,
+      );
+
+  int get _repetitions =>
+      _endsOn == null && _recurrence != PlanScheduleType.once
+          ? 0
+          : _occurrences.length;
+
+  int get _selectedTargetCount => switch (_targetMode) {
+        _TargetMode.farm => 1,
+        _TargetMode.sections => _sectionIds.length,
+        _TargetMode.zones => _zoneIds.length,
+      };
+
+  /// Combined grouping only means something for 2+ concrete targets.
+  TaskGrouping get _effectiveGrouping =>
+      _targetMode != _TargetMode.farm && _selectedTargetCount > 1
+          ? _grouping
+          : TaskGrouping.perTarget;
+
+  int get _generatedTaskCount =>
+      _repetitions *
+      (_effectiveGrouping == TaskGrouping.combined ? 1 : _selectedTargetCount);
+
+  /// The latest end date the rules allow for the current start date.
+  DateTime get _monthCap =>
+      DateTime(_startsOn.year, _startsOn.month + 1, _startsOn.day);
 
   /// Client-side preview of the per-run quantity for the current selection
   /// (display only — the backend computation is authoritative).
@@ -219,6 +260,7 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
                   controller: _title,
                   decoration:
                       InputDecoration(labelText: l10n.scheduleTitleField),
+                  onChanged: (_) => setState(() {}),
                   validator: (value) => value == null || value.trim().isEmpty
                       ? l10n.scheduleTitleRequired
                       : null,
@@ -231,6 +273,7 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
                   decoration: InputDecoration(
                     labelText: l10n.inventoryDescriptionField,
                   ),
+                  onChanged: (_) => setState(() {}),
                 ),
               ],
             ),
@@ -296,7 +339,7 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
                       onPressed: () => _pickDate(isEnd: true),
                       icon: const Icon(Icons.event_available_outlined),
                       label: Text(_endsOn == null
-                          ? l10n.scheduleEndsOn
+                          ? l10n.scheduleEndsOnRequired
                           : '${l10n.scheduleEndsOn}: ${_formatDate(_endsOn!)}'),
                     ),
                     OutlinedButton.icon(
@@ -309,6 +352,23 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 6),
+                Text(
+                  l10n.scheduleDateWithinMonth,
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(color: AppColors.muted),
+                ),
+                if (_endsOn != null ||
+                    _recurrence == PlanScheduleType.once) ...<Widget>[
+                  const SizedBox(height: 6),
+                  Text(
+                    l10n.scheduleRepetitions(_repetitions),
+                    key: const Key('schedule-repetitions'),
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                ],
                 const SizedBox(height: 10),
                 TextFormField(
                   key: const Key('schedule-duration-field'),
@@ -343,22 +403,28 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
                       key: const Key('schedule-target-farm'),
                       label: Text(l10n.scheduleTargetFarm),
                       selected: _targetMode == _TargetMode.farm,
-                      onSelected: (_) =>
-                          setState(() => _targetMode = _TargetMode.farm),
+                      onSelected: (_) => setState(() {
+                        _targetMode = _TargetMode.farm;
+                        _grouping = TaskGrouping.perTarget;
+                      }),
                     ),
                     ChoiceChip(
                       key: const Key('schedule-target-sections'),
                       label: Text(l10n.scheduleTargetSections),
                       selected: _targetMode == _TargetMode.sections,
-                      onSelected: (_) =>
-                          setState(() => _targetMode = _TargetMode.sections),
+                      onSelected: (_) => setState(() {
+                        _targetMode = _TargetMode.sections;
+                        _grouping = TaskGrouping.perTarget;
+                      }),
                     ),
                     ChoiceChip(
                       key: const Key('schedule-target-zones'),
                       label: Text(l10n.scheduleTargetZones),
                       selected: _targetMode == _TargetMode.zones,
-                      onSelected: (_) =>
-                          setState(() => _targetMode = _TargetMode.zones),
+                      onSelected: (_) => setState(() {
+                        _targetMode = _TargetMode.zones;
+                        _grouping = TaskGrouping.perTarget;
+                      }),
                     ),
                   ],
                 ),
@@ -410,6 +476,36 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
                           )
                           .toList(growable: false),
                     ),
+                  ),
+                ],
+                // Task-creation mode: only meaningful when several targets
+                // of one kind are selected.
+                if (_targetMode != _TargetMode.farm &&
+                    _selectedTargetCount > 1) ...<Widget>[
+                  const Divider(height: 22),
+                  Text(l10n.scheduleGroupingTitle,
+                      style: Theme.of(context).textTheme.titleMedium),
+                  RadioListTile<TaskGrouping>(
+                    key: const Key('schedule-grouping-per-target'),
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                    value: TaskGrouping.perTarget,
+                    groupValue: _grouping,
+                    title: Text(l10n.scheduleGroupingSeparate),
+                    subtitle: Text(l10n.scheduleGroupingSeparateHint),
+                    onChanged: (value) => setState(
+                        () => _grouping = value ?? TaskGrouping.perTarget),
+                  ),
+                  RadioListTile<TaskGrouping>(
+                    key: const Key('schedule-grouping-combined'),
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                    value: TaskGrouping.combined,
+                    groupValue: _grouping,
+                    title: Text(l10n.scheduleGroupingCombined),
+                    subtitle: Text(l10n.scheduleGroupingCombinedHint),
+                    onChanged: (value) => setState(
+                        () => _grouping = value ?? TaskGrouping.perTarget),
                   ),
                 ],
               ],
@@ -475,6 +571,7 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
                         child: DropdownButtonFormField<RateBasis>(
                           key: const Key('schedule-basis-field'),
                           value: _basis,
+                          isExpanded: true,
                           decoration: InputDecoration(
                             labelText: l10n.scheduleBasisField,
                           ),
@@ -532,7 +629,60 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                    if (product.quantity < preview)
+                    // Whole-schedule projection: dose x repetitions against
+                    // the available stock.
+                    if (preview > 0 && _repetitions > 0) ...<Widget>[
+                      const SizedBox(height: 6),
+                      Text(
+                        l10n.scheduleRepetitions(_repetitions),
+                      ),
+                      Text(
+                        l10n.scheduleTotalRequired(
+                          formatQuantity(preview * _repetitions),
+                          product.unit.localizedLabel(l10n),
+                        ),
+                        key: const Key('schedule-total-required'),
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                      Text(
+                        l10n.scheduleAvailableStock(
+                          formatQuantity(product.quantity),
+                          product.unit.localizedLabel(l10n),
+                        ),
+                        key: const Key('schedule-available'),
+                      ),
+                      if (product.quantity >= preview * _repetitions)
+                        Text(
+                          l10n.scheduleRemainingAfter(
+                            formatQuantity(
+                              product.quantity - preview * _repetitions,
+                            ),
+                            product.unit.localizedLabel(l10n),
+                          ),
+                          key: const Key('schedule-remaining'),
+                          style: const TextStyle(
+                            color: AppColors.green,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        )
+                      else
+                        Text(
+                          l10n.scheduleShortage(
+                            formatQuantity(
+                              preview * _repetitions - product.quantity,
+                            ),
+                            product.unit.localizedLabel(l10n),
+                          ),
+                          key: const Key('schedule-shortage'),
+                          style: const TextStyle(
+                            color: AppColors.issue,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                    ],
+                    if (product.quantity < preview ||
+                        (_repetitions > 0 &&
+                            product.quantity < preview * _repetitions))
                       Text(
                         l10n.scheduleInsufficient,
                         key: const Key('schedule-insufficient'),
@@ -577,6 +727,8 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
               ],
             ),
           ),
+          const SizedBox(height: 10),
+          _reviewCard(context, hierarchy, members, preview, product),
           if (controller.message != null) ...<Widget>[
             const SizedBox(height: 10),
             Text(
@@ -607,13 +759,222 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
     );
   }
 
+  /// Live summary of everything the schedule will do, rebuilt on every
+  /// form change so the numbers always match the inputs above it.
+  Widget _reviewCard(
+    BuildContext context,
+    FarmHierarchy? hierarchy,
+    List<TaskAssignee> members,
+    double? preview,
+    InventoryItem? product,
+  ) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final muted = theme.textTheme.bodySmall?.copyWith(color: AppColors.muted);
+
+    final targetLabels = switch (_targetMode) {
+      _TargetMode.farm => <String>[l10n.scheduleTargetFarm],
+      _TargetMode.sections => (hierarchy?.sections ?? const <FarmSection>[])
+          .where((section) => _sectionIds.contains(section.id))
+          .map((section) => section.code)
+          .toList(growable: false),
+      _TargetMode.zones => (hierarchy?.zones ?? const <IrrigationZone>[])
+          .where((zone) => _zoneIds.contains(zone.id))
+          .map((zone) => zone.code)
+          .toList(growable: false),
+    };
+    final workerNames = members
+        .where((member) => _assigneeIds.contains(member.profileId))
+        .map((member) => member.fullName)
+        .toList(growable: false);
+    final dates = _occurrences;
+    final total =
+        preview == null || _repetitions == 0 ? null : preview * _repetitions;
+
+    Widget row(String label, String value, {Key? key}) => Padding(
+          padding: const EdgeInsets.symmetric(vertical: 3),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Expanded(flex: 2, child: Text(label, style: muted)),
+              const SizedBox(width: 10),
+              Expanded(
+                flex: 3,
+                child: Text(
+                  value,
+                  key: key,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
+        );
+
+    return WahatCard(
+      child: Column(
+        key: const Key('schedule-review'),
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          Text(l10n.scheduleReviewTitle, style: theme.textTheme.titleLarge),
+          const SizedBox(height: 8),
+          row(l10n.scheduleTypeField, _type.localizedLabel(l10n)),
+          row(
+            l10n.scheduleTitleField,
+            _title.text.trim().isEmpty ? l10n.commonNotSet : _title.text.trim(),
+          ),
+          row(
+            l10n.scheduleStartsOn,
+            _formatDate(_startsOn),
+          ),
+          row(
+            l10n.scheduleEndsOn,
+            _endsOn == null ? l10n.commonNotSet : _formatDate(_endsOn!),
+            key: const Key('schedule-review-ends'),
+          ),
+          row(
+            l10n.scheduleTimeField,
+            _time == null ? l10n.commonNotSet : _time!.format(context),
+          ),
+          row(
+            l10n.scheduleRecurrenceField,
+            _recurrence == PlanScheduleType.weekly
+                ? '${_recurrence.localizedLabel(l10n)} · '
+                    '${(_weekdays.toList()..sort()).map((day) => weekdayShortLabel(context, day)).join('، ')}'
+                : _recurrence.localizedLabel(l10n),
+          ),
+          row(
+            l10n.scheduleExecutionDates,
+            l10n.scheduleRepetitions(_repetitions),
+            key: const Key('schedule-review-repetitions'),
+          ),
+          row(
+            l10n.scheduleTargetsTitle,
+            targetLabels.isEmpty
+                ? l10n.commonNotSet
+                : l10n.scheduleReviewTargets(
+                    targetLabels.length,
+                    targetLabels.join('، '),
+                  ),
+          ),
+          if (_targetMode != _TargetMode.farm && _selectedTargetCount > 1)
+            row(
+              l10n.scheduleGroupingTitle,
+              _effectiveGrouping == TaskGrouping.combined
+                  ? l10n.scheduleGroupingCombined
+                  : l10n.scheduleGroupingSeparate,
+              key: const Key('schedule-review-grouping'),
+            ),
+          if (_type.carriesProduct)
+            row(
+              l10n.scheduleProductTitle,
+              product == null ? l10n.scheduleReviewNoProduct : product.name,
+            ),
+          if (preview != null && product != null) ...<Widget>[
+            row(
+              l10n.scheduleRateField,
+              l10n.schedulePerOccurrence(
+                formatQuantity(preview),
+                product.unit.localizedLabel(l10n),
+              ),
+            ),
+            if (total != null) ...<Widget>[
+              row(
+                l10n.scheduleProductField,
+                l10n.scheduleTotalRequired(
+                  formatQuantity(total),
+                  product.unit.localizedLabel(l10n),
+                ),
+                key: const Key('schedule-review-total'),
+              ),
+              row(
+                l10n.inventoryTitle,
+                l10n.scheduleAvailableStock(
+                  formatQuantity(product.quantity),
+                  product.unit.localizedLabel(l10n),
+                ),
+              ),
+              row(
+                '',
+                product.quantity >= total
+                    ? l10n.scheduleRemainingAfter(
+                        formatQuantity(product.quantity - total),
+                        product.unit.localizedLabel(l10n),
+                      )
+                    : l10n.scheduleShortage(
+                        formatQuantity(total - product.quantity),
+                        product.unit.localizedLabel(l10n),
+                      ),
+                key: const Key('schedule-review-balance'),
+              ),
+            ],
+          ],
+          row(
+            l10n.scheduleAssigneesTitle,
+            workerNames.isEmpty ? l10n.commonNotSet : workerNames.join('، '),
+          ),
+          row(
+            l10n.inventoryDescriptionField,
+            _description.text.trim().isEmpty
+                ? l10n.commonNotSet
+                : _description.text.trim(),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            l10n.scheduleTasksTotal(_generatedTaskCount),
+            key: const Key('schedule-review-task-count'),
+            style: const TextStyle(fontWeight: FontWeight.w700),
+          ),
+          if (dates.isNotEmpty) ...<Widget>[
+            const SizedBox(height: 8),
+            Text(l10n.scheduleExecutionDates, style: muted),
+            const SizedBox(height: 4),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: <Widget>[
+                for (final date in dates.take(6))
+                  Chip(
+                    visualDensity: VisualDensity.compact,
+                    label: Text(_formatDate(date)),
+                  ),
+                if (dates.length > 6)
+                  Chip(
+                    visualDensity: VisualDensity.compact,
+                    label: Text(l10n.scheduleMoreDates(dates.length - 6)),
+                  ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// Date rules (mirrored by the backend): start today or later, end
+  /// required, start <= end <= start + one month. The pickers only offer
+  /// valid days.
   Future<void> _pickDate({required bool isEnd}) async {
     final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final DateTime firstDate;
+    final DateTime lastDate;
+    DateTime initial;
+    if (isEnd) {
+      firstDate = _startsOn.isBefore(today) ? today : _startsOn;
+      lastDate = _monthCap;
+      initial = _endsOn ?? firstDate;
+    } else {
+      firstDate = today;
+      lastDate = DateTime(today.year + 2, today.month, today.day);
+      initial = _startsOn;
+    }
+    if (initial.isBefore(firstDate)) initial = firstDate;
+    if (initial.isAfter(lastDate)) initial = lastDate;
     final selected = await showDatePicker(
       context: context,
-      initialDate: isEnd ? (_endsOn ?? _startsOn) : _startsOn,
-      firstDate: DateTime(now.year - 1),
-      lastDate: DateTime(now.year + 5),
+      initialDate: initial,
+      firstDate: firstDate,
+      lastDate: lastDate,
     );
     if (selected == null || !mounted) return;
     setState(() {
@@ -621,6 +982,15 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
         _endsOn = selected;
       } else {
         _startsOn = selected;
+        // Keep the end date inside the new [start, start + 1 month] window.
+        final end = _endsOn;
+        if (end != null) {
+          if (end.isBefore(_startsOn)) {
+            _endsOn = _startsOn;
+          } else if (end.isAfter(_monthCap)) {
+            _endsOn = _monthCap;
+          }
+        }
       }
     });
   }
@@ -642,6 +1012,18 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
         SnackBar(content: Text(l10n.scheduleWeekdaysRequired)),
       );
       return;
+    }
+    if (_endsOn == null) {
+      // `once` runs on its single start day; every other recurrence needs
+      // an explicit end date.
+      if (_recurrence == PlanScheduleType.once) {
+        _endsOn = _startsOn;
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.scheduleEndRequiredMessage)),
+        );
+        return;
+      }
     }
     final operational = OperationalContextScope.maybeOf(context);
     final farmId = operational?.selectedMembership.farm.id;
@@ -682,7 +1064,14 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
           _productItemId == null ? null : double.tryParse(_rate.text.trim()),
       rateBasis: _productItemId == null ? null : _basis,
       rateUnit: _productItemId == null ? null : product?.unit,
+      taskGrouping: _effectiveGrouping,
     );
+    final validation = draft.validate();
+    if (validation != null) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(validation)));
+      return;
+    }
     final id = await controller.createPlan(draft);
     if (!mounted) return;
     if (id != null) context.go('/more/schedules/$id');

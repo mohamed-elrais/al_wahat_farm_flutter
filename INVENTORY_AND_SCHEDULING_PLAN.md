@@ -528,3 +528,29 @@ must be live before M2/M4/M6/M7 UI reaches devices. Single-target task
 creation keeps working against the old backend (the app only sends
 `p_targets` for two or more targets), so a stale app + new backend is also
 safe.
+
+## 13. Follow-up delivery (2026-07-21): schedule rules, projections, combined tasks, map polish
+
+- **Date rules** (backend `20260721120000` + form + draft validation): end date
+  required, start today or later at creation, start ≤ end ≤ start + 1 month.
+  Pickers only offer valid days; legacy plans stay pausable (rules fire only
+  when a date changes).
+- **Repetitions & inventory projection**: `planOccurrences(...)` in
+  `schedule_models.dart` is the single calculator (start/end inclusive; `once`
+  = 1). The form shows per-run dose, repetitions, schedule total, available
+  stock, remaining, and shortage. Creation with a shortage stays allowed by
+  design — generation blocks per date and auto-recovers after restock
+  (owner decision 2).
+- **Review section**: live summary card at the end of the schedule form
+  (type, dates, time, recurrence, repetitions, targets, task mode, product
+  math, workers, notes, first run dates, total task count).
+- **Combined tasks** (`operation_plans.task_grouping`): one multi-target task
+  per run date via `private.generate_plan_run_group`; one run row per
+  (plan, target, date) keeps dedup + blocked-run recovery in both modes;
+  the runs' generated_task_id unique index became a plain index.
+- **Map state**: leaving the map tab clears selection/highlight/filter and
+  refits the camera; `?focus=` deep links are consumed after applying so
+  stale parameters can't replay.
+- **Full-screen map**: root-navigator route sharing the same transformation
+  controller and selection (camera + highlight survive both directions);
+  zoom buttons removed in favour of pinch gestures.

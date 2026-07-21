@@ -3,44 +3,54 @@ import 'package:al_wahat_farm_flutter/features/schedules/domain/schedule_models.
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('draft validation enforces recurrence and product rules', () {
-    OperationPlanDraft draft({
-      PlanScheduleType schedule = PlanScheduleType.daily,
-      List<int>? days,
-      String? item,
-      double? rate,
-      RateBasis? basis,
-      InventoryUnit? unit,
-      OperationPlanType type = OperationPlanType.fertilization,
-    }) =>
-        OperationPlanDraft(
-          farmId: 'farm-id',
-          type: type,
-          title: 'Plan',
-          scheduleType: schedule,
-          startsOn: DateTime(2026, 8, 1),
-          daysOfWeek: days,
-          inventoryItemId: item,
-          applicationRate: rate,
-          rateBasis: basis,
-          rateUnit: unit,
-        );
+  final today = DateTime(2026, 8, 1);
 
-    expect(draft().validate(), isNull);
+  OperationPlanDraft draft({
+    PlanScheduleType schedule = PlanScheduleType.daily,
+    List<int>? days,
+    String? item,
+    double? rate,
+    RateBasis? basis,
+    InventoryUnit? unit,
+    OperationPlanType type = OperationPlanType.fertilization,
+    DateTime? startsOn,
+    DateTime? endsOn,
+    List<PlanTarget> targets = const <PlanTarget>[PlanTarget()],
+    TaskGrouping grouping = TaskGrouping.perTarget,
+  }) =>
+      OperationPlanDraft(
+        farmId: 'farm-id',
+        type: type,
+        title: 'Plan',
+        scheduleType: schedule,
+        startsOn: startsOn ?? today,
+        endsOn: endsOn ?? today.add(const Duration(days: 20)),
+        daysOfWeek: days,
+        targets: targets,
+        inventoryItemId: item,
+        applicationRate: rate,
+        rateBasis: basis,
+        rateUnit: unit,
+        taskGrouping: grouping,
+      );
+
+  test('draft validation enforces recurrence and product rules', () {
+    expect(draft().validate(today: today), isNull);
     expect(
-      draft(schedule: PlanScheduleType.weekly).validate(),
+      draft(schedule: PlanScheduleType.weekly).validate(today: today),
       contains('weekday'),
     );
     expect(
-      draft(schedule: PlanScheduleType.weekly, days: const <int>[5]).validate(),
+      draft(schedule: PlanScheduleType.weekly, days: const <int>[5])
+          .validate(today: today),
       isNull,
     );
     expect(
-      draft(item: 'item-1', rate: 0).validate(),
+      draft(item: 'item-1', rate: 0).validate(today: today),
       contains('positive'),
     );
     expect(
-      draft(item: 'item-1', rate: 100).validate(),
+      draft(item: 'item-1', rate: 100).validate(today: today),
       contains('basis'),
     );
     expect(
@@ -49,13 +59,144 @@ void main() {
         rate: 100,
         basis: RateBasis.perFeddan,
         unit: InventoryUnit.gram,
-      ).validate(),
+      ).validate(today: today),
       isNull,
     );
     expect(
-      draft(type: OperationPlanType.irrigation, item: 'item-1').validate(),
+      draft(type: OperationPlanType.irrigation, item: 'item-1')
+          .validate(today: today),
       contains('Irrigation'),
     );
+  });
+
+  test('draft validation enforces the date rules', () {
+    expect(
+      OperationPlanDraft(
+        farmId: 'farm-id',
+        type: OperationPlanType.irrigation,
+        title: 'No end',
+        scheduleType: PlanScheduleType.daily,
+        startsOn: today,
+      ).validate(today: today),
+      contains('end date'),
+    );
+    expect(
+      draft(startsOn: today.subtract(const Duration(days: 1)))
+          .validate(today: today),
+      contains('past'),
+    );
+    expect(
+      draft(
+        startsOn: today.add(const Duration(days: 5)),
+        endsOn: today.add(const Duration(days: 2)),
+      ).validate(today: today),
+      contains('on or after'),
+    );
+    expect(
+      draft(endsOn: today.add(const Duration(days: 45))).validate(today: today),
+      contains('one month'),
+    );
+    // Exactly one month is allowed; a one-day schedule is allowed.
+    expect(
+      draft(endsOn: DateTime(2026, 9, 1)).validate(today: today),
+      isNull,
+    );
+    expect(draft(endsOn: today).validate(today: today), isNull);
+  });
+
+  test('combined grouping needs multiple concrete same-kind targets', () {
+    expect(
+      draft(
+        grouping: TaskGrouping.combined,
+        targets: const <PlanTarget>[
+          PlanTarget(irrigationZoneId: 'z1'),
+          PlanTarget(irrigationZoneId: 'z2'),
+        ],
+      ).validate(today: today),
+      isNull,
+    );
+    expect(
+      draft(
+        grouping: TaskGrouping.combined,
+        targets: const <PlanTarget>[
+          PlanTarget(sectionId: 's1'),
+          PlanTarget(irrigationZoneId: 'z1'),
+        ],
+      ).validate(today: today),
+      contains('same kind'),
+    );
+    expect(
+      draft(grouping: TaskGrouping.combined).validate(today: today),
+      contains('specific targets'),
+    );
+  });
+
+  test('occurrences are inclusive of both boundary dates', () {
+    // A one-day daily schedule runs exactly once.
+    expect(
+      planOccurrences(
+        scheduleType: PlanScheduleType.daily,
+        startsOn: today,
+        endsOn: today,
+      ),
+      <DateTime>[today],
+    );
+    // Four inclusive days.
+    expect(
+      planOccurrences(
+        scheduleType: PlanScheduleType.daily,
+        startsOn: today,
+        endsOn: today.add(const Duration(days: 3)),
+      ).length,
+      4,
+    );
+    // Weekly Fridays over a month window: 2026-08-01 is a Saturday, so
+    // the Fridays are 7, 14, 21 and 28 August.
+    final fridays = planOccurrences(
+      scheduleType: PlanScheduleType.weekly,
+      startsOn: today,
+      endsOn: DateTime(2026, 8, 28),
+      daysOfWeek: const <int>[DateTime.friday],
+    );
+    expect(fridays.length, 4);
+    expect(fridays.first, DateTime(2026, 8, 7));
+    expect(fridays.last, DateTime(2026, 8, 28));
+    // `once` runs on its single start day.
+    expect(
+      planOccurrences(
+        scheduleType: PlanScheduleType.once,
+        startsOn: today,
+        endsOn: today,
+      ),
+      <DateTime>[today],
+    );
+  });
+
+  test('repetition and task counts drive the totals', () {
+    final weekly = draft(
+      schedule: PlanScheduleType.weekly,
+      days: const <int>[DateTime.friday],
+      endsOn: DateTime(2026, 8, 28),
+      targets: const <PlanTarget>[
+        PlanTarget(irrigationZoneId: 'z1'),
+        PlanTarget(irrigationZoneId: 'z2'),
+        PlanTarget(irrigationZoneId: 'z3'),
+      ],
+    );
+    expect(weekly.repetitionCount, 4);
+    expect(weekly.generatedTaskCount, 12); // per target: 4 dates x 3 targets
+    final combined = draft(
+      schedule: PlanScheduleType.weekly,
+      days: const <int>[DateTime.friday],
+      endsOn: DateTime(2026, 8, 28),
+      grouping: TaskGrouping.combined,
+      targets: const <PlanTarget>[
+        PlanTarget(irrigationZoneId: 'z1'),
+        PlanTarget(irrigationZoneId: 'z2'),
+        PlanTarget(irrigationZoneId: 'z3'),
+      ],
+    );
+    expect(combined.generatedTaskCount, 4); // one combined task per date
   });
 
   test('weekly plans compute the next occurrence dates', () {
@@ -134,5 +275,17 @@ void main() {
     expect(params['p_rate_basis'], 'per_feddan');
     expect(params['p_rate_unit'], 'gram');
     expect(params['p_default_assignee_profile_ids'], const ['worker-1']);
+    expect(params['p_task_grouping'], 'per_target');
+  });
+
+  test('combined grouping serializes to the RPC parameter', () {
+    final params = draft(
+      grouping: TaskGrouping.combined,
+      targets: const <PlanTarget>[
+        PlanTarget(irrigationZoneId: 'z1'),
+        PlanTarget(irrigationZoneId: 'z2'),
+      ],
+    ).toRpcParameters();
+    expect(params['p_task_grouping'], 'combined');
   });
 }

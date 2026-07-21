@@ -135,6 +135,13 @@ class _ScheduleDetailScreenState extends State<ScheduleDetailScreen> {
               const SizedBox(height: 6),
               Text('${l10n.scheduleStartsOn}: ${_date(plan.startsOn)}'
                   '${plan.endsOn == null ? '' : ' → ${_date(plan.endsOn!)}'}'),
+              if (plan.taskGrouping == TaskGrouping.combined &&
+                  plan.targets.length > 1)
+                Text(
+                  '${l10n.scheduleGroupingTitle}: '
+                  '${l10n.scheduleGroupingCombined}',
+                  key: const Key('schedule-detail-grouping'),
+                ),
               if (plan.plannedDurationMinutes != null)
                 Text('${l10n.scheduleDurationField}: '
                     '${plan.plannedDurationMinutes}'),

@@ -64,6 +64,60 @@ enum PlanScheduleType {
       };
 }
 
+/// Mirrors `operation_plans.task_grouping`: whether the generator creates
+/// one task per target and date (default) or one combined multi-target
+/// task per date.
+enum TaskGrouping {
+  perTarget,
+  combined;
+
+  String get wireValue => switch (this) {
+        perTarget => 'per_target',
+        combined => 'combined',
+      };
+
+  factory TaskGrouping.fromJson(String value) => switch (value) {
+        'per_target' => perTarget,
+        'combined' => combined,
+        _ => throw FormatException('Unknown task grouping: $value'),
+      };
+}
+
+/// The single source of truth for schedule occurrence dates, shared by the
+/// form preview, the review section, and [OperationPlan.nextOccurrences].
+///
+/// Both [startsOn] and [endsOn] are INCLUSIVE: a one-day schedule
+/// (startsOn == endsOn) has exactly one occurrence when its recurrence
+/// matches that day. `once` schedules occur only on [startsOn].
+List<DateTime> planOccurrences({
+  required PlanScheduleType scheduleType,
+  required DateTime startsOn,
+  DateTime? endsOn,
+  List<int>? daysOfWeek,
+  DateTime? from,
+  int? limit,
+}) {
+  final start = DateTime(startsOn.year, startsOn.month, startsOn.day);
+  var day = from == null ? start : DateTime(from.year, from.month, from.day);
+  if (day.isBefore(start)) day = start;
+  final end = endsOn == null
+      ? day.add(const Duration(days: 366))
+      : DateTime(endsOn.year, endsOn.month, endsOn.day);
+  final result = <DateTime>[];
+  while (!day.isAfter(end) && (limit == null || result.length < limit)) {
+    final matches = switch (scheduleType) {
+      PlanScheduleType.once => day == start,
+      PlanScheduleType.daily => true,
+      PlanScheduleType.weekly =>
+        (daysOfWeek ?? const <int>[]).contains(day.weekday),
+    };
+    if (matches) result.add(day);
+    if (scheduleType == PlanScheduleType.once) break;
+    day = day.add(const Duration(days: 1));
+  }
+  return result;
+}
+
 /// Mirrors `public.application_rate_basis` (feddan is the farm's dosing
 /// unit; 60 trees = 1 feddan by default).
 enum RateBasis {
@@ -161,6 +215,7 @@ class OperationPlan {
     this.applicationRate,
     this.rateBasis,
     this.rateUnit,
+    this.taskGrouping = TaskGrouping.perTarget,
   });
 
   final String id;
@@ -182,6 +237,7 @@ class OperationPlan {
   final double? applicationRate;
   final RateBasis? rateBasis;
   final InventoryUnit? rateUnit;
+  final TaskGrouping taskGrouping;
 
   factory OperationPlan.fromJson(
     Map<String, Object?> json, {
@@ -222,30 +278,22 @@ class OperationPlan {
         rateUnit: json['rate_unit'] == null
             ? null
             : InventoryUnit.fromJson(json['rate_unit']! as String),
+        // Absent in rows/caches from before combined-task support.
+        taskGrouping: json['task_grouping'] == null
+            ? TaskGrouping.perTarget
+            : TaskGrouping.fromJson(json['task_grouping']! as String),
       );
 
   /// The next [count] occurrence dates on/after [from], per the recurrence.
-  List<DateTime> nextOccurrences(DateTime from, {int count = 5}) {
-    final result = <DateTime>[];
-    var day = DateTime(from.year, from.month, from.day);
-    final start = DateTime(startsOn.year, startsOn.month, startsOn.day);
-    if (day.isBefore(start)) day = start;
-    final end = endsOn == null
-        ? day.add(const Duration(days: 366))
-        : DateTime(endsOn!.year, endsOn!.month, endsOn!.day);
-    while (result.length < count && !day.isAfter(end)) {
-      final matches = switch (scheduleType) {
-        PlanScheduleType.once => day == start,
-        PlanScheduleType.daily => true,
-        PlanScheduleType.weekly =>
-          (daysOfWeek ?? const <int>[]).contains(day.weekday),
-      };
-      if (matches) result.add(day);
-      if (scheduleType == PlanScheduleType.once) break;
-      day = day.add(const Duration(days: 1));
-    }
-    return result;
-  }
+  List<DateTime> nextOccurrences(DateTime from, {int count = 5}) =>
+      planOccurrences(
+        scheduleType: scheduleType,
+        startsOn: startsOn,
+        endsOn: endsOn,
+        daysOfWeek: daysOfWeek,
+        from: from,
+        limit: count,
+      );
 }
 
 class OperationPlanDraft {
@@ -268,6 +316,7 @@ class OperationPlanDraft {
     this.applicationRate,
     this.rateBasis,
     this.rateUnit,
+    this.taskGrouping = TaskGrouping.perTarget,
   });
 
   final String farmId;
@@ -288,15 +337,43 @@ class OperationPlanDraft {
   final double? applicationRate;
   final RateBasis? rateBasis;
   final InventoryUnit? rateUnit;
+  final TaskGrouping taskGrouping;
 
-  String? validate() {
+  /// Every date this schedule will run (start and end inclusive).
+  List<DateTime> occurrences() => planOccurrences(
+        scheduleType: scheduleType,
+        startsOn: startsOn,
+        endsOn: endsOn,
+        daysOfWeek: daysOfWeek,
+      );
+
+  /// How many times the schedule runs; drives the total-quantity math.
+  int get repetitionCount => occurrences().length;
+
+  /// Tasks the schedule will create over its whole life: one per date for
+  /// a combined plan, one per target and date otherwise.
+  int get generatedTaskCount =>
+      repetitionCount *
+      (taskGrouping == TaskGrouping.combined ? 1 : targets.length);
+
+  String? validate({DateTime? today}) {
+    final now = today ?? DateTime.now();
+    final floorToday = DateTime(now.year, now.month, now.day);
     if (title.trim().isEmpty) return 'Schedule title is required';
     if (scheduleType == PlanScheduleType.weekly &&
         (daysOfWeek == null || daysOfWeek!.isEmpty)) {
       return 'Weekly schedules need at least one weekday';
     }
-    if (endsOn != null && endsOn!.isBefore(startsOn)) {
+    if (endsOn == null) return 'Schedules need an end date';
+    if (startsOn.isBefore(floorToday)) {
+      return 'The start date cannot be in the past';
+    }
+    if (endsOn!.isBefore(startsOn)) {
       return 'End date must be on or after the start date';
+    }
+    final monthCap = DateTime(startsOn.year, startsOn.month + 1, startsOn.day);
+    if (endsOn!.isAfter(monthCap)) {
+      return 'The end date cannot be more than one month after the start date';
     }
     if (type.carriesProduct && inventoryItemId != null) {
       if (applicationRate == null || applicationRate! <= 0) {
@@ -310,6 +387,21 @@ class OperationPlanDraft {
       return 'Irrigation schedules cannot carry a product';
     }
     if (targets.isEmpty) return 'Choose at least one target';
+    if (taskGrouping == TaskGrouping.combined) {
+      if (targets.any((target) => target.isFarmWide)) {
+        return 'A combined task needs specific targets';
+      }
+      final kinds = targets
+          .map((target) => target.sectionId != null
+              ? 'section'
+              : target.irrigationZoneId != null
+                  ? 'zone'
+                  : 'tree')
+          .toSet();
+      if (kinds.length > 1) {
+        return 'A combined task can only group targets of the same kind';
+      }
+    }
     return null;
   }
 
@@ -333,6 +425,7 @@ class OperationPlanDraft {
         'p_rate_basis': rateBasis?.wireValue,
         'p_rate_unit': rateUnit?.wireValue,
         'p_default_assignee_profile_ids': assigneeProfileIds,
+        'p_task_grouping': taskGrouping.wireValue,
       };
 }
 

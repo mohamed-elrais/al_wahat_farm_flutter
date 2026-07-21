@@ -67,10 +67,10 @@ void main() {
     );
     await tester.pump();
 
-    // All four controls are present in the stacked narrow layout, and the
+    // The controls are present in the stacked narrow layout, and the
     // full-width title lays out without overflow errors.
     expect(find.byTooltip('Map layers'), findsOneWidget);
-    expect(find.byTooltip('Zoom in'), findsOneWidget);
+    expect(find.byTooltip('Full screen'), findsOneWidget);
     expect(find.text('Al Wahat farm overview'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });

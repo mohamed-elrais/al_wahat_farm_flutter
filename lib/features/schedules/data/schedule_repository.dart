@@ -32,7 +32,7 @@ class SupabaseScheduleRepository implements ScheduleRepository {
       'schedule_type, starts_on, ends_on, scheduled_start_time, '
       'planned_duration_minutes, days_of_week, inventory_item_id, '
       'application_method, application_rate, rate_basis, rate_unit, '
-      'default_assignee_profile_ids';
+      'default_assignee_profile_ids, task_grouping';
   static const targetColumns =
       'id, operation_plan_id, section_id, irrigation_zone_id, tree_id';
 

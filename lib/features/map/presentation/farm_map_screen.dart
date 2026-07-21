@@ -14,6 +14,7 @@ import 'package:al_wahat_farm_flutter/features/map/domain/tree_reconciliation.da
 import 'package:al_wahat_farm_flutter/features/map/presentation/farm_map_painter.dart';
 import 'package:al_wahat_farm_flutter/features/trees/domain/tree_identity.dart';
 import 'package:al_wahat_farm_flutter/features/trees/presentation/tree_detail_sheet.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -48,6 +49,9 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
   ProjectedFarmMap? _lastReconciledMap;
   TreeReconciliationResult? _reconciliation;
   String? _pendingFocus;
+  bool _needsRefit = false;
+  bool _fullScreenOpen = false;
+  ValueListenable<bool>? _visibility;
 
   @override
   void initState() {
@@ -67,7 +71,35 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // The shell keeps this screen alive in an IndexedStack; TickerMode
+    // flips to disabled when the user leaves the tab, which is our signal
+    // to drop ephemeral state (selection, highlight, filter, camera).
+    final notifier = TickerMode.getNotifier(context);
+    if (!identical(notifier, _visibility)) {
+      _visibility?.removeListener(_handleVisibilityChanged);
+      _visibility = notifier..addListener(_handleVisibilityChanged);
+    }
+  }
+
+  void _handleVisibilityChanged() {
+    if (_visibility?.value != false || !mounted) return;
+    // Entering full-screen also disables tickers below the pushed route;
+    // that is not "leaving the map".
+    if (_fullScreenOpen) return;
+    setState(() {
+      _selectedTree = null;
+      _selectedValve = null;
+      _section = null;
+      _pendingFocus = null;
+      _needsRefit = true; // default camera on the next visit
+    });
+  }
+
+  @override
   void dispose() {
+    _visibility?.removeListener(_handleVisibilityChanged);
     _transformation.dispose();
     super.dispose();
   }
@@ -98,39 +130,32 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
                 final focus = _pendingFocus;
                 if (focus != null) {
                   _pendingFocus = null;
+                  _needsRefit = false;
                   WidgetsBinding.instance.addPostFrameCallback((_) {
-                    if (mounted) _applyFocus(map, focus, constraints.biggest);
+                    if (!mounted) return;
+                    _applyFocus(map, focus, constraints.biggest);
+                    // Consume the deep link so the route no longer carries
+                    // it: re-opening the map later starts from the default
+                    // state, and re-sending the same focus works again.
+                    GoRouter.maybeOf(context)?.go('/map');
+                  });
+                } else if (_needsRefit) {
+                  _needsRefit = false;
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (mounted) _fit(map, null, constraints.biggest);
                   });
                 }
                 final wide = constraints.maxWidth >= AppBreakpoints.tablet;
-                final selectedValve = _selectedValve;
-                final highlightZones = selectedValve == null
-                    ? null
-                    : _zonesFor(map, selectedValve);
-                final isolationSelected =
-                    selectedValve != null && !selectedValve.isZoneControl;
-                final highlightLine = !isolationSelected
-                    ? null
-                    : map.valves
-                        .firstWhere(
-                          (projected) =>
-                              projected.valve.assetId == selectedValve.assetId,
-                        )
-                        .downstreamPoints;
-                final submains = selectedValve?.downstreamSubmains;
-                final highlightSubmains =
-                    isolationSelected && (submains?.isNotEmpty ?? false)
-                        ? submains!.toSet()
-                        : null;
+                final highlights = _highlights(map);
                 final canvas = _MapPanel(
                   map: map,
                   transformation: _transformation,
                   section: _section,
                   selectedTree: _selectedTree,
-                  selectedValveId: selectedValve?.assetId,
-                  highlightZones: highlightZones,
-                  highlightSubmains: highlightSubmains,
-                  highlightLine: highlightLine,
+                  selectedValveId: _selectedValve?.assetId,
+                  highlightZones: highlights.zones,
+                  highlightSubmains: highlights.submains,
+                  highlightLine: highlights.line,
                   showTrees: _trees,
                   showIrrigation: _irrigation,
                   showUtilities: _utilities,
@@ -164,7 +189,7 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
                         flushValves: _flushValves,
                         waterSupply: _waterSupply,
                         onReset: () => _fit(map, null, constraints.biggest),
-                        onZoom: _zoom,
+                        onFullScreen: () => _openFullScreen(map),
                         onTrees: (value) => setState(() => _trees = value),
                         onIrrigation: (value) =>
                             setState(() => _irrigation = value),
@@ -317,6 +342,7 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
         onAttachTask: isLive && canManageTasks
             ? () {
                 Navigator.of(sheetContext).pop();
+                _leaveFullScreenIfOpen();
                 context.go('/tasks/create?treeId=${tree.id}');
               }
             : null,
@@ -327,6 +353,31 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
               }
             : null,
       ),
+    );
+  }
+
+  /// Highlight overlays for the current valve selection, shared by the
+  /// embedded panel and the full-screen panel.
+  ({Set<String>? zones, Set<String>? submains, List<Offset>? line}) _highlights(
+      ProjectedFarmMap map) {
+    final selectedValve = _selectedValve;
+    final zones = selectedValve == null ? null : _zonesFor(map, selectedValve);
+    final isolationSelected =
+        selectedValve != null && !selectedValve.isZoneControl;
+    final line = !isolationSelected
+        ? null
+        : map.valves
+            .firstWhere(
+              (projected) => projected.valve.assetId == selectedValve.assetId,
+            )
+            .downstreamPoints;
+    final submains = selectedValve?.downstreamSubmains;
+    return (
+      zones: zones,
+      submains: isolationSelected && (submains?.isNotEmpty ?? false)
+          ? submains!.toSet()
+          : null,
+      line: line,
     );
   }
 
@@ -375,6 +426,7 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
         onCreateTask: valve.isZoneControl && zoneIsLive && canManageTasks
             ? () {
                 Navigator.of(sheetContext).pop();
+                _leaveFullScreenIfOpen();
                 context.go('/tasks/create?zoneId=$zoneUuid');
               }
             : null,
@@ -453,11 +505,27 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
     return null;
   }
 
-  void _zoom(double factor) {
-    final matrix = _transformation.value.clone();
-    final scale = matrix.getMaxScaleOnAxis();
-    final next = (scale * factor).clamp(0.3, 8.0) / scale;
-    _transformation.value = matrix..scale(next);
+  /// Navigating to another screen (e.g. create task from a sheet) while
+  /// full screen is open must first dismiss the full-screen route, which
+  /// sits above the shell on the root navigator.
+  void _leaveFullScreenIfOpen() {
+    if (!_fullScreenOpen) return;
+    Navigator.of(context, rootNavigator: true).pop();
+  }
+
+  /// Full-screen mode reuses this state's transformation controller and
+  /// selection, so camera and highlights survive entering and leaving.
+  Future<void> _openFullScreen(ProjectedFarmMap map) async {
+    _fullScreenOpen = true;
+    await Navigator.of(context, rootNavigator: true).push(
+      MaterialPageRoute<void>(
+        fullscreenDialog: true,
+        builder: (_) => _FullScreenMap(host: this, map: map),
+      ),
+    );
+    _fullScreenOpen = false;
+    // Reflect any selection made while full screen was open.
+    if (mounted) setState(() {});
   }
 
   void _fit(ProjectedFarmMap map, String? section, Size viewport) {
@@ -665,9 +733,14 @@ class _MapPanel extends StatefulWidget {
     required this.onTapTree,
     required this.onTapValve,
     required this.onTapMiss,
+    this.autoFit = true,
   });
   final ProjectedFarmMap map;
   final TransformationController transformation;
+
+  /// The full-screen panel shares the embedded panel's transformation
+  /// controller and must not clobber its camera with an initial fit.
+  final bool autoFit;
   final String? section;
   final FarmTree? selectedTree;
   final String? selectedValveId;
@@ -709,7 +782,7 @@ class _MapPanelState extends State<_MapPanel> {
   @override
   Widget build(BuildContext context) => LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
-          if (!_fitted) {
+          if (widget.autoFit && !_fitted) {
             _fitted = true;
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (!mounted) return;
@@ -807,6 +880,88 @@ class _MapPanelState extends State<_MapPanel> {
       );
 }
 
+/// Root-navigator full-screen map. It renders through the HOST screen's
+/// state (same transformation controller, same selection fields), so the
+/// camera and highlights carry over in both directions; taps route through
+/// the host's handlers and its sheets open above this route.
+class _FullScreenMap extends StatefulWidget {
+  const _FullScreenMap({required this.host, required this.map});
+
+  final _FarmMapScreenState host;
+  final ProjectedFarmMap map;
+
+  @override
+  State<_FullScreenMap> createState() => _FullScreenMapState();
+}
+
+class _FullScreenMapState extends State<_FullScreenMap> {
+  @override
+  Widget build(BuildContext context) {
+    final host = widget.host;
+    final highlights = host._highlights(widget.map);
+    return Scaffold(
+      backgroundColor: AppColors.sand,
+      body: SafeArea(
+        child: Stack(
+          children: <Widget>[
+            Positioned.fill(
+              child: _MapPanel(
+                map: widget.map,
+                transformation: host._transformation,
+                section: host._section,
+                selectedTree: host._selectedTree,
+                selectedValveId: host._selectedValve?.assetId,
+                highlightZones: highlights.zones,
+                highlightSubmains: highlights.submains,
+                highlightLine: highlights.line,
+                showTrees: host._trees,
+                showIrrigation: host._irrigation,
+                showUtilities: host._utilities,
+                showValves: host._valves,
+                showFlushValves: host._flushValves,
+                showWaterSupply: host._waterSupply,
+                autoFit: false,
+                onTapTree: (tree) {
+                  host._selectTree(tree);
+                  setState(() {});
+                },
+                onTapValve: (valve) {
+                  host._selectValve(widget.map, valve);
+                  setState(() {});
+                },
+                onTapMiss: () {
+                  if (host._selectedValve != null) {
+                    // The host rebuilds itself; this route re-reads its
+                    // fields on the local setState below.
+                    // ignore: invalid_use_of_protected_member
+                    host.setState(() => host._selectedValve = null);
+                    setState(() {});
+                  }
+                },
+              ),
+            ),
+            PositionedDirectional(
+              top: 10,
+              end: 10,
+              child: Material(
+                color: AppColors.card.withOpacity(0.92),
+                shape: const CircleBorder(),
+                elevation: 2,
+                child: IconButton(
+                  key: const Key('map-exit-full-screen'),
+                  tooltip: context.l10n.mapExitFullScreen,
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: const Icon(Icons.fullscreen_exit),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _MapHeader extends StatelessWidget {
   const _MapHeader({
     required this.map,
@@ -818,7 +973,7 @@ class _MapHeader extends StatelessWidget {
     required this.flushValves,
     required this.waterSupply,
     required this.onReset,
-    required this.onZoom,
+    required this.onFullScreen,
     required this.onTrees,
     required this.onIrrigation,
     required this.onUtilities,
@@ -835,7 +990,7 @@ class _MapHeader extends StatelessWidget {
   final bool flushValves;
   final bool waterSupply;
   final VoidCallback onReset;
-  final ValueChanged<double> onZoom;
+  final VoidCallback onFullScreen;
   final ValueChanged<bool> onTrees;
   final ValueChanged<bool> onIrrigation;
   final ValueChanged<bool> onUtilities;
@@ -885,16 +1040,13 @@ class _MapHeader extends StatelessWidget {
     );
   }
 
+  // Zoom in/out buttons were retired with full-screen mode: pinch
+  // gestures cover zooming on every supported device.
   List<Widget> _controls(BuildContext context) => <Widget>[
         _Control(
-          icon: Icons.add,
-          tooltip: context.l10n.mapZoomIn,
-          onTap: () => onZoom(1.25),
-        ),
-        _Control(
-          icon: Icons.remove,
-          tooltip: context.l10n.mapZoomOut,
-          onTap: () => onZoom(0.8),
+          icon: Icons.fullscreen,
+          tooltip: context.l10n.mapFullScreen,
+          onTap: onFullScreen,
         ),
         _Control(
           icon: Icons.center_focus_strong,

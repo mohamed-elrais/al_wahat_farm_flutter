@@ -60,7 +60,8 @@ import 'app_localizations_en.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale)
+      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -68,7 +69,8 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -80,7 +82,8 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
     delegate,
     GlobalMaterialLocalizations.delegate,
     GlobalCupertinoLocalizations.delegate,
@@ -2061,6 +2064,138 @@ abstract class AppLocalizations {
   /// **'Selected tree'**
   String get selectedTree;
 
+  /// No description provided for @scheduleEndsOnRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Ends on (required)'**
+  String get scheduleEndsOnRequired;
+
+  /// No description provided for @scheduleEndRequiredMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose an end date — schedules need one'**
+  String get scheduleEndRequiredMessage;
+
+  /// No description provided for @scheduleDateWithinMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'A schedule starts today or later and runs for at most one month.'**
+  String get scheduleDateWithinMonth;
+
+  /// No description provided for @scheduleRepetitions.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No runs in the selected dates} =1{Runs once} other{Runs {count} times}}'**
+  String scheduleRepetitions(int count);
+
+  /// No description provided for @scheduleTotalRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Total for the whole schedule: {quantity} {unit}'**
+  String scheduleTotalRequired(String quantity, String unit);
+
+  /// No description provided for @scheduleAvailableStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Available now: {quantity} {unit}'**
+  String scheduleAvailableStock(String quantity, String unit);
+
+  /// No description provided for @scheduleRemainingAfter.
+  ///
+  /// In en, this message translates to:
+  /// **'Left after the schedule: {quantity} {unit}'**
+  String scheduleRemainingAfter(String quantity, String unit);
+
+  /// No description provided for @scheduleShortage.
+  ///
+  /// In en, this message translates to:
+  /// **'Shortage: {quantity} {unit}'**
+  String scheduleShortage(String quantity, String unit);
+
+  /// No description provided for @scheduleGroupingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Task creation'**
+  String get scheduleGroupingTitle;
+
+  /// No description provided for @scheduleGroupingSeparate.
+  ///
+  /// In en, this message translates to:
+  /// **'Separate tasks'**
+  String get scheduleGroupingSeparate;
+
+  /// No description provided for @scheduleGroupingSeparateHint.
+  ///
+  /// In en, this message translates to:
+  /// **'One task per target on every run date.'**
+  String get scheduleGroupingSeparateHint;
+
+  /// No description provided for @scheduleGroupingCombined.
+  ///
+  /// In en, this message translates to:
+  /// **'One combined task'**
+  String get scheduleGroupingCombined;
+
+  /// No description provided for @scheduleGroupingCombinedHint.
+  ///
+  /// In en, this message translates to:
+  /// **'A single task carrying all selected targets on every run date.'**
+  String get scheduleGroupingCombinedHint;
+
+  /// No description provided for @scheduleReviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Review before creating'**
+  String get scheduleReviewTitle;
+
+  /// No description provided for @scheduleReviewTargets.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 target} other{{count} targets}}: {labels}'**
+  String scheduleReviewTargets(int count, String labels);
+
+  /// No description provided for @scheduleTasksTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 task will be created in total} other{{count} tasks will be created in total}}'**
+  String scheduleTasksTotal(int count);
+
+  /// No description provided for @scheduleExecutionDates.
+  ///
+  /// In en, this message translates to:
+  /// **'Run dates'**
+  String get scheduleExecutionDates;
+
+  /// No description provided for @scheduleMoreDates.
+  ///
+  /// In en, this message translates to:
+  /// **'+{count} more'**
+  String scheduleMoreDates(int count);
+
+  /// No description provided for @scheduleReviewNoProduct.
+  ///
+  /// In en, this message translates to:
+  /// **'No product'**
+  String get scheduleReviewNoProduct;
+
+  /// No description provided for @commonNotSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not set'**
+  String get commonNotSet;
+
+  /// No description provided for @mapFullScreen.
+  ///
+  /// In en, this message translates to:
+  /// **'Full screen'**
+  String get mapFullScreen;
+
+  /// No description provided for @mapExitFullScreen.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit full screen'**
+  String get mapExitFullScreen;
+
   /// No description provided for @mapCreateTaskForSection.
   ///
   /// In en, this message translates to:
@@ -3076,7 +3211,8 @@ abstract class AppLocalizations {
   String taskProductQuantity(String quantity, String unit);
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -3085,25 +3221,25 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['ar', 'en'].contains(locale.languageCode);
+  bool isSupported(Locale locale) =>
+      <String>['ar', 'en'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
-
-
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'ar': return AppLocalizationsAr();
-    case 'en': return AppLocalizationsEn();
+    case 'ar':
+      return AppLocalizationsAr();
+    case 'en':
+      return AppLocalizationsEn();
   }
 
   throw FlutterError(
-    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-    'an issue with the localizations generation tool. Please file an issue '
-    'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.'
-  );
+      'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+      'an issue with the localizations generation tool. Please file an issue '
+      'on GitHub with a reproducible sample app and the gen-l10n configuration '
+      'that was used.');
 }

@@ -29,6 +29,7 @@ class FakeScheduleRepository implements ScheduleRepository {
       applicationRate: draft.applicationRate,
       rateBasis: draft.rateBasis,
       rateUnit: draft.rateUnit,
+      taskGrouping: draft.taskGrouping,
     ));
     return id;
   }
