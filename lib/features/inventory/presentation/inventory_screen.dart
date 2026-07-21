@@ -76,25 +76,19 @@ class _InventoryScreenState extends State<InventoryScreen> {
   @override
   Widget build(BuildContext context) {
     final controller = _controller;
-    return Scaffold(
-      body: PaperBackground(
-        child: SafeArea(
-          child: controller == null
-              ? Center(child: Text(context.l10n.inventoryLoadFailed))
-              : ListenableBuilder(
-                  listenable: controller,
-                  builder: (context, _) => _body(context, controller),
-                ),
-        ),
+    // No Scaffold/SafeArea here: the app shell already provides the top
+    // inset and overlays the floating bottom navigation (extendBody), so the
+    // list keeps 110 bottom padding and the add action lives in the header.
+    return PaperBackground(
+      child: Material(
+        type: MaterialType.transparency,
+        child: controller == null
+            ? Center(child: Text(context.l10n.inventoryLoadFailed))
+            : ListenableBuilder(
+                listenable: controller,
+                builder: (context, _) => _body(context, controller),
+              ),
       ),
-      floatingActionButton: _canManage
-          ? FloatingActionButton.extended(
-              key: const Key('inventory-add-item'),
-              onPressed: () => context.go('/more/inventory/new'),
-              icon: const Icon(Icons.add),
-              label: Text(context.l10n.inventoryAddItem),
-            )
-          : null,
     );
   }
 
@@ -106,9 +100,10 @@ class _InventoryScreenState extends State<InventoryScreen> {
       child: ListView(
         key: const Key('inventory-list'),
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 110),
+        padding: const EdgeInsets.fromLTRB(16, 24, 16, 110),
         children: <Widget>[
           Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: <Widget>[
               IconButton(
                 tooltip: l10n.commonBack,
@@ -128,6 +123,13 @@ class _InventoryScreenState extends State<InventoryScreen> {
                   ],
                 ),
               ),
+              if (_canManage)
+                FilledButton.icon(
+                  key: const Key('inventory-add-item'),
+                  onPressed: () => context.go('/more/inventory/new'),
+                  icon: const Icon(Icons.add),
+                  label: Text(l10n.inventoryAddItem),
+                ),
             ],
           ),
           const SizedBox(height: 12),

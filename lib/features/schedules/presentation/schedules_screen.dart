@@ -91,25 +91,20 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
   @override
   Widget build(BuildContext context) {
     final controller = _controller;
-    return Scaffold(
-      body: PaperBackground(
-        child: SafeArea(
-          child: controller == null || !_canManage
-              ? Center(child: Text(context.l10n.schedulesLoadFailed))
-              : ListenableBuilder(
-                  listenable: controller,
-                  builder: (context, _) => _body(context, controller),
-                ),
-        ),
+    // No Scaffold/SafeArea here: the app shell already provides the top
+    // inset and overlays the floating bottom navigation (extendBody), so the
+    // list keeps 110 bottom padding and the new-plan action lives in the
+    // header row, matching the tasks screen.
+    return PaperBackground(
+      child: Material(
+        type: MaterialType.transparency,
+        child: controller == null || !_canManage
+            ? Center(child: Text(context.l10n.schedulesLoadFailed))
+            : ListenableBuilder(
+                listenable: controller,
+                builder: (context, _) => _body(context, controller),
+              ),
       ),
-      floatingActionButton: _canManage
-          ? FloatingActionButton.extended(
-              key: const Key('schedule-new'),
-              onPressed: () => context.go('/more/schedules/new'),
-              icon: const Icon(Icons.add),
-              label: Text(context.l10n.scheduleNew),
-            )
-          : null,
     );
   }
 
@@ -120,9 +115,10 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
       child: ListView(
         key: const Key('schedules-list'),
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 110),
+        padding: const EdgeInsets.fromLTRB(16, 24, 16, 110),
         children: <Widget>[
           Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: <Widget>[
               IconButton(
                 tooltip: l10n.commonBack,
@@ -141,6 +137,12 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                     ),
                   ],
                 ),
+              ),
+              FilledButton.icon(
+                key: const Key('schedule-new'),
+                onPressed: () => context.go('/more/schedules/new'),
+                icon: const Icon(Icons.add),
+                label: Text(l10n.scheduleNew),
               ),
             ],
           ),

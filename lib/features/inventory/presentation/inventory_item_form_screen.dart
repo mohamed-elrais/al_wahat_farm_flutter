@@ -102,16 +102,17 @@ class _InventoryItemFormScreenState extends State<InventoryItemFormScreen> {
             .role
             .canManageInventory ??
         false;
-    return Scaffold(
-      body: PaperBackground(
-        child: SafeArea(
-          child: controller == null || !canManage
-              ? Center(child: Text(context.l10n.inventoryLoadFailed))
-              : ListenableBuilder(
-                  listenable: controller,
-                  builder: (context, _) => _form(context, controller),
-                ),
-        ),
+    // The app shell owns the safe areas; a nested Scaffold/SafeArea would
+    // double the top inset below the shell's top bar.
+    return PaperBackground(
+      child: Material(
+        type: MaterialType.transparency,
+        child: controller == null || !canManage
+            ? Center(child: Text(context.l10n.inventoryLoadFailed))
+            : ListenableBuilder(
+                listenable: controller,
+                builder: (context, _) => _form(context, controller),
+              ),
       ),
     );
   }

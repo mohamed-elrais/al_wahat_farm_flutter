@@ -71,16 +71,17 @@ class _ScheduleDetailScreenState extends State<ScheduleDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final controller = _controller;
-    return Scaffold(
-      body: PaperBackground(
-        child: SafeArea(
-          child: controller == null
-              ? Center(child: Text(context.l10n.schedulesLoadFailed))
-              : ListenableBuilder(
-                  listenable: controller,
-                  builder: (context, _) => _body(context, controller),
-                ),
-        ),
+    // The app shell owns the safe areas; a nested Scaffold/SafeArea would
+    // double the top inset below the shell's top bar.
+    return PaperBackground(
+      child: Material(
+        type: MaterialType.transparency,
+        child: controller == null
+            ? Center(child: Text(context.l10n.schedulesLoadFailed))
+            : ListenableBuilder(
+                listenable: controller,
+                builder: (context, _) => _body(context, controller),
+              ),
       ),
     );
   }
