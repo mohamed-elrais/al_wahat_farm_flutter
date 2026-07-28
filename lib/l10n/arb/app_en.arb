@@ -502,6 +502,7 @@
   "@scheduleMoreDates": {"placeholders": {"count": {"type": "int"}}},
   "scheduleReviewNoProduct": "No product",
   "commonNotSet": "Not set",
+  "photoLoadFailed": "This photo could not be loaded. Check your connection and try again.",
   "mapFullScreen": "Full screen",
   "mapExitFullScreen": "Exit full screen",
   "mapCreateTaskForSection": "Create task for Section {code}",

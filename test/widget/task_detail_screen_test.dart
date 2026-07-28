@@ -4,6 +4,7 @@ import 'package:al_wahat_farm_flutter/features/tasks/domain/farm_task.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/task_draft.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_detail_controller.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_detail_screen.dart';
+import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_photo_viewer.dart';
 import 'package:al_wahat_farm_flutter/shared/models/farm_role.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -158,6 +159,191 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('map-stub:zone:zone-2'), findsOneWidget);
   });
+
+  testWidgets('evidence photos open in the full-screen viewer with error retry',
+      (tester) async {
+    tester.view.physicalSize = const Size(430, 1200);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final store = InMemoryTaskStore();
+    final manager = FakeTaskRepository(
+      store: store,
+      viewerProfileId: 'manager-id',
+      canManage: true,
+    );
+    final taskId = await manager.create(
+      const TaskDraft(
+        farmId: 'farm-id',
+        type: TaskType.irrigation,
+        title: 'Task with photos',
+      ),
+    );
+    store.photos[taskId] = <TaskPhoto>[
+      TaskPhoto(
+        id: 'photo-1',
+        taskId: taskId,
+        storageBucketId: 'farm-evidence',
+        storagePath: 'u/f/t/one.jpg',
+        photoType: TaskPhotoType.after,
+        uploadedByProfileId: 'worker-id',
+        createdAt: DateTime(2026, 7, 28, 14, 33),
+      ),
+      TaskPhoto(
+        id: 'photo-2',
+        taskId: taskId,
+        storageBucketId: 'farm-evidence',
+        storagePath: 'u/f/t/two.jpg',
+        photoType: TaskPhotoType.before,
+        uploadedByProfileId: 'worker-id',
+        createdAt: DateTime(2026, 7, 28, 14, 40),
+      ),
+    ];
+    final urls = _FakePhotoUrls();
+    final controller = TaskDetailController(
+      repository: manager,
+      evidencePicker: FakeTaskEvidencePicker(),
+      evidenceStorage: FakeTaskEvidenceStorage(),
+      taskId: taskId,
+      farmId: 'farm-id',
+      userId: 'manager-id',
+    );
+    addTearDown(controller.dispose);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: TaskDetailScreen(
+          taskId: taskId,
+          controller: controller,
+          hierarchy: _hierarchy,
+          role: FarmRole.owner,
+          userId: 'manager-id',
+          farmId: 'farm-id',
+          photoUrls: urls,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    _drainImageErrors(tester);
+
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('evidence-photo-0')),
+      400,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.byKey(const Key('evidence-photo-0')));
+    await tester.pumpAndSettle();
+    _drainImageErrors(tester);
+
+    // Viewer is open, shows the multi-photo counter, and (since the test
+    // HTTP client refuses network) the error state with a retry.
+    expect(find.byKey(const Key('photo-viewer')), findsOneWidget);
+    expect(find.text('1 / 2'), findsOneWidget);
+    expect(find.byKey(const Key('photo-viewer-error')), findsWidgets);
+    final urlCallsBeforeRetry = urls.calls;
+    await tester.tap(find.byKey(const Key('photo-viewer-retry')).first);
+    await tester.pumpAndSettle();
+    _drainImageErrors(tester);
+    expect(urls.refreshes, 1); // retry requests a FRESH signed URL
+    expect(urls.calls, greaterThan(urlCallsBeforeRetry));
+
+    // Closing returns to the intact task detail screen.
+    await tester.tap(find.byKey(const Key('photo-viewer-close')));
+    await tester.pumpAndSettle();
+    _drainImageErrors(tester);
+    expect(find.byKey(const Key('photo-viewer')), findsNothing);
+    expect(find.byKey(const Key('task-detail-list')), findsOneWidget);
+    expect(find.byKey(const Key('evidence-photo-1')), findsOneWidget);
+  });
+
+  testWidgets('instructions hide generator metadata but show human content',
+      (tester) async {
+    tester.view.physicalSize = const Size(430, 1200);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final store = InMemoryTaskStore();
+    final manager = FakeTaskRepository(
+      store: store,
+      viewerProfileId: 'manager-id',
+      canManage: true,
+    );
+    final taskId = await manager.create(
+      const TaskDraft(
+        farmId: 'farm-id',
+        type: TaskType.fertilization,
+        title: 'Generated feeding task',
+        instructions: <String, Object?>{
+          'text': 'Wear gloves near the pump.',
+          'watering_depth': '30 cm',
+          'operation_plan_id': '251134fe-c199-4933-8678-07f62165b2c2',
+          'operation_plan_run_ids': <String>[
+            '6f115981-d00f-431d-b412-d1cf97aef0d4',
+          ],
+          'inventory_item_id': '8e387609-b060-4c92-9e99-83ace40ccc96',
+          'required_quantity': 42.133,
+          'required_unit': 'liter',
+          'application_method': null,
+        },
+      ),
+    );
+    final controller = TaskDetailController(
+      repository: manager,
+      evidencePicker: FakeTaskEvidencePicker(),
+      evidenceStorage: FakeTaskEvidenceStorage(),
+      taskId: taskId,
+      farmId: 'farm-id',
+      userId: 'manager-id',
+    );
+    addTearDown(controller.dispose);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: TaskDetailScreen(
+          taskId: taskId,
+          controller: controller,
+          hierarchy: _hierarchy,
+          role: FarmRole.owner,
+          userId: 'manager-id',
+          farmId: 'farm-id',
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // The note and custom keys are readable ...
+    expect(find.text('Wear gloves near the pump.'), findsOneWidget);
+    expect(find.text('watering depth'), findsOneWidget);
+    expect(find.text('30 cm'), findsOneWidget);
+    // ... while the machine metadata never renders.
+    expect(
+      find.textContaining('251134fe-c199-4933-8678-07f62165b2c2'),
+      findsNothing,
+    );
+    expect(find.textContaining('operation_plan'), findsNothing);
+    expect(find.textContaining('inventory_item_id'), findsNothing);
+  });
+}
+
+/// The test HttpClient answers every request with 400, so image loads
+/// fail by design; the UI handles them via errorBuilder, and the pending
+/// exceptions just need consuming so the test framework ignores them.
+void _drainImageErrors(WidgetTester tester) {
+  while (tester.takeException() != null) {}
+}
+
+class _FakePhotoUrls implements TaskPhotoUrlProvider {
+  int calls = 0;
+  int refreshes = 0;
+
+  @override
+  Future<String> urlFor(TaskPhoto photo, {bool refresh = false}) async {
+    calls++;
+    if (refresh) refreshes++;
+    return 'http://localhost/${photo.storagePath}';
+  }
 }
 
 final _hierarchy = FarmHierarchy(

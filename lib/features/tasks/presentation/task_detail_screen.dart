@@ -17,6 +17,7 @@ import 'package:al_wahat_farm_flutter/features/tasks/domain/farm_task.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/task_draft.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/task_evidence.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_detail_controller.dart';
+import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_photo_viewer.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_widgets.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_workspace_controller.dart';
 import 'package:al_wahat_farm_flutter/shared/models/farm_role.dart';
@@ -34,6 +35,7 @@ class TaskDetailScreen extends StatefulWidget {
     this.userId,
     this.farmId,
     this.assignableMembers,
+    this.photoUrls,
     super.key,
   });
 
@@ -46,6 +48,11 @@ class TaskDetailScreen extends StatefulWidget {
   final String? farmId;
   final List<TaskAssignee>? assignableMembers;
 
+  /// Signed-URL resolver for evidence photos; injectable for tests. When
+  /// null, a Supabase-backed one is created lazily (and skipped entirely
+  /// when Supabase is not initialized, e.g. in widget tests).
+  final TaskPhotoUrlProvider? photoUrls;
+
   @override
   State<TaskDetailScreen> createState() => _TaskDetailScreenState();
 }
@@ -55,6 +62,21 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
   TaskWorkspaceController? _workspace;
   bool _ownsController = false;
   bool _membersRequested = false;
+  TaskPhotoUrlProvider? _photoUrls;
+  bool _photoUrlsResolved = false;
+
+  TaskPhotoUrlProvider? get _photoUrlProvider {
+    if (!_photoUrlsResolved) {
+      _photoUrlsResolved = true;
+      try {
+        _photoUrls = widget.photoUrls ??
+            SupabaseTaskPhotoUrlProvider(Supabase.instance.client);
+      } catch (_) {
+        _photoUrls = widget.photoUrls; // Supabase not initialized (tests)
+      }
+    }
+    return _photoUrls;
+  }
 
   @override
   void didChangeDependencies() {
@@ -288,12 +310,42 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                 const SizedBox(height: 5),
                 Text(task.description!),
               ],
-              if (task.instructions.isNotEmpty) ...<Widget>[
+              // Only human-readable content: the free-text note plus any
+              // custom keys. Machine metadata stamped by the schedule
+              // generator (plan/run/target ids, dosing keys) is hidden —
+              // the dosing itself is already shown by the product row.
+              if (_instructionNote(task.instructions) != null ||
+                  _instructionExtras(task.instructions).isNotEmpty) ...<Widget>[
                 const Divider(height: 24),
                 Text(context.l10n.detailInstructions,
                     style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 5),
-                Text(_instructionsText(task.instructions)),
+                if (_instructionNote(task.instructions) != null)
+                  Text(
+                    _instructionNote(task.instructions)!,
+                    key: const Key('task-instructions-note'),
+                  ),
+                for (final entry in _instructionExtras(task.instructions))
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Expanded(
+                          flex: 2,
+                          child: Text(
+                            entry.key,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(color: AppColors.muted),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(flex: 3, child: Text(entry.value)),
+                      ],
+                    ),
+                  ),
               ],
             ],
           ),
@@ -352,7 +404,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
           ),
         ),
         const SizedBox(height: 12),
-        _EvidenceCard(photos: details.photos),
+        _EvidenceCard(photos: details.photos, urls: _photoUrlProvider),
         const SizedBox(height: 12),
         _ActivityCard(activity: details.activity),
       ],
@@ -505,9 +557,10 @@ class _AssignmentsCard extends StatelessWidget {
 }
 
 class _EvidenceCard extends StatelessWidget {
-  const _EvidenceCard({required this.photos});
+  const _EvidenceCard({required this.photos, required this.urls});
 
   final List<TaskPhoto> photos;
+  final TaskPhotoUrlProvider? urls;
 
   @override
   Widget build(BuildContext context) => WahatCard(
@@ -520,18 +573,29 @@ class _EvidenceCard extends StatelessWidget {
             if (photos.isEmpty)
               Text(context.l10n.noEvidence)
             else
-              for (final photo in photos)
+              for (var index = 0; index < photos.length; index++)
                 ListTile(
+                  key: Key('evidence-photo-$index'),
                   contentPadding: EdgeInsets.zero,
-                  leading: const CircleAvatar(
-                    backgroundColor: AppColors.softGreen,
-                    child: Icon(Icons.photo_outlined),
+                  leading: TaskPhotoThumbnail(
+                    photo: photos[index],
+                    urls: urls,
                   ),
-                  title: Text(photo.caption ??
-                      photo.photoType.localizedLabel(context.l10n)),
+                  title: Text(photos[index].caption ??
+                      photos[index].photoType.localizedLabel(context.l10n)),
                   subtitle: Text(
-                    '${photo.photoType.localizedLabel(context.l10n)} · ${taskDateTimeLabel(photo.createdAt)}',
+                    '${photos[index].photoType.localizedLabel(context.l10n)} · ${taskDateTimeLabel(photos[index].createdAt)}',
                   ),
+                  trailing:
+                      urls == null ? null : const Icon(Icons.chevron_right),
+                  onTap: urls == null
+                      ? null
+                      : () => TaskPhotoViewer.open(
+                            context,
+                            photos: photos,
+                            initialIndex: index,
+                            urls: urls!,
+                          ),
                 ),
           ],
         ),
@@ -920,13 +984,45 @@ String? _productLine(BuildContext context, Map<String, Object?> instructions) {
   }
 }
 
-String _instructionsText(Map<String, Object?> instructions) {
+/// Machine metadata the schedule generator and consumption logic stamp
+/// into `instructions`. Never shown raw: the product row renders the
+/// dosing, and the ids mean nothing to a field worker.
+const Set<String> _internalInstructionKeys = <String>{
+  'text',
+  'priority',
+  'operation_plan_id',
+  'operation_plan_target_id',
+  'operation_plan_run_id',
+  'operation_plan_target_ids',
+  'operation_plan_run_ids',
+  'inventory_item_id',
+  'required_quantity',
+  'required_unit',
+  'application_method',
+};
+
+/// The free-text note a manager typed for the task, if any.
+String? _instructionNote(Map<String, Object?> instructions) {
   final text = instructions['text'];
-  if (text is String && text.trim().isNotEmpty) return text;
-  return instructions.entries
-      .map((entry) => '${entry.key}: ${entry.value}')
-      .join('\n');
+  if (text is String && text.trim().isNotEmpty) return text.trim();
+  return null;
 }
+
+/// Any remaining custom key/values, with the keys humanized
+/// ("watering_depth" -> "watering depth").
+List<MapEntry<String, String>> _instructionExtras(
+  Map<String, Object?> instructions,
+) =>
+    instructions.entries
+        .where((entry) =>
+            !_internalInstructionKeys.contains(entry.key) &&
+            entry.value != null &&
+            '${entry.value}'.trim().isNotEmpty)
+        .map((entry) => MapEntry(
+              entry.key.replaceAll('_', ' '),
+              '${entry.value}',
+            ))
+        .toList(growable: false);
 
 String _stageLabel(AppLocalizations l10n, TaskMutationStage stage) =>
     switch (stage) {

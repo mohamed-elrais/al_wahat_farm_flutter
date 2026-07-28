@@ -502,6 +502,7 @@
   "@scheduleMoreDates": {"placeholders": {"count": {"type": "int"}}},
   "scheduleReviewNoProduct": "بدون منتج",
   "commonNotSet": "غير محدد",
+  "photoLoadFailed": "تعذر تحميل هذه الصورة. تحقق من الاتصال وحاول مرة أخرى.",
   "mapFullScreen": "ملء الشاشة",
   "mapExitFullScreen": "الخروج من ملء الشاشة",
   "mapCreateTaskForSection": "إنشاء مهمة للقسم {code}",
