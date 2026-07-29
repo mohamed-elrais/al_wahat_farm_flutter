@@ -2,6 +2,7 @@ import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
+import 'package:al_wahat_farm_flutter/core/widgets/section_refresh.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
 import 'package:al_wahat_farm_flutter/features/auth/presentation/authenticated_gate.dart';
 import 'package:al_wahat_farm_flutter/features/farm/domain/farm_hierarchy.dart';
@@ -40,8 +41,16 @@ class TasksScreen extends StatefulWidget {
   State<TasksScreen> createState() => _TasksScreenState();
 }
 
-class _TasksScreenState extends State<TasksScreen> {
+class _TasksScreenState extends State<TasksScreen> with SectionReturnAware {
   TaskListView _view = TaskListView.today;
+
+  /// Returning to the Tasks section re-pulls the list (new/updated tasks
+  /// from schedules, reviews or other members) while keeping the current
+  /// data on screen — refresh() no-ops when one is already in flight.
+  @override
+  void onSectionReturn() {
+    (widget.controller ?? TaskWorkspaceScope.maybeOf(context))?.refresh();
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -33,11 +33,10 @@ class TreeDetailScreen extends StatelessWidget {
         children: <Widget>[
           Align(
             alignment: AlignmentDirectional.centerStart,
-            child: IconButton(
+            child: WahatBackButton(
               key: const Key('tree-detail-back'),
               tooltip: context.l10n.commonBack,
               onPressed: context.pop,
-              icon: const Icon(Icons.arrow_back),
             ),
           ),
           WahatCard(child: TreeDetailContent(tree: tree)),

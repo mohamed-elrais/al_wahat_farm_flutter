@@ -79,11 +79,10 @@ class _FailedOpsScreenState extends State<FailedOpsScreen> {
       children: <Widget>[
         Row(
           children: <Widget>[
-            IconButton(
+            WahatBackButton(
               key: const Key('failed-ops-back'),
               tooltip: l10n.commonBack,
               onPressed: () => context.pop(),
-              icon: const Icon(Icons.arrow_back),
             ),
             const SizedBox(width: 4),
             Expanded(

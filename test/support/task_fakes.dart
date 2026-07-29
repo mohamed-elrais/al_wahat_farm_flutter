@@ -56,6 +56,7 @@ class FakeTaskRepository implements TaskRepository {
   Object? addPhotoFailureAfterCommit;
   int completeFailuresRemaining = 0;
   int createCalls = 0;
+  int listCalls = 0;
   String? lastCreateOpId;
   TaskDraft? lastCreateDraft;
   String? lastStartOpId;
@@ -65,6 +66,7 @@ class FakeTaskRepository implements TaskRepository {
 
   @override
   Future<List<FarmTask>> listForFarm(String farmId) async {
+    listCalls++;
     if (listFailure != null) throw listFailure!;
     final result = store.tasks.values.where((task) {
       if (task.farmId != farmId) return false;

@@ -21,9 +21,14 @@ class AppShell extends StatelessWidget {
         extendBody: true,
         bottomNavigationBar: WahatNavigation(
           index: navigationShell.currentIndex,
+          // One rule for every section: the navigation bar always opens the
+          // section's ROOT screen, discarding any sub-page (task detail,
+          // schedule form, ...) left on that branch. Deep links still work —
+          // they navigate directly and never pass through here — but normal
+          // tab switching never resurfaces a stale detail screen.
           onSelected: (index) => navigationShell.goBranch(
             index,
-            initialLocation: index == navigationShell.currentIndex,
+            initialLocation: true,
           ),
         ),
       );
@@ -176,29 +181,36 @@ class WahatNavigation extends StatelessWidget {
                           shape: BoxShape.circle,
                         )
                       : null,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Icon(
-                        item.$1,
-                        color: scan || active
-                            ? Colors.white
-                            : const Color(0xFFB6C6B9),
-                        size: scan ? 27 : 23,
-                      ),
-                      if (!scan) ...<Widget>[
-                        const SizedBox(height: 2),
-                        Text(
-                          item.$3,
-                          style: TextStyle(
-                            color:
-                                active ? Colors.white : const Color(0xFFB6C6B9),
-                            fontFamily: 'Inter',
-                            fontSize: 9,
-                          ),
+                  // Scaled down instead of overflowing when large text
+                  // scales make icon + label taller than the 52dp item.
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Icon(
+                          item.$1,
+                          color: scan || active
+                              ? Colors.white
+                              : const Color(0xFFB6C6B9),
+                          size: scan ? 27 : 23,
                         ),
+                        if (!scan) ...<Widget>[
+                          const SizedBox(height: 2),
+                          Text(
+                            item.$3,
+                            style: TextStyle(
+                              color: active
+                                  ? Colors.white
+                                  : const Color(0xFFB6C6B9),
+                              fontFamily: 'Inter',
+                              fontSize: 9,
+                            ),
+                          ),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
                 ),
               ),

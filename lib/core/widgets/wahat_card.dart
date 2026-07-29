@@ -31,6 +31,27 @@ class WahatCard extends StatelessWidget {
       );
 }
 
+/// The standard header back button: an explicit 48x48 target whose icon is
+/// centered inside it, used with `CrossAxisAlignment.start` header rows so
+/// the arrow anchors to the header's top corner instead of floating at the
+/// vertical middle of a tall (wrapped-title) row.
+class WahatBackButton extends StatelessWidget {
+  const WahatBackButton({required this.onPressed, this.tooltip, super.key});
+
+  final VoidCallback? onPressed;
+  final String? tooltip;
+
+  @override
+  Widget build(BuildContext context) => IconButton(
+        tooltip: tooltip,
+        constraints: const BoxConstraints.tightFor(width: 48, height: 48),
+        alignment: Alignment.center,
+        padding: EdgeInsets.zero,
+        onPressed: onPressed,
+        icon: const Icon(Icons.arrow_back),
+      );
+}
+
 class Eyebrow extends StatelessWidget {
   const Eyebrow(this.text, {super.key});
 

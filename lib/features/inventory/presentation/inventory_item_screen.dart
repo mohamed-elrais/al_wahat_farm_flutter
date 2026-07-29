@@ -119,10 +119,9 @@ class _InventoryItemScreenState extends State<InventoryItemScreen> {
       children: <Widget>[
         Row(
           children: <Widget>[
-            IconButton(
+            WahatBackButton(
               tooltip: l10n.commonBack,
               onPressed: () => context.go('/more/inventory'),
-              icon: const Icon(Icons.arrow_back),
             ),
             const SizedBox(width: 4),
             Expanded(

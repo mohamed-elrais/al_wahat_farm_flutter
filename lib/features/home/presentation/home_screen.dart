@@ -2,6 +2,7 @@ import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
+import 'package:al_wahat_farm_flutter/core/widgets/section_refresh.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
 import 'package:al_wahat_farm_flutter/features/farm/presentation/farm_hierarchy_gate.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/farm_task.dart';
@@ -10,8 +11,20 @@ import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_workspace
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> with SectionReturnAware {
+  /// The dashboard summarizes the shared task workspace; returning to Home
+  /// re-pulls it so today's counts reflect work done in other sections.
+  @override
+  void onSectionReturn() {
+    TaskWorkspaceScope.maybeOf(context)?.refresh();
+  }
 
   @override
   Widget build(BuildContext context) => PaperBackground(

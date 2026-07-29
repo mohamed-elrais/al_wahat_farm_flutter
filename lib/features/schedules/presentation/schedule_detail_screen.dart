@@ -104,10 +104,9 @@ class _ScheduleDetailScreenState extends State<ScheduleDetailScreen> {
       children: <Widget>[
         Row(
           children: <Widget>[
-            IconButton(
+            WahatBackButton(
               tooltip: l10n.commonBack,
               onPressed: () => context.go('/more/schedules'),
-              icon: const Icon(Icons.arrow_back),
             ),
             const SizedBox(width: 4),
             Expanded(

@@ -120,10 +120,9 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: <Widget>[
-              IconButton(
+              WahatBackButton(
                 tooltip: l10n.commonBack,
                 onPressed: () => context.go('/more'),
-                icon: const Icon(Icons.arrow_back),
               ),
               const SizedBox(width: 4),
               Expanded(

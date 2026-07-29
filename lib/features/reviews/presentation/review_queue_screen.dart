@@ -91,10 +91,9 @@ class ReviewQueueScreen extends StatelessWidget {
         children: <Widget>[
           Row(
             children: <Widget>[
-              IconButton(
+              WahatBackButton(
                 tooltip: context.l10n.backToTasks,
                 onPressed: () => context.go('/tasks'),
-                icon: const Icon(Icons.arrow_back),
               ),
               const SizedBox(width: 4),
               Expanded(

@@ -102,10 +102,9 @@ class _IssueReportScreenState extends State<IssueReportScreen> {
           children: <Widget>[
             Row(
               children: <Widget>[
-                IconButton(
+                WahatBackButton(
                   tooltip: context.l10n.commonBack,
                   onPressed: controller.isBusy ? null : context.pop,
-                  icon: const Icon(Icons.arrow_back),
                 ),
                 const SizedBox(width: 4),
                 Expanded(

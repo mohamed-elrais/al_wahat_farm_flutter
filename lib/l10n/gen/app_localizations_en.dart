@@ -66,7 +66,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get offlineBanner => 'Offline · showing cached farm and task data';
 
   @override
-  String get offlineBannerSemantics => 'You are offline. Showing cached farm and task data.';
+  String get offlineBannerSemantics =>
+      'You are offline. Showing cached farm and task data.';
 
   @override
   String get languageLabel => 'Language';
@@ -102,7 +103,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginSignInButton => 'Sign in';
 
   @override
-  String get loginNotConfigured => 'Supabase is not configured. Run with --dart-define-from-file=config.json.';
+  String get loginNotConfigured =>
+      'Supabase is not configured. Run with --dart-define-from-file=config.json.';
 
   @override
   String get loginInvalidEmail => 'Enter a valid email address';
@@ -120,7 +122,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeHeroTitle => 'Your farm.\nTree by tree.';
 
   @override
-  String get homeHeroLede => 'Field operations grounded in every mapped tree and irrigation zone.';
+  String get homeHeroLede =>
+      'Field operations grounded in every mapped tree and irrigation zone.';
 
   @override
   String get homeScanTreeQr => 'Scan Tree QR';
@@ -179,10 +182,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get syncOffline => 'Offline';
 
   @override
-  String get syncOnlineSubtitle => 'Online · operational reads refresh from Supabase';
+  String get syncOnlineSubtitle =>
+      'Online · operational reads refresh from Supabase';
 
   @override
-  String get syncOfflineSubtitle => 'Offline · showing cached farm and task data';
+  String get syncOfflineSubtitle =>
+      'Offline · showing cached farm and task data';
 
   @override
   String get syncStatusOnlineSemantics => 'Sync status online';
@@ -246,7 +251,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get failedOpsTitle => 'Failed changes';
 
   @override
-  String get failedOpsIntro => 'These changes could not be synced to the farm. Retry them, or discard the ones you no longer need.';
+  String get failedOpsIntro =>
+      'These changes could not be synced to the farm. Retry them, or discard the ones you no longer need.';
 
   @override
   String get failedOpsUnavailable => 'Sync is not available right now.';
@@ -255,7 +261,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get failedOpsEmptyTitle => 'No failed changes';
 
   @override
-  String get failedOpsEmptyMessage => 'Everything has synced or is still waiting to sync.';
+  String get failedOpsEmptyMessage =>
+      'Everything has synced or is still waiting to sync.';
 
   @override
   String get failedOpsRetryAll => 'Retry all';
@@ -270,7 +277,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get failedOpsDiscardConfirmTitle => 'Discard this change?';
 
   @override
-  String get failedOpsDiscardConfirmMessage => 'This change will be removed and will not be sent to the farm. This cannot be undone.';
+  String get failedOpsDiscardConfirmMessage =>
+      'This change will be removed and will not be sent to the farm. This cannot be undone.';
 
   @override
   String get failedOpsKindStartTask => 'Start task';
@@ -297,13 +305,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get gateAccessUnavailableTitle => 'Farm access unavailable';
 
   @override
-  String get gateProfileMissing => 'Your account profile has not been provisioned.';
+  String get gateProfileMissing =>
+      'Your account profile has not been provisioned.';
 
   @override
   String get gateProfileInactive => 'Your account is inactive.';
 
   @override
-  String get gateNoMembership => 'No active operational farm membership is assigned.';
+  String get gateNoMembership =>
+      'No active operational farm membership is assigned.';
 
   @override
   String get gateLoadFailedTitle => 'Unable to load farm access';
@@ -315,7 +325,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hierarchyFailedTitle => 'Unable to load farm data';
 
   @override
-  String get hierarchyFailedMessage => 'Check your connection and farm access, then try again.';
+  String get hierarchyFailedMessage =>
+      'Check your connection and farm access, then try again.';
 
   @override
   String get roleOwner => 'Owner';
@@ -506,7 +517,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tasksLoadFailedTitle => 'Tasks could not be loaded';
 
   @override
-  String get tasksFailureDefault => 'Unable to load farm tasks. Check your connection and try again.';
+  String get tasksFailureDefault =>
+      'Unable to load farm tasks. Check your connection and try again.';
 
   @override
   String get tasksEmptyTodayTitle => 'No tasks scheduled today';
@@ -515,10 +527,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tasksEmptyAllTitle => 'No visible tasks';
 
   @override
-  String get tasksEmptyManager => 'Create a task or switch the date and assignment in Supabase.';
+  String get tasksEmptyManager =>
+      'Create a task or switch the date and assignment in Supabase.';
 
   @override
-  String get tasksEmptyWorker => 'Only active tasks assigned to you appear here.';
+  String get tasksEmptyWorker =>
+      'Only active tasks assigned to you appear here.';
 
   @override
   String get reviewQueueEntryTitle => 'Review queue';
@@ -651,7 +665,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get editAssignments => 'Edit assignments';
 
   @override
-  String get noOperationalMembers => 'No active operational members are available.';
+  String get noOperationalMembers =>
+      'No active operational members are available.';
 
   @override
   String get saveAssignments => 'Save assignments';
@@ -731,13 +746,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get msgTaskEvidenceSaved => 'Task evidence saved.';
 
   @override
-  String get msgEvidenceQueuedOffline => 'Evidence saved offline. It will upload when you\'re back online.';
+  String get msgEvidenceQueuedOffline =>
+      'Evidence saved offline. It will upload when you\'re back online.';
 
   @override
   String get msgTaskCompleted => 'Task completed.';
 
   @override
-  String get msgTaskCompletedReview => 'Task completed and sent for engineer review.';
+  String get msgTaskCompletedReview =>
+      'Task completed and sent for engineer review.';
 
   @override
   String get errTaskStart => 'The task could not be started.';
@@ -749,13 +766,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errEvidencePrepare => 'Unable to prepare that evidence photo.';
 
   @override
-  String get errEvidenceRegister => 'Evidence registration was not confirmed. You can safely retry.';
+  String get errEvidenceRegister =>
+      'Evidence registration was not confirmed. You can safely retry.';
 
   @override
   String get errTaskComplete => 'The task could not be completed.';
 
   @override
-  String get errCompletionUnconfirmed => 'Evidence is saved, but task completion was not confirmed. Retry completion without uploading again.';
+  String get errCompletionUnconfirmed =>
+      'Evidence is saved, but task completion was not confirmed. Retry completion without uploading again.';
 
   @override
   String get createEyebrow => 'Plan field work';
@@ -842,16 +861,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addAnotherTarget => 'Add another target';
 
   @override
-  String get createUnavailableRole => 'Your farm role cannot create or assign tasks.';
+  String get createUnavailableRole =>
+      'Your farm role cannot create or assign tasks.';
 
   @override
-  String get createUnavailableWorkspace => 'The farm task workspace is not ready.';
+  String get createUnavailableWorkspace =>
+      'The farm task workspace is not ready.';
 
   @override
   String get msgTaskCreated => 'Task created and assigned.';
 
   @override
-  String get msgTaskCreatedOffline => 'Task saved offline. It will be created on the farm when you\'re back online.';
+  String get msgTaskCreatedOffline =>
+      'Task saved offline. It will be created on the farm when you\'re back online.';
 
   @override
   String get errTaskCreate => 'The task could not be created.';
@@ -860,7 +882,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get taskPendingSyncBadge => 'Pending sync';
 
   @override
-  String get taskPendingSyncOpen => 'This task opens once it syncs to the farm.';
+  String get taskPendingSyncOpen =>
+      'This task opens once it syncs to the farm.';
 
   @override
   String get reviewTaskEyebrow => 'Review task';
@@ -886,7 +909,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reviewQueueLoadingTitle => 'Loading review queue';
 
   @override
-  String get reviewQueueLoadingMessage => 'Checking tasks flagged for engineer review…';
+  String get reviewQueueLoadingMessage =>
+      'Checking tasks flagged for engineer review…';
 
   @override
   String get reviewQueueFailedTitle => 'Queue could not be loaded';
@@ -895,19 +919,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reviewQueueEmptyTitle => 'No tasks are waiting';
 
   @override
-  String get reviewQueueEmptyMessage => 'Completed work sent for review will appear here.';
+  String get reviewQueueEmptyMessage =>
+      'Completed work sent for review will appear here.';
 
   @override
   String get reviewQueueUnavailableTitle => 'Review workspace is unavailable';
 
   @override
-  String get reviewQueueUnavailableMessage => 'Reopen the app to restore your farm review queue.';
+  String get reviewQueueUnavailableMessage =>
+      'Reopen the app to restore your farm review queue.';
 
   @override
   String get reviewDeniedTitle => 'Reviews are restricted';
 
   @override
-  String get reviewDeniedMessage => 'Only the owner or agricultural engineer can review completed work.';
+  String get reviewDeniedMessage =>
+      'Only the owner or agricultural engineer can review completed work.';
 
   @override
   String get backToReviewQueue => 'Back to review queue';
@@ -922,10 +949,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get decisionTitle => 'Decision';
 
   @override
-  String get decisionNotAwaiting => 'This task is not awaiting a review decision.';
+  String get decisionNotAwaiting =>
+      'This task is not awaiting a review decision.';
 
   @override
-  String get decisionPrompt => 'Record the engineer review outcome for this work.';
+  String get decisionPrompt =>
+      'Record the engineer review outcome for this work.';
 
   @override
   String get reviewNotesLabel => 'Review notes';
@@ -970,10 +999,12 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get msgReviewRecordedOffline => 'Review saved offline. It will be recorded on the farm when you\'re back online.';
+  String get msgReviewRecordedOffline =>
+      'Review saved offline. It will be recorded on the farm when you\'re back online.';
 
   @override
-  String get errReviewPhotoUnconfirmed => 'The review photo is uploaded, but the decision was not confirmed. Retry without uploading again.';
+  String get errReviewPhotoUnconfirmed =>
+      'The review photo is uploaded, but the decision was not confirmed. Retry without uploading again.';
 
   @override
   String get errReviewRecord => 'The review decision could not be recorded.';
@@ -1016,7 +1047,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get issueRetryPhoto => 'Retry photo';
 
   @override
-  String get issueUnavailable => 'This tree is not available for issue reporting.';
+  String get issueUnavailable =>
+      'This tree is not available for issue reporting.';
 
   @override
   String get issueStagePreparingPhoto => 'Preparing photo…';
@@ -1034,19 +1066,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get issueErrPhotoPrepare => 'Unable to prepare that photo.';
 
   @override
-  String get issueMsgReported => 'Issue reported and engineer review task created.';
+  String get issueMsgReported =>
+      'Issue reported and engineer review task created.';
 
   @override
-  String get issueMsgReportedOffline => 'Issue saved offline. It will be reported to the farm when you\'re back online.';
+  String get issueMsgReportedOffline =>
+      'Issue saved offline. It will be reported to the farm when you\'re back online.';
 
   @override
-  String get issueErrReport => 'The issue could not be reported. Check your connection.';
+  String get issueErrReport =>
+      'The issue could not be reported. Check your connection.';
 
   @override
-  String get issueMsgReportedWithPhoto => 'Issue, review task, and photo evidence saved.';
+  String get issueMsgReportedWithPhoto =>
+      'Issue, review task, and photo evidence saved.';
 
   @override
-  String get issueErrPartialPrefix => 'The issue and review task were saved, but photo registration was not confirmed. ';
+  String get issueErrPartialPrefix =>
+      'The issue and review task were saved, but photo registration was not confirmed. ';
 
   @override
   String get issueMsgRetryPhoto => 'You can safely retry the photo.';
@@ -1058,10 +1095,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get scheduleEndsOnRequired => 'Ends on (required)';
 
   @override
-  String get scheduleEndRequiredMessage => 'Choose an end date — schedules need one';
+  String get scheduleEndRequiredMessage =>
+      'Choose an end date — schedules need one';
 
   @override
-  String get scheduleDateWithinMonth => 'A schedule starts today or later and runs for at most one month.';
+  String get scheduleDateWithinMonth =>
+      'A schedule starts today or later and runs for at most one month.';
 
   @override
   String scheduleRepetitions(int count) {
@@ -1102,13 +1141,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get scheduleGroupingSeparate => 'Separate tasks';
 
   @override
-  String get scheduleGroupingSeparateHint => 'One task per target on every run date.';
+  String get scheduleGroupingSeparateHint =>
+      'One task per target on every run date.';
 
   @override
   String get scheduleGroupingCombined => 'One combined task';
 
   @override
-  String get scheduleGroupingCombinedHint => 'A single task carrying all selected targets on every run date.';
+  String get scheduleGroupingCombinedHint =>
+      'A single task carrying all selected targets on every run date.';
 
   @override
   String get scheduleReviewTitle => 'Review before creating';
@@ -1150,7 +1191,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonNotSet => 'Not set';
 
   @override
-  String get photoLoadFailed => 'This photo could not be loaded. Check your connection and try again.';
+  String get photoLoadFailed =>
+      'This photo could not be loaded. Check your connection and try again.';
 
   @override
   String get mapFullScreen => 'Full screen';
@@ -1170,7 +1212,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reportAnIssue => 'Report an issue';
 
   @override
-  String get treeUnavailableActions => 'This geometry point is not available in live farm data, so operational actions are disabled.';
+  String get treeUnavailableActions =>
+      'This geometry point is not available in live farm data, so operational actions are disabled.';
 
   @override
   String get treeDetailSection => 'Section';
@@ -1191,16 +1234,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get treeUnavailableTitle => 'Tree unavailable';
 
   @override
-  String get treeUnavailableMessage => 'This tree is inactive or no longer visible to your farm.';
+  String get treeUnavailableMessage =>
+      'This tree is inactive or no longer visible to your farm.';
 
   @override
   String get goBack => 'Go back';
 
   @override
-  String get scanQrInactive => 'This QR code is not active or visible to your farm.';
+  String get scanQrInactive =>
+      'This QR code is not active or visible to your farm.';
 
   @override
-  String get scanOffline => 'Unable to scan while offline. Try again when connected.';
+  String get scanOffline =>
+      'Unable to scan while offline. Try again when connected.';
 
   @override
   String get scanLookingUp => 'Looking up tree…';
@@ -1209,10 +1255,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get scanPointCamera => 'Point the camera at a tree QR label.';
 
   @override
-  String get scanCameraOff => 'Camera access is off. Enable it in Settings to scan tree labels.';
+  String get scanCameraOff =>
+      'Camera access is off. Enable it in Settings to scan tree labels.';
 
   @override
-  String get scanCameraUnavailable => 'The camera is unavailable. You can try again after checking permissions.';
+  String get scanCameraUnavailable =>
+      'The camera is unavailable. You can try again after checking permissions.';
 
   @override
   String get mapEyebrow => 'Coordinate-accurate 2D map';
@@ -1283,7 +1331,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get mapValveHighlightHint => 'The downstream line and its zones are highlighted on the map. Tap empty map space to clear.';
+  String get mapValveHighlightHint =>
+      'The downstream line and its zones are highlighted on the map. Tap empty map space to clear.';
 
   @override
   String get mapZoneSheetTitle => 'Irrigation zone';
@@ -1306,7 +1355,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get mapZoneHighlightHint => 'The zone\'s lines and trees are highlighted on the map. Tap empty map space to clear.';
+  String get mapZoneHighlightHint =>
+      'The zone\'s lines and trees are highlighted on the map. Tap empty map space to clear.';
 
   @override
   String get mapAllSections => 'All 12 sections';
@@ -1360,7 +1410,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryEmptyTitle => 'No inventory items';
 
   @override
-  String get inventoryEmptyManager => 'Add your first item with the button below.';
+  String get inventoryEmptyManager =>
+      'Add your first item with the button below.';
 
   @override
   String get inventoryEmptyWorker => 'No items have been added yet.';
@@ -1464,10 +1515,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryDeactivateConfirmTitle => 'Deactivate this item?';
 
   @override
-  String get inventoryDeactivateConfirmMessage => 'The item is hidden from the inventory but its history is kept.';
+  String get inventoryDeactivateConfirmMessage =>
+      'The item is hidden from the inventory but its history is kept.';
 
   @override
-  String get inventoryOffline => 'Inventory changes need a connection. Showing saved data.';
+  String get inventoryOffline =>
+      'Inventory changes need a connection. Showing saved data.';
 
   @override
   String get inventoryMsgItemCreated => 'Item added to the inventory.';
@@ -1554,7 +1607,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get schedulesEmptyTitle => 'No schedules yet';
 
   @override
-  String get schedulesEmptyMessage => 'Create a recurring irrigation, fertilization, or spraying plan.';
+  String get schedulesEmptyMessage =>
+      'Create a recurring irrigation, fertilization, or spraying plan.';
 
   @override
   String get schedulesLoadFailed => 'Schedules could not be loaded.';
@@ -1679,7 +1733,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get scheduleInsufficient => 'Not enough stock — tasks will not be generated until you restock.';
+  String get scheduleInsufficient =>
+      'Not enough stock — tasks will not be generated until you restock.';
 
   @override
   String get scheduleAssigneesTitle => 'Assigned workers';

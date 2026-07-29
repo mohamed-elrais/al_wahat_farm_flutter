@@ -150,11 +150,14 @@ class _ReviewDetailScreenState extends State<ReviewDetailScreen> {
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 110),
       children: <Widget>[
         Row(
+          // Top-aligned so the back button anchors to the header's top
+          // corner instead of floating at the middle of a tall wrapped
+          // title (which made its position - and tap target - drift).
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            IconButton(
+            WahatBackButton(
               tooltip: context.l10n.backToReviewQueue,
               onPressed: () => context.go('/tasks/reviews'),
-              icon: const Icon(Icons.arrow_back),
             ),
             const SizedBox(width: 4),
             Expanded(

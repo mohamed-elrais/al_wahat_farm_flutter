@@ -127,14 +127,13 @@ class _InventoryItemFormScreenState extends State<InventoryItemFormScreen> {
         children: <Widget>[
           Row(
             children: <Widget>[
-              IconButton(
+              WahatBackButton(
                 tooltip: l10n.commonBack,
                 onPressed: () => context.go(
                   _isEdit
                       ? '/more/inventory/item/${widget.itemId}'
                       : '/more/inventory',
                 ),
-                icon: const Icon(Icons.arrow_back),
               ),
               const SizedBox(width: 4),
               Expanded(
