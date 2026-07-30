@@ -25,6 +25,7 @@ dependencies:
   uuid: ^4.6.0
 
 dev_dependencies:
+  flutter_launcher_icons: ^0.13.1
   flutter_lints: ^4.0.0
   flutter_test:
     sdk: flutter
@@ -56,3 +57,13 @@ flutter:
           weight: 400
         - asset: assets/fonts/LibreBaskerville-Variable.ttf
           weight: 700
+
+# Launcher icons are generated from the painter in
+# test/golden/app_icon_test.dart (see that file for the regen steps).
+flutter_launcher_icons:
+  image_path: "assets/icon/app_icon.png"
+  android: true
+  ios: true
+  remove_alpha_ios: true
+  adaptive_icon_background: "#F8F4E9"
+  adaptive_icon_foreground: "assets/icon/app_icon_foreground.png"
