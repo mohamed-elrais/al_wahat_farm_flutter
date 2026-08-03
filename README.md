@@ -12,11 +12,24 @@ project URL and anon/publishable key. Never place a service-role key in this app
 flutter run --dart-define-from-file=config.json
 ```
 
-This project resolves and runs with Flutter 3.13.9 / Dart 3.1.5. A browser launch can
-be selected explicitly with `flutter run -d chrome`. The iOS project is configured for
-its existing iOS 11.0 target and Xcode 14.2-compatible pod releases. If CocoaPods reports
-an encoding error when run directly, invoke it with a UTF-8 locale; Flutter's wrapper
-handles the normal `flutter run` flow.
+This project resolves and runs with Flutter 3.44.7 / Dart 3.12.2. A browser launch can
+be selected explicitly with `flutter run -d chrome`. The iOS project targets iOS 15.0
+and uses Flutter's Swift Package Manager integration for native plugins, so CocoaPods
+and the system Ruby are not required for this app.
+
+Build and validate the iOS release with:
+
+```sh
+flutter build ios --release --no-codesign \
+  --dart-define-from-file=config.json
+```
+
+For App Store distribution, sign in to the Apple Developer account in Xcode, select
+the Runner team's signing configuration, increment the version/build number, and run:
+
+```sh
+flutter build ipa --release --dart-define-from-file=config.json
+```
 
 The immutable map renders from `assets/data/al_wahat_map_data.json`. Operational data
 requires an authenticated active profile and farm membership.

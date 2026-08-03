@@ -27,8 +27,9 @@ class PlatformConnectivityService implements ConnectivityService {
   Stream<NetworkStatus> get changes =>
       _connectivity.onConnectivityChanged.map(_map);
 
-  static NetworkStatus _map(ConnectivityResult result) =>
-      result == ConnectivityResult.none
+  static NetworkStatus _map(List<ConnectivityResult> results) =>
+      results.isEmpty ||
+              results.every((result) => result == ConnectivityResult.none)
           ? NetworkStatus.offline
           : NetworkStatus.online;
 }

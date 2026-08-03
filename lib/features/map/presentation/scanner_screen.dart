@@ -95,7 +95,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
           else
             MobileScanner(
               onDetect: _scan,
-              errorBuilder: (_, error, __) => _CameraFailure(error: error),
+              errorBuilder: (_, error) => _CameraFailure(error: error),
             ),
           IgnorePointer(
             child: Center(

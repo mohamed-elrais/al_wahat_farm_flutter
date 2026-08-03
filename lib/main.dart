@@ -15,7 +15,10 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   const config = AppConfig.fromEnvironment();
   if (config.isConfigured) {
-    await Supabase.initialize(url: config.supabaseUrl, anonKey: config.anonKey);
+    await Supabase.initialize(
+      url: config.supabaseUrl,
+      publishableKey: config.anonKey,
+    );
   }
   final services = await _bootstrapServices();
   runApp(AlWahatApp(config: config, services: services));

@@ -5,9 +5,11 @@
 *.swp
 .DS_Store
 .atom/
+.build/
 .buildlog/
 .history
 .svn/
+.swiftpm/
 migrate_working_dir/
 
 # IntelliJ related
@@ -33,7 +35,7 @@ migrate_working_dir/
 /build/
 .agents/
 reference_web_app/
-supabase/
+/supabase/
 .claude/
 # Symbolication related
 app.*.symbols
