@@ -47,6 +47,60 @@ void main() {
     expect(workspace.tasksForDay(DateTime(2026, 7, 13)), hasLength(1));
   });
 
+  test('workspace groups calendar dates with scheduled dates taking priority',
+      () async {
+    final store = InMemoryTaskStore();
+    final manager = _manager(store);
+    await manager.create(
+      TaskDraft(
+        farmId: 'farm-id',
+        type: TaskType.irrigation,
+        title: 'Scheduled task',
+        scheduledFor: DateTime(2026, 7, 14),
+        dueAt: DateTime(2026, 7, 15, 9),
+      ),
+    );
+    await manager.create(
+      TaskDraft(
+        farmId: 'farm-id',
+        type: TaskType.general,
+        title: 'Due-date fallback',
+        dueAt: DateTime(2026, 7, 15, 10),
+      ),
+    );
+    await manager.create(
+      TaskDraft(
+        farmId: 'farm-id',
+        type: TaskType.general,
+        title: 'Next month',
+        scheduledFor: DateTime(2026, 8, 1),
+      ),
+    );
+    final workspace = TaskWorkspaceController(
+      repository: manager,
+      farmId: 'farm-id',
+    );
+    addTearDown(workspace.dispose);
+
+    await workspace.load();
+
+    expect(
+      workspace.tasksForDay(DateTime(2026, 7, 14)).map((task) => task.title),
+      <String>['Scheduled task'],
+    );
+    expect(
+      workspace.tasksForDay(DateTime(2026, 7, 15)).map((task) => task.title),
+      <String>['Due-date fallback'],
+    );
+    expect(
+      workspace.taskCountsForMonth(DateTime(2026, 7)),
+      <DateTime, int>{
+        DateTime(2026, 7, 14): 1,
+        DateTime(2026, 7, 15): 1,
+      },
+    );
+  });
+
   test('create controller validates and prevents duplicate submission',
       () async {
     final store = InMemoryTaskStore();

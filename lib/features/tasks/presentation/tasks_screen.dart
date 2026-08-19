@@ -9,6 +9,7 @@ import 'package:al_wahat_farm_flutter/features/farm/domain/farm_hierarchy.dart';
 import 'package:al_wahat_farm_flutter/features/farm/presentation/farm_hierarchy_gate.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/farm_task.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/task_draft.dart';
+import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_month_calendar.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_widgets.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_workspace_controller.dart';
 import 'package:al_wahat_farm_flutter/shared/models/farm_role.dart';
@@ -16,6 +17,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 enum TaskListView { today, all }
+
+enum TaskPageView { list, calendar }
 
 class TasksScreen extends StatefulWidget {
   const TasksScreen({
@@ -43,6 +46,17 @@ class TasksScreen extends StatefulWidget {
 
 class _TasksScreenState extends State<TasksScreen> with SectionReturnAware {
   TaskListView _view = TaskListView.today;
+  TaskPageView _pageView = TaskPageView.list;
+  late DateTime _selectedDate;
+  late DateTime _visibleMonth;
+  final GlobalKey _calendarResultsKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedDate = _currentDate();
+    _visibleMonth = DateTime(_selectedDate.year, _selectedDate.month);
+  }
 
   /// Returning to the Tasks section re-pulls the list (new/updated tasks
   /// from schedules, reviews or other members) while keeping the current
@@ -85,10 +99,11 @@ class _TasksScreenState extends State<TasksScreen> with SectionReturnAware {
     FarmHierarchy? hierarchy,
   ) {
     final snapshot = controller.snapshot;
-    final now = (widget.now ?? DateTime.now)();
-    final tasks = _view == TaskListView.today
-        ? controller.tasksForDay(now)
+    final today = _currentDate();
+    final listTasks = _view == TaskListView.today
+        ? controller.tasksForDay(today)
         : snapshot.tasks;
+    final calendarTasks = controller.tasksForDay(_selectedDate);
     return RefreshIndicator(
       onRefresh: controller.refresh,
       child: ListView(
@@ -125,19 +140,49 @@ class _TasksScreenState extends State<TasksScreen> with SectionReturnAware {
           const SizedBox(height: 18),
           Wrap(
             spacing: 8,
+            runSpacing: 8,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: <Widget>[
-              ChoiceChip(
-                key: const Key('tasks-today-filter'),
-                label: Text(context.l10n.tasksFilterToday),
-                selected: _view == TaskListView.today,
-                onSelected: (_) => setState(() => _view = TaskListView.today),
+              SegmentedButton<TaskPageView>(
+                key: const Key('tasks-view-switch'),
+                segments: <ButtonSegment<TaskPageView>>[
+                  ButtonSegment<TaskPageView>(
+                    value: TaskPageView.list,
+                    icon: const Icon(Icons.view_list_outlined),
+                    label: Text(
+                      context.l10n.tasksViewList,
+                      key: const Key('tasks-list-view'),
+                    ),
+                  ),
+                  ButtonSegment<TaskPageView>(
+                    value: TaskPageView.calendar,
+                    icon: const Icon(Icons.calendar_month_outlined),
+                    label: Text(
+                      context.l10n.tasksViewCalendar,
+                      key: const Key('tasks-calendar-view'),
+                    ),
+                  ),
+                ],
+                selected: <TaskPageView>{_pageView},
+                onSelectionChanged: (selection) {
+                  setState(() => _pageView = selection.single);
+                },
               ),
-              ChoiceChip(
-                key: const Key('tasks-all-filter'),
-                label: Text(context.l10n.tasksFilterAll(snapshot.tasks.length)),
-                selected: _view == TaskListView.all,
-                onSelected: (_) => setState(() => _view = TaskListView.all),
-              ),
+              if (_pageView == TaskPageView.list) ...<Widget>[
+                ChoiceChip(
+                  key: const Key('tasks-today-filter'),
+                  label: Text(context.l10n.tasksFilterToday),
+                  selected: _view == TaskListView.today,
+                  onSelected: (_) => setState(() => _view = TaskListView.today),
+                ),
+                ChoiceChip(
+                  key: const Key('tasks-all-filter'),
+                  label:
+                      Text(context.l10n.tasksFilterAll(snapshot.tasks.length)),
+                  selected: _view == TaskListView.all,
+                  onSelected: (_) => setState(() => _view = TaskListView.all),
+                ),
+              ],
             ],
           ),
           if (role.canReview) ...<Widget>[
@@ -189,42 +234,136 @@ class _TasksScreenState extends State<TasksScreen> with SectionReturnAware {
                   ],
                 ),
               ),
-            if (tasks.isEmpty)
-              _TaskMessage(
-                icon: Icons.task_alt_outlined,
-                title: _view == TaskListView.today
-                    ? context.l10n.tasksEmptyTodayTitle
-                    : context.l10n.tasksEmptyAllTitle,
-                message: role.canManageTasks
-                    ? context.l10n.tasksEmptyManager
-                    : context.l10n.tasksEmptyWorker,
-              )
-            else
-              for (final task in tasks) ...<Widget>[
-                _TaskTile(
-                  task: task,
-                  hierarchy: hierarchy,
-                  onTap: task.isPendingSync
-                      ? () => ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(context.l10n.taskPendingSyncOpen),
-                            ),
-                          )
-                      : () {
-                          final callback = widget.onOpenTask;
-                          if (callback != null) {
-                            callback(task.id);
-                          } else {
-                            context.go('/tasks/${task.id}');
-                          }
-                        },
-                ),
-                const SizedBox(height: 10),
-              ],
+            if (_pageView == TaskPageView.list) ...<Widget>[
+              if (listTasks.isEmpty)
+                _TaskMessage(
+                  icon: Icons.task_alt_outlined,
+                  title: _view == TaskListView.today
+                      ? context.l10n.tasksEmptyTodayTitle
+                      : context.l10n.tasksEmptyAllTitle,
+                  message: role.canManageTasks
+                      ? context.l10n.tasksEmptyManager
+                      : context.l10n.tasksEmptyWorker,
+                )
+              else
+                ..._taskTiles(context, listTasks, hierarchy),
+            ] else
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  TaskMonthCalendar(
+                    visibleMonth: _visibleMonth,
+                    selectedDate: _selectedDate,
+                    today: today,
+                    taskCounts: controller.taskCountsForMonth(_visibleMonth),
+                    onDateSelected: _selectCalendarDate,
+                    onPreviousMonth: () => _moveMonth(-1),
+                    onNextMonth: () => _moveMonth(1),
+                    onToday: _showToday,
+                  ),
+                  const SizedBox(height: 18),
+                  SizedBox(
+                    key: _calendarResultsKey,
+                    width: double.infinity,
+                    child: Text(
+                      context.l10n.tasksCalendarTasksForDate(
+                        MaterialLocalizations.of(context)
+                            .formatFullDate(_selectedDate),
+                      ),
+                      key: const Key('tasks-calendar-selected-date-title'),
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  if (calendarTasks.isEmpty)
+                    _TaskMessage(
+                      icon: Icons.event_available_outlined,
+                      title: context.l10n.tasksCalendarNoTasksTitle,
+                      message: role.canManageTasks
+                          ? context.l10n.tasksCalendarNoTasksManager
+                          : context.l10n.tasksCalendarNoTasksWorker,
+                    )
+                  else
+                    ..._taskTiles(context, calendarTasks, hierarchy),
+                ],
+              ),
           ],
         ],
       ),
     );
+  }
+
+  List<Widget> _taskTiles(
+    BuildContext context,
+    List<FarmTask> tasks,
+    FarmHierarchy? hierarchy,
+  ) =>
+      <Widget>[
+        for (final task in tasks) ...<Widget>[
+          _TaskTile(
+            task: task,
+            hierarchy: hierarchy,
+            onTap: () => _openTask(context, task),
+          ),
+          const SizedBox(height: 10),
+        ],
+      ];
+
+  void _openTask(BuildContext context, FarmTask task) {
+    if (task.isPendingSync) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.taskPendingSyncOpen)),
+      );
+      return;
+    }
+    final callback = widget.onOpenTask;
+    if (callback != null) {
+      callback(task.id);
+    } else {
+      context.go('/tasks/${task.id}');
+    }
+  }
+
+  void _selectCalendarDate(DateTime date) {
+    setState(() => _selectedDate = date);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final resultsContext = _calendarResultsKey.currentContext;
+      if (resultsContext == null) return;
+      Scrollable.ensureVisible(
+        resultsContext,
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeOutCubic,
+        alignment: 0.05,
+      );
+    });
+  }
+
+  void _moveMonth(int offset) {
+    final month = DateTime(
+      _visibleMonth.year,
+      _visibleMonth.month + offset,
+    );
+    final lastDay = DateTime(month.year, month.month + 1, 0).day;
+    final selectedDay =
+        _selectedDate.day > lastDay ? lastDay : _selectedDate.day;
+    setState(() {
+      _visibleMonth = month;
+      _selectedDate = DateTime(month.year, month.month, selectedDay);
+    });
+  }
+
+  void _showToday() {
+    final today = _currentDate();
+    setState(() {
+      _selectedDate = today;
+      _visibleMonth = DateTime(today.year, today.month);
+    });
+  }
+
+  DateTime _currentDate() {
+    final value = (widget.now ?? DateTime.now)();
+    return DateTime(value.year, value.month, value.day);
   }
 }
 

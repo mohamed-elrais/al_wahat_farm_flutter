@@ -191,6 +191,32 @@
       }
     }
   },
+  "tasksViewList": "List",
+  "tasksViewCalendar": "Calendar",
+  "tasksCalendarPreviousMonth": "Previous month",
+  "tasksCalendarNextMonth": "Next month",
+  "tasksCalendarToday": "Today",
+  "tasksCalendarTasksForDate": "Tasks for {date}",
+  "@tasksCalendarTasksForDate": {
+    "description": "Heading above tasks for the selected calendar date.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "tasksCalendarTaskCount": "{count, plural, =1{1 task} other{{count} tasks}}",
+  "@tasksCalendarTaskCount": {
+    "description": "Accessible task count announced for a calendar date.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tasksCalendarNoTasksTitle": "No tasks on this date",
+  "tasksCalendarNoTasksManager": "Choose another date or create a new task.",
+  "tasksCalendarNoTasksWorker": "Choose another date to view tasks assigned to you.",
   "tasksLoadingTitle": "Loading farm tasks",
   "tasksLoadingMessage": "Checking your role-filtered task queue…",
   "tasksLoadFailedTitle": "Tasks could not be loaded",

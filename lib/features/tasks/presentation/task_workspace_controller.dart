@@ -88,12 +88,29 @@ class TaskWorkspaceController extends ChangeNotifier {
     }
   }
 
-  List<FarmTask> tasksForDay(DateTime day) => _snapshot.tasks.where((task) {
-        final scheduled = task.scheduledFor;
-        final due = task.dueAt?.toLocal();
-        return (scheduled != null && _sameDay(scheduled, day)) ||
-            (scheduled == null && due != null && _sameDay(due, day));
-      }).toList(growable: false);
+  List<FarmTask> tasksForDay(DateTime day) {
+    final target = _dateOnly(day);
+    return _snapshot.tasks
+        .where((task) => _effectiveTaskDate(task) == target)
+        .toList(growable: false);
+  }
+
+  /// Compact date-to-count index used by the Tasks calendar. Scheduled dates
+  /// take precedence over due dates through [_effectiveTaskDate], matching
+  /// [tasksForDay] exactly.
+  Map<DateTime, int> taskCountsForMonth(DateTime month) {
+    final counts = <DateTime, int>{};
+    for (final task in _snapshot.tasks) {
+      final date = _effectiveTaskDate(task);
+      if (date == null ||
+          date.year != month.year ||
+          date.month != month.month) {
+        continue;
+      }
+      counts.update(date, (count) => count + 1, ifAbsent: () => 1);
+    }
+    return Map<DateTime, int>.unmodifiable(counts);
+  }
 
   FarmTask? taskById(String id) {
     for (final task in _snapshot.tasks) {
@@ -196,7 +213,12 @@ String taskFailureMessage(AppLocalizations l10n, Object? error) =>
       _ => l10n.tasksFailureDefault,
     };
 
-bool _sameDay(DateTime left, DateTime right) =>
-    left.year == right.year &&
-    left.month == right.month &&
-    left.day == right.day;
+DateTime? _effectiveTaskDate(FarmTask task) {
+  final scheduled = task.scheduledFor;
+  if (scheduled != null) return _dateOnly(scheduled);
+  final due = task.dueAt?.toLocal();
+  return due == null ? null : _dateOnly(due);
+}
+
+DateTime _dateOnly(DateTime value) =>
+    DateTime(value.year, value.month, value.day);

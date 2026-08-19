@@ -60,8 +60,7 @@ import 'app_localizations_en.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale)
-      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -69,8 +68,7 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate =
-      _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -82,8 +80,7 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
-      <LocalizationsDelegate<dynamic>>[
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
     delegate,
     GlobalMaterialLocalizations.delegate,
     GlobalCupertinoLocalizations.delegate,
@@ -1031,6 +1028,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'All ({count})'**
   String tasksFilterAll(int count);
+
+  /// No description provided for @tasksViewList.
+  ///
+  /// In en, this message translates to:
+  /// **'List'**
+  String get tasksViewList;
+
+  /// No description provided for @tasksViewCalendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Calendar'**
+  String get tasksViewCalendar;
+
+  /// No description provided for @tasksCalendarPreviousMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous month'**
+  String get tasksCalendarPreviousMonth;
+
+  /// No description provided for @tasksCalendarNextMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Next month'**
+  String get tasksCalendarNextMonth;
+
+  /// No description provided for @tasksCalendarToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get tasksCalendarToday;
+
+  /// Heading above tasks for the selected calendar date.
+  ///
+  /// In en, this message translates to:
+  /// **'Tasks for {date}'**
+  String tasksCalendarTasksForDate(String date);
+
+  /// Accessible task count announced for a calendar date.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 task} other{{count} tasks}}'**
+  String tasksCalendarTaskCount(int count);
+
+  /// No description provided for @tasksCalendarNoTasksTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No tasks on this date'**
+  String get tasksCalendarNoTasksTitle;
+
+  /// No description provided for @tasksCalendarNoTasksManager.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose another date or create a new task.'**
+  String get tasksCalendarNoTasksManager;
+
+  /// No description provided for @tasksCalendarNoTasksWorker.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose another date to view tasks assigned to you.'**
+  String get tasksCalendarNoTasksWorker;
 
   /// No description provided for @tasksLoadingTitle.
   ///
@@ -3217,8 +3274,7 @@ abstract class AppLocalizations {
   String taskProductQuantity(String quantity, String unit);
 }
 
-class _AppLocalizationsDelegate
-    extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -3227,25 +3283,25 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['ar', 'en'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['ar', 'en'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
+
+
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'ar':
-      return AppLocalizationsAr();
-    case 'en':
-      return AppLocalizationsEn();
+    case 'ar': return AppLocalizationsAr();
+    case 'en': return AppLocalizationsEn();
   }
 
   throw FlutterError(
-      'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-      'an issue with the localizations generation tool. Please file an issue '
-      'on GitHub with a reproducible sample app and the gen-l10n configuration '
-      'that was used.');
+    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+    'an issue with the localizations generation tool. Please file an issue '
+    'on GitHub with a reproducible sample app and the gen-l10n configuration '
+    'that was used.'
+  );
 }
