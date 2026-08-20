@@ -1034,6 +1034,66 @@ abstract class AppLocalizations {
   /// **'All ({count})'**
   String tasksFilterAll(int count);
 
+  /// No description provided for @tasksViewList.
+  ///
+  /// In en, this message translates to:
+  /// **'List'**
+  String get tasksViewList;
+
+  /// No description provided for @tasksViewCalendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Calendar'**
+  String get tasksViewCalendar;
+
+  /// No description provided for @tasksCalendarPreviousMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous month'**
+  String get tasksCalendarPreviousMonth;
+
+  /// No description provided for @tasksCalendarNextMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Next month'**
+  String get tasksCalendarNextMonth;
+
+  /// No description provided for @tasksCalendarToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get tasksCalendarToday;
+
+  /// Heading above tasks for the selected calendar date.
+  ///
+  /// In en, this message translates to:
+  /// **'Tasks for {date}'**
+  String tasksCalendarTasksForDate(String date);
+
+  /// Accessible task count announced for a calendar date.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 task} other{{count} tasks}}'**
+  String tasksCalendarTaskCount(int count);
+
+  /// No description provided for @tasksCalendarNoTasksTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No tasks on this date'**
+  String get tasksCalendarNoTasksTitle;
+
+  /// No description provided for @tasksCalendarNoTasksManager.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose another date or create a new task.'**
+  String get tasksCalendarNoTasksManager;
+
+  /// No description provided for @tasksCalendarNoTasksWorker.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose another date to view tasks assigned to you.'**
+  String get tasksCalendarNoTasksWorker;
+
   /// No description provided for @tasksLoadingTitle.
   ///
   /// In en, this message translates to:

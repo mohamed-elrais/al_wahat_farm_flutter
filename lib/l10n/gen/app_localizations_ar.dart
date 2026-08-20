@@ -508,6 +508,51 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String get tasksViewList => 'القائمة';
+
+  @override
+  String get tasksViewCalendar => 'التقويم';
+
+  @override
+  String get tasksCalendarPreviousMonth => 'الشهر السابق';
+
+  @override
+  String get tasksCalendarNextMonth => 'الشهر التالي';
+
+  @override
+  String get tasksCalendarToday => 'اليوم';
+
+  @override
+  String tasksCalendarTasksForDate(String date) {
+    return 'مهام $date';
+  }
+
+  @override
+  String tasksCalendarTaskCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count مهمة',
+      many: '$count مهمة',
+      few: '$count مهام',
+      two: 'مهمتان',
+      one: 'مهمة واحدة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get tasksCalendarNoTasksTitle => 'لا توجد مهام في هذا التاريخ';
+
+  @override
+  String get tasksCalendarNoTasksManager =>
+      'اختر تاريخًا آخر أو أنشئ مهمة جديدة.';
+
+  @override
+  String get tasksCalendarNoTasksWorker =>
+      'اختر تاريخًا آخر لعرض المهام المسندة إليك.';
+
+  @override
   String get tasksLoadingTitle => 'جارٍ تحميل مهام المزرعة';
 
   @override

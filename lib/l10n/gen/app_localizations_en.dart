@@ -510,6 +510,48 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get tasksViewList => 'List';
+
+  @override
+  String get tasksViewCalendar => 'Calendar';
+
+  @override
+  String get tasksCalendarPreviousMonth => 'Previous month';
+
+  @override
+  String get tasksCalendarNextMonth => 'Next month';
+
+  @override
+  String get tasksCalendarToday => 'Today';
+
+  @override
+  String tasksCalendarTasksForDate(String date) {
+    return 'Tasks for $date';
+  }
+
+  @override
+  String tasksCalendarTaskCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tasks',
+      one: '1 task',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get tasksCalendarNoTasksTitle => 'No tasks on this date';
+
+  @override
+  String get tasksCalendarNoTasksManager =>
+      'Choose another date or create a new task.';
+
+  @override
+  String get tasksCalendarNoTasksWorker =>
+      'Choose another date to view tasks assigned to you.';
+
+  @override
   String get tasksLoadingTitle => 'Loading farm tasks';
 
   @override

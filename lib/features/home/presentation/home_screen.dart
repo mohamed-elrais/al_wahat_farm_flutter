@@ -30,36 +30,64 @@ class _HomeScreenState extends State<HomeScreen> with SectionReturnAware {
   Widget build(BuildContext context) => PaperBackground(
         child: LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
-            final wide = constraints.maxWidth >= AppBreakpoints.tablet;
+            final tablet = constraints.maxWidth >= AppBreakpoints.tablet;
+            final wide = constraints.maxWidth >= AppBreakpoints.wide;
             final intro = _Intro(onScan: () => context.go('/scan'));
             const operations = _OperationsPanel();
+
+            late final Widget content;
+            if (wide) {
+              content = Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  SizedBox(width: 300, child: intro),
+                  const SizedBox(width: 18),
+                  const Expanded(child: _FarmOverview()),
+                  const SizedBox(width: 18),
+                  const SizedBox(width: 330, child: operations),
+                ],
+              );
+            } else if (tablet) {
+              content = Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  SizedBox(width: 300, child: intro),
+                  const SizedBox(width: 18),
+                  const Expanded(
+                    child: Column(
+                      children: <Widget>[
+                        _FarmOverview(),
+                        SizedBox(height: 18),
+                        _OperationsPanel(),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            } else {
+              content = Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  intro,
+                  const SizedBox(height: 18),
+                  const _FarmOverview(),
+                  const SizedBox(height: 18),
+                  operations,
+                ],
+              );
+            }
+
             return SingleChildScrollView(
-              padding:
-                  EdgeInsets.fromLTRB(wide ? 28 : 16, 24, wide ? 28 : 16, 110),
+              padding: EdgeInsets.fromLTRB(
+                tablet ? 28 : 16,
+                24,
+                tablet ? 28 : 16,
+                110,
+              ),
               child: Center(
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 1380),
-                  child: wide
-                      ? Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            SizedBox(width: 300, child: intro),
-                            const SizedBox(width: 18),
-                            const Expanded(child: _FarmOverview()),
-                            const SizedBox(width: 18),
-                            const SizedBox(width: 330, child: operations),
-                          ],
-                        )
-                      : Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: <Widget>[
-                            intro,
-                            const SizedBox(height: 18),
-                            const _FarmOverview(),
-                            const SizedBox(height: 18),
-                            operations,
-                          ],
-                        ),
+                  child: content,
                 ),
               ),
             );

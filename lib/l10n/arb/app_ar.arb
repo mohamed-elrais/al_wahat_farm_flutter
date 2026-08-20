@@ -191,6 +191,16 @@
       }
     }
   },
+  "tasksViewList": "القائمة",
+  "tasksViewCalendar": "التقويم",
+  "tasksCalendarPreviousMonth": "الشهر السابق",
+  "tasksCalendarNextMonth": "الشهر التالي",
+  "tasksCalendarToday": "اليوم",
+  "tasksCalendarTasksForDate": "مهام {date}",
+  "tasksCalendarTaskCount": "{count, plural, =1{مهمة واحدة} =2{مهمتان} few{{count} مهام} many{{count} مهمة} other{{count} مهمة}}",
+  "tasksCalendarNoTasksTitle": "لا توجد مهام في هذا التاريخ",
+  "tasksCalendarNoTasksManager": "اختر تاريخًا آخر أو أنشئ مهمة جديدة.",
+  "tasksCalendarNoTasksWorker": "اختر تاريخًا آخر لعرض المهام المسندة إليك.",
   "tasksLoadingTitle": "جارٍ تحميل مهام المزرعة",
   "tasksLoadingMessage": "جارٍ التحقق من قائمة مهامك المصفّاة حسب دورك…",
   "tasksLoadFailedTitle": "تعذّر تحميل المهام",
