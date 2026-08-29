@@ -2403,6 +2403,12 @@ abstract class AppLocalizations {
   /// **'Trees'**
   String get mapLayerTrees;
 
+  /// No description provided for @mapLayerPlantingPits.
+  ///
+  /// In en, this message translates to:
+  /// **'Planting pits'**
+  String get mapLayerPlantingPits;
+
   /// No description provided for @mapLayerIrrigation.
   ///
   /// In en, this message translates to:
@@ -2516,6 +2522,204 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Unplanted'**
   String get mapSectionUnplanted;
+
+  /// No description provided for @mapSectionPitCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 pit} other{{count} pits}}'**
+  String mapSectionPitCount(int count);
+
+  /// No description provided for @plantingPitEyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Planting pit'**
+  String get plantingPitEyebrow;
+
+  /// No description provided for @plantingPitSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Section {section}'**
+  String plantingPitSection(String section);
+
+  /// No description provided for @plantingPitPosition.
+  ///
+  /// In en, this message translates to:
+  /// **'Row {row} · Pit {pit}'**
+  String plantingPitPosition(String row, String pit);
+
+  /// No description provided for @plantingPitCoordinates.
+  ///
+  /// In en, this message translates to:
+  /// **'{latitude}, {longitude}'**
+  String plantingPitCoordinates(String latitude, String longitude);
+
+  /// No description provided for @plantingPitPlannedFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Planned for {date}'**
+  String plantingPitPlannedFor(String date);
+
+  /// No description provided for @plantingPitStatusPlanned.
+  ///
+  /// In en, this message translates to:
+  /// **'Planned'**
+  String get plantingPitStatusPlanned;
+
+  /// No description provided for @plantingPitStatusMarked.
+  ///
+  /// In en, this message translates to:
+  /// **'Marked'**
+  String get plantingPitStatusMarked;
+
+  /// No description provided for @plantingPitStatusDug.
+  ///
+  /// In en, this message translates to:
+  /// **'Dug'**
+  String get plantingPitStatusDug;
+
+  /// No description provided for @plantingPitStatusPrepared.
+  ///
+  /// In en, this message translates to:
+  /// **'Prepared'**
+  String get plantingPitStatusPrepared;
+
+  /// No description provided for @plantingPitStatusCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get plantingPitStatusCompleted;
+
+  /// No description provided for @plantingPitStatusCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get plantingPitStatusCancelled;
+
+  /// No description provided for @plantingPitAdvanceTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Move to {status}'**
+  String plantingPitAdvanceTo(String status);
+
+  /// No description provided for @plantingPitCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel pit'**
+  String get plantingPitCancel;
+
+  /// No description provided for @plantingPitUpdating.
+  ///
+  /// In en, this message translates to:
+  /// **'Updating…'**
+  String get plantingPitUpdating;
+
+  /// No description provided for @plantingPitUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Planting pit updated.'**
+  String get plantingPitUpdated;
+
+  /// No description provided for @plantingPitUpdateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The planting pit could not be updated.'**
+  String get plantingPitUpdateFailed;
+
+  /// No description provided for @plantingPitAddForSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Add pit to Section {section}'**
+  String plantingPitAddForSection(String section);
+
+  /// No description provided for @plantingPitCreateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add planting pit'**
+  String get plantingPitCreateTitle;
+
+  /// No description provided for @plantingPitCodeField.
+  ///
+  /// In en, this message translates to:
+  /// **'Pit code'**
+  String get plantingPitCodeField;
+
+  /// No description provided for @plantingPitRowField.
+  ///
+  /// In en, this message translates to:
+  /// **'Row number'**
+  String get plantingPitRowField;
+
+  /// No description provided for @plantingPitNumberField.
+  ///
+  /// In en, this message translates to:
+  /// **'Pit number'**
+  String get plantingPitNumberField;
+
+  /// No description provided for @plantingPitLatitudeField.
+  ///
+  /// In en, this message translates to:
+  /// **'Latitude'**
+  String get plantingPitLatitudeField;
+
+  /// No description provided for @plantingPitLongitudeField.
+  ///
+  /// In en, this message translates to:
+  /// **'Longitude'**
+  String get plantingPitLongitudeField;
+
+  /// No description provided for @plantingPitPlannedDateField.
+  ///
+  /// In en, this message translates to:
+  /// **'Planned date (optional)'**
+  String get plantingPitPlannedDateField;
+
+  /// No description provided for @plantingPitNotesField.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes (optional)'**
+  String get plantingPitNotesField;
+
+  /// No description provided for @plantingPitSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Add pit'**
+  String get plantingPitSave;
+
+  /// No description provided for @plantingPitSaving.
+  ///
+  /// In en, this message translates to:
+  /// **'Adding…'**
+  String get plantingPitSaving;
+
+  /// No description provided for @plantingPitCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Planting pit added.'**
+  String get plantingPitCreated;
+
+  /// No description provided for @plantingPitCreateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The planting pit could not be added.'**
+  String get plantingPitCreateFailed;
+
+  /// No description provided for @plantingPitRequiredField.
+  ///
+  /// In en, this message translates to:
+  /// **'This field is required'**
+  String get plantingPitRequiredField;
+
+  /// No description provided for @plantingPitInvalidCoordinate.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid coordinate'**
+  String get plantingPitInvalidCoordinate;
+
+  /// No description provided for @plantingPitGridPairRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter both row and pit numbers, or leave both empty'**
+  String get plantingPitGridPairRequired;
 
   /// No description provided for @mapSelectAnyTree.
   ///

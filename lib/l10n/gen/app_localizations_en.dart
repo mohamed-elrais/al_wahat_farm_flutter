@@ -1273,6 +1273,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mapLayerTrees => 'Trees';
 
   @override
+  String get mapLayerPlantingPits => 'Planting pits';
+
+  @override
   String get mapLayerIrrigation => 'Irrigation network';
 
   @override
@@ -1356,6 +1359,125 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mapSectionUnplanted => 'Unplanted';
+
+  @override
+  String mapSectionPitCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count pits',
+      one: '1 pit',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get plantingPitEyebrow => 'Planting pit';
+
+  @override
+  String plantingPitSection(String section) {
+    return 'Section $section';
+  }
+
+  @override
+  String plantingPitPosition(String row, String pit) {
+    return 'Row $row · Pit $pit';
+  }
+
+  @override
+  String plantingPitCoordinates(String latitude, String longitude) {
+    return '$latitude, $longitude';
+  }
+
+  @override
+  String plantingPitPlannedFor(String date) {
+    return 'Planned for $date';
+  }
+
+  @override
+  String get plantingPitStatusPlanned => 'Planned';
+
+  @override
+  String get plantingPitStatusMarked => 'Marked';
+
+  @override
+  String get plantingPitStatusDug => 'Dug';
+
+  @override
+  String get plantingPitStatusPrepared => 'Prepared';
+
+  @override
+  String get plantingPitStatusCompleted => 'Completed';
+
+  @override
+  String get plantingPitStatusCancelled => 'Cancelled';
+
+  @override
+  String plantingPitAdvanceTo(String status) {
+    return 'Move to $status';
+  }
+
+  @override
+  String get plantingPitCancel => 'Cancel pit';
+
+  @override
+  String get plantingPitUpdating => 'Updating…';
+
+  @override
+  String get plantingPitUpdated => 'Planting pit updated.';
+
+  @override
+  String get plantingPitUpdateFailed => 'The planting pit could not be updated.';
+
+  @override
+  String plantingPitAddForSection(String section) {
+    return 'Add pit to Section $section';
+  }
+
+  @override
+  String get plantingPitCreateTitle => 'Add planting pit';
+
+  @override
+  String get plantingPitCodeField => 'Pit code';
+
+  @override
+  String get plantingPitRowField => 'Row number';
+
+  @override
+  String get plantingPitNumberField => 'Pit number';
+
+  @override
+  String get plantingPitLatitudeField => 'Latitude';
+
+  @override
+  String get plantingPitLongitudeField => 'Longitude';
+
+  @override
+  String get plantingPitPlannedDateField => 'Planned date (optional)';
+
+  @override
+  String get plantingPitNotesField => 'Notes (optional)';
+
+  @override
+  String get plantingPitSave => 'Add pit';
+
+  @override
+  String get plantingPitSaving => 'Adding…';
+
+  @override
+  String get plantingPitCreated => 'Planting pit added.';
+
+  @override
+  String get plantingPitCreateFailed => 'The planting pit could not be added.';
+
+  @override
+  String get plantingPitRequiredField => 'This field is required';
+
+  @override
+  String get plantingPitInvalidCoordinate => 'Enter a valid coordinate';
+
+  @override
+  String get plantingPitGridPairRequired => 'Enter both row and pit numbers, or leave both empty';
 
   @override
   String get mapSelectAnyTree => 'Select any tree';

@@ -25,6 +25,11 @@ void main() {
       expect(result.hierarchy.sections, hasLength(12));
       expect(result.hierarchy.trees, hasLength(1567));
       expect(result.hierarchy.zones, hasLength(56));
+      expect(result.hierarchy.plantingPits, hasLength(1));
+      expect(
+        result.hierarchy.plantingPits.single.pitCode,
+        'PIT-E-R01-001',
+      );
       expect(
         dataSource.requestedSectionIds,
         <String>['A', 'B', 'C', 'D', 'E', 'F', 'G', 'L', 'M', 'N', 'O', 'Q'],
@@ -55,6 +60,23 @@ void main() {
           allowCachedFallback: false,
         ),
         throwsStateError,
+      );
+    });
+
+    test('rejects a planting pit whose zone belongs to another section',
+        () async {
+      final otherSectionZone = dataSource.zones.firstWhere(
+        (zone) => zone['section_id'] != 'E',
+      );
+      dataSource.plantingPits.single['irrigation_zone_id'] =
+          otherSectionZone['id'];
+
+      await expectLater(
+        repository.load(
+          CanonicalFarmHierarchyDataSource.farmId,
+          allowCachedFallback: false,
+        ),
+        throwsFormatException,
       );
     });
   });

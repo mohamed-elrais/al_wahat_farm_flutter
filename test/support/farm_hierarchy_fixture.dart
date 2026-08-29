@@ -3,11 +3,13 @@ import 'dart:io';
 
 import 'package:al_wahat_farm_flutter/features/farm/data/farm_hierarchy_repository.dart';
 
-class CanonicalFarmHierarchyDataSource implements FarmHierarchyDataSource {
+class CanonicalFarmHierarchyDataSource
+    implements FarmHierarchyDataSource, PlantingPitHierarchyDataSource {
   CanonicalFarmHierarchyDataSource._({
     required this.sections,
     required this.zones,
     required this.trees,
+    required this.plantingPits,
   });
 
   static const farmId = 'fixture-farm';
@@ -16,6 +18,7 @@ class CanonicalFarmHierarchyDataSource implements FarmHierarchyDataSource {
   final List<Map<String, Object?>> sections;
   final List<Map<String, Object?>> zones;
   final List<Map<String, Object?>> trees;
+  final List<Map<String, Object?>> plantingPits;
   bool fail = false;
   List<String>? requestedSectionIds;
 
@@ -92,6 +95,30 @@ class CanonicalFarmHierarchyDataSource implements FarmHierarchyDataSource {
       sections: sections,
       zones: zones,
       trees: trees,
+      plantingPits: <Map<String, Object?>>[
+        <String, Object?>{
+          'id': 'fixture-pit-e-1',
+          'farm_id': farmId,
+          'section_id': 'E',
+          'irrigation_zone_id': null,
+          'pit_code': 'PIT-E-R01-001',
+          'row_number': 1,
+          'pit_number': 1,
+          'latitude': 28.2951,
+          'longitude': 28.75018,
+          'planned_for': '2026-09-01',
+          'status': 'planned',
+          'marked_at': null,
+          'dug_at': null,
+          'prepared_at': null,
+          'completed_at': null,
+          'cancelled_at': null,
+          'notes': null,
+          'created_by_profile_id': 'fixture-profile',
+          'created_at': _timestamp,
+          'updated_at': _timestamp,
+        },
+      ],
     );
   }
 
@@ -114,6 +141,12 @@ class CanonicalFarmHierarchyDataSource implements FarmHierarchyDataSource {
   Future<List<Map<String, Object?>>> fetchTrees(String farmId) async {
     _throwIfFailed();
     return trees;
+  }
+
+  @override
+  Future<List<Map<String, Object?>>> fetchPlantingPits(String farmId) async {
+    _throwIfFailed();
+    return plantingPits;
   }
 
   void _throwIfFailed() {

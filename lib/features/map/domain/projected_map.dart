@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:al_wahat_farm_flutter/features/map/domain/farm_map_data.dart';
 import 'package:al_wahat_farm_flutter/features/map/domain/map_projection.dart';
+import 'package:al_wahat_farm_flutter/features/planting_pits/domain/planting_pit.dart';
 
 class ProjectedShape {
   const ProjectedShape({
@@ -55,6 +56,18 @@ class ProjectedValve {
 class ProjectedNetworkPoint {
   const ProjectedNetworkPoint({required this.feature, required this.point});
   final NetworkPoint feature;
+  final Offset point;
+}
+
+class ProjectedPlantingPit {
+  const ProjectedPlantingPit({
+    required this.pit,
+    required this.sectionCode,
+    required this.point,
+  });
+
+  final PlantingPit pit;
+  final String sectionCode;
   final Offset point;
 }
 

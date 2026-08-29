@@ -1282,6 +1282,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get mapLayerTrees => 'الأشجار';
 
   @override
+  String get mapLayerPlantingPits => 'حفر الزراعة';
+
+  @override
   String get mapLayerIrrigation => 'شبكة الري';
 
   @override
@@ -1365,6 +1368,127 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get mapSectionUnplanted => 'غير مزروع';
+
+  @override
+  String mapSectionPitCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count حفرة',
+      few: '$count حفر',
+      two: 'حفرتان',
+      one: 'حفرة واحدة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get plantingPitEyebrow => 'حفرة زراعة';
+
+  @override
+  String plantingPitSection(String section) {
+    return 'القسم $section';
+  }
+
+  @override
+  String plantingPitPosition(String row, String pit) {
+    return 'الصف $row · الحفرة $pit';
+  }
+
+  @override
+  String plantingPitCoordinates(String latitude, String longitude) {
+    return '$latitude، $longitude';
+  }
+
+  @override
+  String plantingPitPlannedFor(String date) {
+    return 'مخطط لها في $date';
+  }
+
+  @override
+  String get plantingPitStatusPlanned => 'مخططة';
+
+  @override
+  String get plantingPitStatusMarked => 'معلّمة';
+
+  @override
+  String get plantingPitStatusDug => 'محفورة';
+
+  @override
+  String get plantingPitStatusPrepared => 'مجهّزة';
+
+  @override
+  String get plantingPitStatusCompleted => 'مكتملة';
+
+  @override
+  String get plantingPitStatusCancelled => 'ملغاة';
+
+  @override
+  String plantingPitAdvanceTo(String status) {
+    return 'النقل إلى $status';
+  }
+
+  @override
+  String get plantingPitCancel => 'إلغاء الحفرة';
+
+  @override
+  String get plantingPitUpdating => 'جارٍ التحديث…';
+
+  @override
+  String get plantingPitUpdated => 'تم تحديث حفرة الزراعة.';
+
+  @override
+  String get plantingPitUpdateFailed => 'تعذّر تحديث حفرة الزراعة.';
+
+  @override
+  String plantingPitAddForSection(String section) {
+    return 'إضافة حفرة إلى القسم $section';
+  }
+
+  @override
+  String get plantingPitCreateTitle => 'إضافة حفرة زراعة';
+
+  @override
+  String get plantingPitCodeField => 'رمز الحفرة';
+
+  @override
+  String get plantingPitRowField => 'رقم الصف';
+
+  @override
+  String get plantingPitNumberField => 'رقم الحفرة';
+
+  @override
+  String get plantingPitLatitudeField => 'خط العرض';
+
+  @override
+  String get plantingPitLongitudeField => 'خط الطول';
+
+  @override
+  String get plantingPitPlannedDateField => 'التاريخ المخطط (اختياري)';
+
+  @override
+  String get plantingPitNotesField => 'ملاحظات (اختياري)';
+
+  @override
+  String get plantingPitSave => 'إضافة الحفرة';
+
+  @override
+  String get plantingPitSaving => 'جارٍ الإضافة…';
+
+  @override
+  String get plantingPitCreated => 'تمت إضافة حفرة الزراعة.';
+
+  @override
+  String get plantingPitCreateFailed => 'تعذّرت إضافة حفرة الزراعة.';
+
+  @override
+  String get plantingPitRequiredField => 'هذا الحقل مطلوب';
+
+  @override
+  String get plantingPitInvalidCoordinate => 'أدخل إحداثياً صحيحاً';
+
+  @override
+  String get plantingPitGridPairRequired => 'أدخل رقم الصف ورقم الحفرة معاً أو اتركهما فارغين';
 
   @override
   String get mapSelectAnyTree => 'اختر أي شجرة';

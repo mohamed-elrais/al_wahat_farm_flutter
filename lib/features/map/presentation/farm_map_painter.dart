@@ -3,6 +3,7 @@ import 'dart:ui' show PointMode;
 
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
 import 'package:al_wahat_farm_flutter/features/map/domain/projected_map.dart';
+import 'package:al_wahat_farm_flutter/features/planting_pits/domain/planting_pit.dart';
 import 'package:flutter/material.dart';
 
 class FarmMapPainter extends CustomPainter {
@@ -10,7 +11,10 @@ class FarmMapPainter extends CustomPainter {
     required this.map,
     required this.selectedSection,
     required this.selectedTreeId,
+    required this.plantingPits,
+    required this.selectedPlantingPitId,
     required this.showTrees,
+    required this.showPlantingPits,
     required this.showIrrigation,
     required this.showUtilities,
     this.showValves = true,
@@ -25,7 +29,10 @@ class FarmMapPainter extends CustomPainter {
   final ProjectedFarmMap map;
   final String? selectedSection;
   final String? selectedTreeId;
+  final List<ProjectedPlantingPit> plantingPits;
+  final String? selectedPlantingPitId;
   final bool showTrees;
+  final bool showPlantingPits;
   final bool showIrrigation;
   final bool showUtilities;
   final bool showValves;
@@ -46,6 +53,7 @@ class FarmMapPainter extends CustomPainter {
   static const overviewTreeRadius = 2.7;
   static const sectionTreeRadius = 4.4;
   static const selectedTreeRadius = 6.8;
+  static const plantingPitRadius = 4.2;
   static const valveRadius = 4.2;
   static const riserRadius = 1.9;
   static const flushValveRadius = 2.6;
@@ -62,6 +70,7 @@ class FarmMapPainter extends CustomPainter {
     _drawHighlightLine(canvas);
     if (showFlushValves) _drawFlushValves(canvas);
     if (showTrees) _drawTrees(canvas);
+    if (showPlantingPits) _drawPlantingPits(canvas);
     if (showValves) _drawValves(canvas);
   }
 
@@ -416,6 +425,46 @@ class FarmMapPainter extends CustomPainter {
     }
   }
 
+  void _drawPlantingPits(Canvas canvas) {
+    for (final projected in plantingPits) {
+      if (selectedSection != null && projected.sectionCode != selectedSection) {
+        continue;
+      }
+      final selected = projected.pit.id == selectedPlantingPitId;
+      final color = switch (projected.pit.status) {
+        PlantingPitStatus.planned => const Color(0xFF7E745E),
+        PlantingPitStatus.marked => const Color(0xFF4267A8),
+        PlantingPitStatus.dug => const Color(0xFF8A5A32),
+        PlantingPitStatus.prepared => AppColors.orange,
+        PlantingPitStatus.completed => AppColors.green,
+        PlantingPitStatus.cancelled => const Color(0xFF9D9A93),
+      };
+      final radius = selected ? plantingPitRadius + 2.2 : plantingPitRadius;
+      if (selected) {
+        canvas.drawCircle(
+          projected.point,
+          radius + 2.5,
+          Paint()..color = Colors.white,
+        );
+      }
+      canvas.drawCircle(
+        projected.point,
+        radius,
+        Paint()
+          ..color = color.withOpacity(
+            projected.pit.status == PlantingPitStatus.cancelled ? 0.35 : 0.9,
+          )
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = selected ? 2.4 : 1.7,
+      );
+      canvas.drawCircle(
+        projected.point,
+        1.2,
+        Paint()..color = color,
+      );
+    }
+  }
+
   void _text(
     Canvas canvas,
     String text,
@@ -460,7 +509,10 @@ class FarmMapPainter extends CustomPainter {
       oldDelegate.map != map ||
       oldDelegate.selectedSection != selectedSection ||
       oldDelegate.selectedTreeId != selectedTreeId ||
+      oldDelegate.plantingPits != plantingPits ||
+      oldDelegate.selectedPlantingPitId != selectedPlantingPitId ||
       oldDelegate.showTrees != showTrees ||
+      oldDelegate.showPlantingPits != showPlantingPits ||
       oldDelegate.showIrrigation != showIrrigation ||
       oldDelegate.showUtilities != showUtilities ||
       oldDelegate.showValves != showValves ||

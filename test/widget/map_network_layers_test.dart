@@ -34,6 +34,7 @@ void main() {
     await tester.tap(find.byTooltip('Map layers'));
     await tester.pumpAndSettle();
 
+    expect(find.text('Planting pits'), findsOneWidget);
     expect(find.text('Zone valves'), findsOneWidget);
     expect(find.text('Flush valves'), findsOneWidget);
     expect(find.text('Water supply'), findsOneWidget);
@@ -90,7 +91,10 @@ void main() {
       map: map,
       selectedSection: null,
       selectedTreeId: null,
+      plantingPits: const <ProjectedPlantingPit>[],
+      selectedPlantingPitId: null,
       showTrees: true,
+      showPlantingPits: true,
       showIrrigation: true,
       showUtilities: true,
       showValves: true,

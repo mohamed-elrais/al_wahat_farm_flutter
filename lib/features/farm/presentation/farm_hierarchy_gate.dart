@@ -10,19 +10,26 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class FarmHierarchyScope extends InheritedWidget {
   const FarmHierarchyScope({
     required this.snapshot,
+    this.controller,
     required super.child,
     super.key,
   });
 
   final FarmHierarchySnapshot snapshot;
+  final FarmHierarchyController? controller;
 
   static FarmHierarchySnapshot? maybeOf(BuildContext context) => context
       .dependOnInheritedWidgetOfExactType<FarmHierarchyScope>()
       ?.snapshot;
 
+  static FarmHierarchyController? maybeControllerOf(BuildContext context) =>
+      context
+          .dependOnInheritedWidgetOfExactType<FarmHierarchyScope>()
+          ?.controller;
+
   @override
   bool updateShouldNotify(FarmHierarchyScope oldWidget) =>
-      oldWidget.snapshot != snapshot;
+      oldWidget.snapshot != snapshot || oldWidget.controller != controller;
 }
 
 class FarmHierarchyGate extends StatefulWidget {
@@ -88,6 +95,7 @@ class _FarmHierarchyGateState extends State<FarmHierarchyGate> {
       builder: (context, _) => switch (controller.state) {
         FarmHierarchyReady(:final snapshot) => FarmHierarchyScope(
             snapshot: snapshot,
+            controller: controller,
             child: widget.child,
           ),
         FarmHierarchyFailure() => _HierarchyFailure(

@@ -17,5 +17,16 @@ void main() {
     test('pages past the default thousand-row response size', () {
       expect(SupabaseFarmHierarchyDataSource.treePageSize, 1000);
     });
+
+    test('loads independent planting pits with lifecycle fields', () {
+      const columns = SupabaseFarmHierarchyDataSource.plantingPitColumns;
+
+      expect(columns, contains('pit_code'));
+      expect(columns, contains('section_id'));
+      expect(columns, contains('status'));
+      expect(columns, contains('completed_at'));
+      expect(columns, isNot(contains('tree_id')));
+      expect(SupabaseFarmHierarchyDataSource.plantingPitPageSize, 1000);
+    });
   });
 }

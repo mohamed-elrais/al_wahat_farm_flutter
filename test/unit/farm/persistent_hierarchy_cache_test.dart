@@ -1,6 +1,7 @@
 import 'package:al_wahat_farm_flutter/core/cache/local_cache_store.dart';
 import 'package:al_wahat_farm_flutter/features/farm/data/farm_hierarchy_repository.dart';
 import 'package:al_wahat_farm_flutter/features/farm/domain/farm_hierarchy.dart';
+import 'package:al_wahat_farm_flutter/features/planting_pits/domain/planting_pit.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class _ThrowingDataSource implements FarmHierarchyDataSource {
@@ -34,6 +35,8 @@ void main() {
     expect(tree.treeCode, 'A-1');
     expect(tree.latitude, 28.2971234);
     expect(tree.healthStatus, TreeHealthStatus.healthy);
+    expect(restored.plantingPits.single.pitCode, 'PIT-A-R01-001');
+    expect(restored.plantingPits.single.status, PlantingPitStatus.marked);
   });
 
   test('reading a corrupt cache entry drops it and returns null', () async {
@@ -118,6 +121,24 @@ final _hierarchy = FarmHierarchy(
       healthStatus: TreeHealthStatus.healthy,
       type: 'medjool',
       isActive: true,
+      createdAt: _now,
+      updatedAt: _now,
+    ),
+  ],
+  plantingPits: <PlantingPit>[
+    PlantingPit(
+      id: 'pit-1',
+      farmId: 'farm-id',
+      sectionId: 'section-1',
+      irrigationZoneId: 'zone-1',
+      pitCode: 'PIT-A-R01-001',
+      rowNumber: 1,
+      pitNumber: 1,
+      latitude: 28.2972,
+      longitude: 28.7502,
+      status: PlantingPitStatus.marked,
+      markedAt: _now,
+      createdByProfileId: 'profile-1',
       createdAt: _now,
       updatedAt: _now,
     ),
