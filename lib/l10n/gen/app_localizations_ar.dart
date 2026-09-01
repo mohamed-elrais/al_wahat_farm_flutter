@@ -141,6 +141,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get homeIrrigationZones => 'مناطق الري';
 
   @override
+  String get homePlantingPits => 'حفر الزراعة';
+
+  @override
   String get homeOpenMap => 'فتح خريطة الإحداثيات';
 
   @override

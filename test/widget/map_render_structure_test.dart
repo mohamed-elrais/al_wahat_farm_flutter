@@ -1,10 +1,11 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_theme.dart';
-import 'package:al_wahat_farm_flutter/features/map/data/map_asset_repository.dart';
 import 'package:al_wahat_farm_flutter/features/map/domain/projected_map.dart';
 import 'package:al_wahat_farm_flutter/features/map/presentation/farm_map_painter.dart';
 import 'package:al_wahat_farm_flutter/features/map/presentation/farm_map_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../support/projected_farm_map_fixture.dart';
 
 void main() {
   testWidgets('one isolated painter owns all map points and layer toggles', (
@@ -14,9 +15,7 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
-    final map = await tester.runAsync(
-      () => const MapAssetRepository().load().then(ProjectedFarmMap.new),
-    );
+    final map = await tester.runAsync(loadComposedFarmMap);
 
     await tester.pumpWidget(
       MaterialApp(
@@ -36,7 +35,7 @@ void main() {
       find.ancestor(of: mapPaint, matching: find.byType(RepaintBoundary)),
       findsWidgets,
     );
-    expect(_painter(tester).map.trees, hasLength(1567));
+    expect(_painter(tester).map.trees, hasLength(1539));
     expect(find.text('Select any tree'), findsOneWidget);
     expect(FarmMapPainter.overviewTreeRadius, 2.7);
     expect(FarmMapPainter.sectionTreeRadius, 4.4);

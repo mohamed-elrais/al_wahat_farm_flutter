@@ -18,8 +18,14 @@ its existing iOS 11.0 target and Xcode 14.2-compatible pod releases. If CocoaPod
 an encoding error when run directly, invoke it with a UTF-8 locale; Flutter's wrapper
 handles the normal `flutter run` flow.
 
-The immutable map renders from `assets/data/al_wahat_map_data.json`. Operational data
-requires an authenticated active profile and farm membership.
+Immutable map geometry renders from `assets/data/al_wahat_map_data.json`. Trees,
+planting pits, section counts, and irrigation-zone UUIDs come from the authenticated
+Supabase hierarchy or its private offline cache. Regenerate and audit geometry with:
+
+```sh
+python3 tool/generate_map_data.py --audit-only
+python3 tool/generate_map_data.py
+```
 
 ## Verification
 
@@ -40,9 +46,9 @@ flutter test test/integration/live_supabase_hierarchy_test.dart \
 ```
 
 The live gate intentionally enforces the declared 12 sections, 122 irrigation zones,
-and 1,567 trees, then resolves one active real QR token without printing it. A failure
-is a backend/product-data discrepancy, not permission to delete or deactivate rows
-automatically.
+and the current authoritative tree/pit snapshot, then resolves one active real QR
+token without printing it. A failure is a backend/product-data discrepancy, not
+permission to delete or deactivate rows automatically.
 
 See `REFERENCE_AUDIT.md`, `IMPLEMENTATION_PLAN.md`, and `FIDELITY_CHECKLIST.md` for
 verified reference facts, phase gates, and known blockers.

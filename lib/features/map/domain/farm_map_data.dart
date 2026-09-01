@@ -406,32 +406,45 @@ class FarmMapData {
   }
 
   void validateReferenceContract() {
-    const counts = <String, int>{
-      'A': 298,
-      'B': 330,
-      'C': 168,
-      'D': 303,
-      'E': 0,
-      'F': 360,
-      'G': 108,
-      'L': 0,
-      'M': 0,
-      'N': 0,
-      'O': 0,
-      'Q': 0,
+    const sectionCodes = <String>{
+      'A',
+      'B',
+      'C',
+      'D',
+      'E',
+      'F',
+      'G',
+      'L',
+      'M',
+      'N',
+      'O',
+      'Q',
     };
-    if (sections.length != 12 || trees.length != 1567) {
+    final actualCodes = sections.map((section) => section.id).toSet();
+    if (sections.length != sectionCodes.length ||
+        actualCodes.length != sections.length ||
+        !actualCodes.containsAll(sectionCodes)) {
       throw FormatException(
-        'Expected 12 sections and 1567 trees; got ${sections.length} and ${trees.length}',
+        'Expected the 12 canonical section geometries; got '
+        '${actualCodes.toList()..sort()}',
       );
     }
-    for (final section in sections) {
-      if (counts[section.id] != section.treeCount) {
+    final treeIds = <String>{};
+    final treeCodes = <String>{};
+    final counts = <String, int>{};
+    for (final tree in trees) {
+      if (!actualCodes.contains(tree.section)) {
         throw FormatException(
-          'Section ${section.id} expected ${counts[section.id]} trees, got ${section.treeCount}',
+          'Tree ${tree.code} references unknown section ${tree.section}',
         );
       }
-      final actual = trees.where((tree) => tree.section == section.id).length;
+      if (!treeIds.add(tree.id) || !treeCodes.add(tree.code)) {
+        throw FormatException('Duplicate tree ${tree.id}/${tree.code}');
+      }
+      counts.update(tree.section, (count) => count + 1, ifAbsent: () => 1);
+    }
+    for (final section in sections) {
+      final actual = counts[section.id] ?? 0;
       if (actual != section.treeCount) {
         throw FormatException(
           'Section ${section.id} metadata/tree row mismatch: ${section.treeCount}/$actual',

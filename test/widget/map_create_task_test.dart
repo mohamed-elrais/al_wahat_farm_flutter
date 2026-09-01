@@ -4,7 +4,6 @@ import 'package:al_wahat_farm_flutter/features/auth/presentation/authenticated_g
 import 'package:al_wahat_farm_flutter/features/farm/data/farm_hierarchy_repository.dart';
 import 'package:al_wahat_farm_flutter/features/farm/domain/farm_hierarchy.dart';
 import 'package:al_wahat_farm_flutter/features/farm/presentation/farm_hierarchy_gate.dart';
-import 'package:al_wahat_farm_flutter/features/map/data/map_asset_repository.dart';
 import 'package:al_wahat_farm_flutter/features/map/domain/projected_map.dart';
 import 'package:al_wahat_farm_flutter/features/map/presentation/farm_map_painter.dart';
 import 'package:al_wahat_farm_flutter/features/map/presentation/farm_map_screen.dart';
@@ -16,21 +15,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 import '../support/farm_hierarchy_fixture.dart';
+import '../support/projected_farm_map_fixture.dart';
 
 Future<
     ({
       ProjectedFarmMap map,
       FarmHierarchy hierarchy,
     })> _load(WidgetTester tester) async {
-  final map = await tester.runAsync(
-    () => const MapAssetRepository().load().then(ProjectedFarmMap.new),
-  );
-  final hierarchy = (await DefaultFarmHierarchyRepository(
-    CanonicalFarmHierarchyDataSource.load(),
-    MemoryFarmHierarchyCache(),
-  ).load(CanonicalFarmHierarchyDataSource.farmId))
-      .hierarchy;
-  return (map: map!, hierarchy: hierarchy);
+  final loaded = await tester.runAsync(loadCanonicalFarmMapFixture);
+  return loaded!;
 }
 
 Widget _app({
@@ -188,6 +181,10 @@ void main() {
       find.byKey(const Key('map-section-create-task')),
       findsOneWidget,
     );
+    expect(
+      tester.getTopLeft(find.byKey(const Key('map-section-create-task'))).dy,
+      tester.getTopLeft(find.byKey(const Key('map-section-add-pit'))).dy,
+    );
     await tester.tap(find.byKey(const Key('map-section-create-task')));
     await tester.pumpAndSettle();
 
@@ -291,7 +288,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     final loaded = await _load(tester);
-    final pit = loaded.hierarchy.plantingPits.single;
+    final pit = loaded.hierarchy.plantingPits.first;
 
     await tester.pumpWidget(
       _app(
@@ -307,7 +304,11 @@ void main() {
     // this test targets only the pit marker contract.
     await tester.tap(find.byTooltip('Map layers'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Zone valves'));
+    final valveEntry = find.ancestor(
+      of: find.text('Zone valves'),
+      matching: find.byType(CheckedPopupMenuItem<String>),
+    );
+    await tester.tap(valveEntry);
     await tester.pumpAndSettle();
 
     final canvasFinder = find.byWidgetPredicate(
@@ -315,7 +316,9 @@ void main() {
     );
     final painter =
         tester.widget<CustomPaint>(canvasFinder).painter! as FarmMapPainter;
-    final projected = painter.plantingPits.single;
+    final projected = painter.plantingPits.firstWhere(
+      (candidate) => candidate.pit.id == pit.id,
+    );
     final canvasBox = tester.renderObject<RenderBox>(canvasFinder);
     await tester.tapAt(canvasBox.localToGlobal(projected.point));
     await tester.pumpAndSettle();
@@ -324,6 +327,57 @@ void main() {
     expect(find.text(pit.pitCode), findsOneWidget);
     expect(find.byKey(const Key('planting-pit-advance')), findsNothing);
     expect(find.byKey(const Key('planting-pit-cancel')), findsNothing);
+  });
+
+  testWidgets('full screen keeps pits and presents tree details above the map',
+      (tester) async {
+    tester.view.physicalSize = const Size(430, 932);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final loaded = await _load(tester);
+
+    await tester.pumpWidget(
+      _app(
+        role: FarmRole.worker,
+        hierarchy: loaded.hierarchy,
+        map: loaded.map,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Remove valve hit-test competition while keeping the pit layer enabled.
+    await tester.tap(find.byTooltip('Map layers'));
+    await tester.pumpAndSettle();
+    final valveEntry = find.ancestor(
+      of: find.text('Zone valves'),
+      matching: find.byType(CheckedPopupMenuItem<String>),
+    );
+    await tester.tap(valveEntry);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Full screen'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('map-exit-full-screen')), findsOneWidget);
+
+    final canvasFinder = find.byWidgetPredicate(
+      (widget) => widget is CustomPaint && widget.painter is FarmMapPainter,
+    );
+    final fullScreenCanvas = canvasFinder.last;
+    final painter =
+        tester.widget<CustomPaint>(fullScreenCanvas).painter! as FarmMapPainter;
+    expect(painter.plantingPits, hasLength(1876));
+    expect(painter.showPlantingPits, isTrue);
+
+    final target = loaded.map.trees.firstWhere(
+      (candidate) => candidate.tree.section == 'A',
+    );
+    final canvasBox = tester.renderObject<RenderBox>(fullScreenCanvas);
+    await tester.tapAt(canvasBox.localToGlobal(target.point));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('tree-detail-code')), findsOneWidget);
+    expect(find.text(target.tree.code), findsOneWidget);
   });
 }
 

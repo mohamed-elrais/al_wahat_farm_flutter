@@ -141,6 +141,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeIrrigationZones => 'Irrigation zones';
 
   @override
+  String get homePlantingPits => 'Planting pits';
+
+  @override
   String get homeOpenMap => 'Open coordinate map';
 
   @override

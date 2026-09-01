@@ -33,6 +33,6 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('12/1567'), findsOneWidget);
+    expect(find.text('12/1539'), findsOneWidget);
   });
 }

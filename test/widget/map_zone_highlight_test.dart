@@ -1,11 +1,12 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_theme.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
-import 'package:al_wahat_farm_flutter/features/map/data/map_asset_repository.dart';
 import 'package:al_wahat_farm_flutter/features/map/domain/projected_map.dart';
 import 'package:al_wahat_farm_flutter/features/map/presentation/farm_map_painter.dart';
 import 'package:al_wahat_farm_flutter/features/map/presentation/farm_map_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../support/projected_farm_map_fixture.dart';
 
 void main() {
   testWidgets('tapping a zone valve highlights its zone; a miss clears it',
@@ -15,9 +16,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    final map = await tester.runAsync(
-      () => const MapAssetRepository().load().then(ProjectedFarmMap.new),
-    );
+    final map = await tester.runAsync(loadComposedFarmMap);
 
     await tester.pumpWidget(
       MaterialApp(
@@ -88,9 +87,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    final map = await tester.runAsync(
-      () => const MapAssetRepository().load().then(ProjectedFarmMap.new),
-    );
+    final map = await tester.runAsync(loadComposedFarmMap);
 
     await tester.pumpWidget(
       MaterialApp(
@@ -110,8 +107,7 @@ void main() {
     // viewer area (some sit under the header chrome after the initial fit).
     final viewerRect =
         tester.getRect(find.byType(InteractiveViewer)).deflate(24);
-    // Valve 04 is the user-facing contract: it shuts off submain 04, whose
-    // SM04 assets (zones, branches, flush valves) carry 279 trees.
+    // Valve 04 is the user-facing contract: it shuts off submain 04.
     final isolation = map.valves.firstWhere(
       (projected) => projected.valve.assetId == 'IRR-IV-ML-04',
     );
@@ -126,10 +122,19 @@ void main() {
     expect(find.byKey(const Key('zone-sheet')), findsOneWidget);
     expect(find.text('Mainline Isolation Valve 04'), findsOneWidget);
     expect(find.text('MAINLINE VALVE'), findsOneWidget); // Eyebrow uppercases
-    // Valve 04 counts submain 04's trees and highlights its network.
+    // Valve 04 counts the current live submain 04 trees and highlights its
+    // network.
     expect(find.byKey(const Key('valve-sheet-trees')), findsOneWidget);
+    final sm04ZoneUuids = map.data.valves
+        .where((valve) => valve.isZoneControl && valve.submain == '04')
+        .map((valve) => valve.zoneUuid)
+        .whereType<String>()
+        .toSet();
+    final sm04TreeCount = map.data.trees
+        .where((tree) => sm04ZoneUuids.contains(tree.zoneId))
+        .length;
     expect(
-      find.text('279 trees are fed through this valve'),
+      find.text('$sm04TreeCount trees are fed through this valve'),
       findsOneWidget,
     );
     expect(find.text('Feeds submains: 04'), findsOneWidget);
@@ -151,9 +156,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    final map = await tester.runAsync(
-      () => const MapAssetRepository().load().then(ProjectedFarmMap.new),
-    );
+    final map = await tester.runAsync(loadComposedFarmMap);
 
     await tester.pumpWidget(
       MaterialApp(
@@ -171,6 +174,29 @@ void main() {
     // Section chips are localized ("القسم A" instead of raw "Section A").
     expect(find.textContaining('القسم A'), findsOneWidget);
     expect(find.textContaining('Section A'), findsNothing);
+    final sectionA = find.byKey(const Key('section-A'));
+    expect(
+      find.descendant(
+        of: sectionA,
+        matching: find.byIcon(Icons.grid_view_outlined),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: sectionA, matching: find.byIcon(Icons.park_outlined)),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: sectionA,
+        matching: find.byIcon(Icons.location_on_outlined),
+      ),
+      findsOneWidget,
+    );
+    expect(find.descendant(of: sectionA, matching: find.text('298')),
+        findsOneWidget);
+    expect(find.descendant(of: sectionA, matching: find.text('0')),
+        findsOneWidget);
 
     final canvasFinder = find.byWidgetPredicate(
       (widget) => widget is CustomPaint && widget.painter is FarmMapPainter,

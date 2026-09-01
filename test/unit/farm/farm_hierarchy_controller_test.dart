@@ -21,6 +21,6 @@ void main() {
     expect(states.first, isA<FarmHierarchyLoading>());
     final ready = states.last as FarmHierarchyReady;
     expect(ready.snapshot.hierarchy.sections, hasLength(12));
-    expect(ready.snapshot.hierarchy.trees, hasLength(1567));
+    expect(ready.snapshot.hierarchy.trees, hasLength(1539));
   });
 }

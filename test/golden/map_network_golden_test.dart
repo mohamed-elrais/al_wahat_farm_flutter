@@ -1,11 +1,12 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_theme.dart';
-import 'package:al_wahat_farm_flutter/features/map/data/map_asset_repository.dart';
 import 'package:al_wahat_farm_flutter/features/map/domain/projected_map.dart';
 import 'package:al_wahat_farm_flutter/features/map/presentation/farm_map_painter.dart';
 import 'package:al_wahat_farm_flutter/features/map/presentation/farm_map_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../support/projected_farm_map_fixture.dart';
 
 /// Fidelity certification of the irrigation-network map layers (M2/M3): the
 /// full network rendered at the primary phone size, and a zone highlighted by
@@ -32,9 +33,7 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
-    final map = await tester.runAsync(
-      () => const MapAssetRepository().load().then(ProjectedFarmMap.new),
-    );
+    final map = await tester.runAsync(loadComposedFarmMap);
     await tester.pumpWidget(
       MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -54,7 +53,14 @@ void main() {
     for (final layer in <String>['Flush valves', 'Water supply']) {
       await tester.tap(find.byTooltip('Map layers'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text(layer));
+      final layerItem = find.text(layer);
+      final layerEntry = find.ancestor(
+        of: layerItem,
+        matching: find.byType(CheckedPopupMenuItem<String>),
+      );
+      await tester.ensureVisible(layerEntry);
+      await tester.pumpAndSettle();
+      await tester.tap(layerEntry);
       await tester.pumpAndSettle();
     }
     await expectLater(

@@ -82,7 +82,8 @@ void main() {
           isTrue,
         );
         expect(hierarchy.sections, hasLength(12));
-        expect(hierarchy.trees, hasLength(1567));
+        expect(hierarchy.trees, hasLength(1539));
+        expect(hierarchy.plantingPits, hasLength(1876));
       });
 
       test('active zone count matches the declared product requirement', () {

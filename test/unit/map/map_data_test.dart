@@ -15,29 +15,29 @@ void main() {
       data = FarmMapData.fromJson(decoded! as Map<String, Object?>);
     });
 
-    test('preserves reference bounds and totals', () {
+    test('preserves reference bounds and static geometry contract', () {
       expect(data.sections, hasLength(12));
-      expect(data.sections.where((section) => section.planted), hasLength(6));
-      expect(data.trees, hasLength(1567));
+      expect(data.sections.where((section) => section.planted), isEmpty);
+      expect(data.trees, isEmpty);
       expect(data.bounds.minLongitude, 28.747598);
       expect(data.bounds.maxLongitude, 28.7546);
       expect(data.bounds.minLatitude, 28.293348);
       expect(data.bounds.maxLatitude, 28.300016);
     });
 
-    test('preserves exact per-section counts', () {
+    test('leaves mutable per-section tree counts for runtime composition', () {
       expect(
         <String, int>{
           for (final section in data.sections) section.id: section.treeCount,
         },
         <String, int>{
-          'A': 298,
-          'B': 330,
-          'C': 168,
-          'D': 303,
+          'A': 0,
+          'B': 0,
+          'C': 0,
+          'D': 0,
           'E': 0,
-          'F': 360,
-          'G': 108,
+          'F': 0,
+          'G': 0,
           'L': 0,
           'M': 0,
           'N': 0,
@@ -65,19 +65,22 @@ void main() {
       expect(byName['House Solar Array']!.type, 'solar_array');
     });
 
-    test('records the asset-only irrigation-zone discrepancy', () {
-      expect(data.trees.map((tree) => tree.zoneId).toSet(), hasLength(56));
+    test('does not bundle mutable Supabase UUIDs', () {
+      expect(data.branchLines.map((line) => line.zoneUuid).whereType<String>(),
+          isEmpty);
+      expect(data.valves.map((valve) => valve.zoneUuid).whereType<String>(),
+          isEmpty);
     });
 
     test('contains every irrigation-network layer', () {
-      expect(data.branchLines, hasLength(121));
+      expect(data.branchLines, hasLength(120));
       expect(data.valves, hasLength(133));
       expect(
         data.valves.where((valve) => valve.isZoneControl),
         hasLength(122),
       );
       expect(data.flushValves, hasLength(131));
-      expect(data.risers, hasLength(66));
+      expect(data.risers, hasLength(64));
       expect(data.waterSupply.points, hasLength(7));
       expect(data.waterSupply.lines, hasLength(12));
     });
@@ -95,18 +98,7 @@ void main() {
             reason: '${valve.assetId} lacks its submain geometry');
         expect(valve.downstreamLine!.length, greaterThanOrEqualTo(2));
       }
-      // Spot-check the user-facing contract: valve 04 controls the SM04
-      // assets (ZCVs, branch lines, flush valves) and their trees.
-      final sm04Zones = data.valves
-          .where((valve) =>
-              valve.isZoneControl &&
-              valve.submain == '04' &&
-              valve.zoneUuid != null)
-          .map((valve) => valve.zoneUuid)
-          .toSet();
-      final sm04Trees =
-          data.trees.where((tree) => sm04Zones.contains(tree.zoneId)).length;
-      expect(sm04Trees, 279);
+      // Spot-check the topology: valve 04 controls the SM04 geometry.
       expect(
         data.branchLines.where((line) => line.submain == '04'),
         isNotEmpty,
@@ -117,29 +109,25 @@ void main() {
       );
     });
 
-    test('zone control valves cover every tree zone by uuid', () {
+    test('zone control valves carry stable codes for runtime UUID binding', () {
       final valveZones = data.valves
-          .map((valve) => valve.zoneUuid)
+          .where((valve) => valve.isZoneControl)
+          .map((valve) => valve.zoneId)
           .whereType<String>()
           .toSet();
-      final treeZones = data.trees.map((tree) => tree.zoneId).toSet();
-      // Every live zone with ZCV metadata carries its uuid; the 56 planted
-      // zones referenced by trees are all among them.
-      expect(valveZones, hasLength(120));
-      expect(treeZones, hasLength(56));
-      expect(treeZones.difference(valveZones), isEmpty);
-      // Zone colors on valves match the trees they irrigate.
-      final treeColorByZone = <String, Object?>{
-        for (final tree in data.trees) tree.zoneId: tree.color,
-      };
-      for (final valve in data.valves) {
-        final zone = valve.zoneUuid;
-        if (zone == null) continue;
-        final treeColor = treeColorByZone[zone];
-        if (treeColor == null) continue; // unplanted zone: no trees to match
-        expect(valve.color, treeColor,
-            reason: 'zone color mismatch for ${valve.assetId}');
-      }
+      final branchZones = data.branchLines
+          .map((line) => line.zoneId)
+          .whereType<String>()
+          .toSet();
+      expect(valveZones, hasLength(122));
+      expect(branchZones, hasLength(120));
+      expect(branchZones.difference(valveZones), isEmpty);
+      expect(
+        data.valves
+            .where((valve) => valve.isZoneControl)
+            .where((valve) => valve.color != null),
+        hasLength(120),
+      );
     });
   });
 }

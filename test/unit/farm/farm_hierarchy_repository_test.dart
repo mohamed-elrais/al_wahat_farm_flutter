@@ -16,19 +16,19 @@ void main() {
       repository = DefaultFarmHierarchyRepository(dataSource, cache);
     });
 
-    test('loads the isolated canonical 12/1567 fixture', () async {
+    test('loads the isolated full-farm hierarchy fixture', () async {
       final result = await repository.load(
         CanonicalFarmHierarchyDataSource.farmId,
       );
 
       expect(result.source, FarmHierarchySource.network);
       expect(result.hierarchy.sections, hasLength(12));
-      expect(result.hierarchy.trees, hasLength(1567));
-      expect(result.hierarchy.zones, hasLength(56));
-      expect(result.hierarchy.plantingPits, hasLength(1));
+      expect(result.hierarchy.trees, hasLength(1539));
+      expect(result.hierarchy.zones, hasLength(122));
+      expect(result.hierarchy.plantingPits, hasLength(1876));
       expect(
-        result.hierarchy.plantingPits.single.pitCode,
-        'PIT-E-R01-001',
+        result.hierarchy.plantingPits.first.pitCode,
+        'FUT-TREE-C-001',
       );
       expect(
         dataSource.requestedSectionIds,
@@ -65,11 +65,11 @@ void main() {
 
     test('rejects a planting pit whose zone belongs to another section',
         () async {
+      final pit = dataSource.plantingPits.first;
       final otherSectionZone = dataSource.zones.firstWhere(
-        (zone) => zone['section_id'] != 'E',
+        (zone) => zone['section_id'] != pit['section_id'],
       );
-      dataSource.plantingPits.single['irrigation_zone_id'] =
-          otherSectionZone['id'];
+      pit['irrigation_zone_id'] = otherSectionZone['id'];
 
       await expectLater(
         repository.load(

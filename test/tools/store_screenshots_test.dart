@@ -9,7 +9,6 @@ import 'package:al_wahat_farm_flutter/features/farm/domain/farm_hierarchy.dart';
 import 'package:al_wahat_farm_flutter/features/inventory/domain/inventory_models.dart';
 import 'package:al_wahat_farm_flutter/features/inventory/presentation/inventory_controller.dart';
 import 'package:al_wahat_farm_flutter/features/inventory/presentation/inventory_screen.dart';
-import 'package:al_wahat_farm_flutter/features/map/data/map_asset_repository.dart';
 import 'package:al_wahat_farm_flutter/features/map/domain/projected_map.dart';
 import 'package:al_wahat_farm_flutter/features/map/presentation/farm_map_screen.dart';
 import 'package:al_wahat_farm_flutter/features/schedules/domain/schedule_models.dart';
@@ -25,6 +24,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../support/inventory_fakes.dart';
+import '../support/projected_farm_map_fixture.dart';
 import '../support/schedule_fakes.dart';
 import '../support/task_fakes.dart';
 
@@ -64,9 +64,7 @@ void main() {
       (dir: 'ipad_13', logical: const Size(1024, 1366), dpr: 2),
     ];
 
-    final map = await tester.runAsync(
-      () => const MapAssetRepository().load().then(ProjectedFarmMap.new),
-    );
+    final map = await tester.runAsync(loadComposedFarmMap);
 
     for (final device in devices) {
       tester.view.physicalSize = device.logical * device.dpr;

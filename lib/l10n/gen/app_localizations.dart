@@ -357,6 +357,12 @@ abstract class AppLocalizations {
   /// **'Irrigation zones'**
   String get homeIrrigationZones;
 
+  /// No description provided for @homePlantingPits.
+  ///
+  /// In en, this message translates to:
+  /// **'Planting pits'**
+  String get homePlantingPits;
+
   /// No description provided for @homeOpenMap.
   ///
   /// In en, this message translates to:

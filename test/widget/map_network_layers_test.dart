@@ -40,7 +40,14 @@ void main() {
     expect(find.text('Water supply'), findsOneWidget);
 
     // Enabling a default-off layer must not throw while painting.
-    await tester.tap(find.text('Flush valves'));
+    final flushValves = find.text('Flush valves');
+    final flushValveEntry = find.ancestor(
+      of: flushValves,
+      matching: find.byType(CheckedPopupMenuItem<String>),
+    );
+    await tester.ensureVisible(flushValveEntry);
+    await tester.pumpAndSettle();
+    await tester.tap(flushValveEntry);
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });
@@ -68,8 +75,7 @@ void main() {
     );
     await tester.pump();
 
-    // The controls are present in the stacked narrow layout, and the
-    // full-width title lays out without overflow errors.
+    // The title and compact controls share one row without overflow.
     expect(find.byTooltip('Map layers'), findsOneWidget);
     expect(find.byTooltip('Full screen'), findsOneWidget);
     expect(find.text('Al Wahat farm overview'), findsOneWidget);
@@ -78,10 +84,10 @@ void main() {
 
   test('painter renders every network layer without errors', () async {
     final map = ProjectedFarmMap(await const MapAssetRepository().load());
-    expect(map.branchLines, hasLength(121));
+    expect(map.branchLines, hasLength(120));
     expect(map.valves, hasLength(133));
     expect(map.flushValves, hasLength(131));
-    expect(map.risers, hasLength(66));
+    expect(map.risers, hasLength(64));
     expect(map.supplyPoints, hasLength(7));
     expect(map.supplyLines, hasLength(12));
 

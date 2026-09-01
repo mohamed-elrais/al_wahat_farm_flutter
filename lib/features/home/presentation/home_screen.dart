@@ -170,47 +170,55 @@ class _FarmOverview extends StatelessWidget {
   const _FarmOverview();
 
   @override
-  Widget build(BuildContext context) => WahatCard(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            Eyebrow(context.l10n.homeLiveMapData),
-            const SizedBox(height: 8),
-            Text(
-              context.l10n.homeFarmOverview,
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: <Widget>[
-                _Metric(
-                  value: '1,567',
-                  label: context.l10n.homeMappedTrees,
-                  icon: Icons.park_outlined,
-                ),
-                _Metric(
-                  value: '12',
-                  label: context.l10n.homeSections,
-                  icon: Icons.grid_view_outlined,
-                ),
-                _Metric(
-                  value: '122',
-                  label: context.l10n.homeIrrigationZones,
-                  icon: Icons.water_drop_outlined,
-                ),
-              ],
-            ),
-            const SizedBox(height: 18),
-            FilledButton.icon(
-              onPressed: () => context.go('/map'),
-              icon: const Icon(Icons.map_outlined),
-              label: Text(context.l10n.homeOpenMap),
-            ),
-          ],
-        ),
-      );
+  Widget build(BuildContext context) {
+    final hierarchy = FarmHierarchyScope.maybeOf(context)?.hierarchy;
+    return WahatCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          Eyebrow(context.l10n.homeLiveMapData),
+          const SizedBox(height: 8),
+          Text(
+            context.l10n.homeFarmOverview,
+            style: Theme.of(context).textTheme.headlineMedium,
+          ),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: <Widget>[
+              _Metric(
+                value: hierarchy?.trees.length.toString() ?? '—',
+                label: context.l10n.homeMappedTrees,
+                icon: Icons.park_outlined,
+              ),
+              _Metric(
+                value: hierarchy?.sections.length.toString() ?? '—',
+                label: context.l10n.homeSections,
+                icon: Icons.grid_view_outlined,
+              ),
+              _Metric(
+                value: hierarchy?.zones.length.toString() ?? '—',
+                label: context.l10n.homeIrrigationZones,
+                icon: Icons.water_drop_outlined,
+              ),
+              _Metric(
+                value: hierarchy?.plantingPits.length.toString() ?? '—',
+                label: context.l10n.homePlantingPits,
+                icon: Icons.add_location_alt_outlined,
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          FilledButton.icon(
+            onPressed: () => context.go('/map'),
+            icon: const Icon(Icons.map_outlined),
+            label: Text(context.l10n.homeOpenMap),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _Metric extends StatelessWidget {

@@ -44,14 +44,21 @@ void main() {
     );
     await tester.pump();
     expect(find.byKey(const Key('section-all')), findsOneWidget);
-    final sectionScroll = tester.state<ScrollableState>(
-      find.byType(Scrollable).first,
+    final sectionE = find.byKey(const Key('section-E'));
+    final sectionFilter = find.byKey(const Key('map-section-filter'));
+    await tester.scrollUntilVisible(
+      sectionE,
+      200,
+      scrollable: find.descendant(
+        of: sectionFilter,
+        matching: find.byType(Scrollable),
+      ),
     );
-    sectionScroll.position.jumpTo(1000);
+    await tester.ensureVisible(sectionE);
+    await tester.pumpAndSettle();
+    expect(sectionE, findsOneWidget);
+    await tester.tap(sectionE);
     await tester.pump();
-    expect(find.byKey(const Key('section-E')), findsOneWidget);
-    await tester.tap(find.byKey(const Key('section-E')));
-    await tester.pump();
-    expect(find.text('Section E · Unplanted · 1 pit'), findsOneWidget);
+    expect(find.text('Section E · Unplanted'), findsOneWidget);
   });
 }
