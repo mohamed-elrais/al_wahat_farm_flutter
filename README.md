@@ -31,8 +31,14 @@ the Runner team's signing configuration, increment the version/build number, and
 flutter build ipa --release --dart-define-from-file=config.json
 ```
 
-The immutable map renders from `assets/data/al_wahat_map_data.json`. Operational data
-requires an authenticated active profile and farm membership.
+Immutable map geometry renders from `assets/data/al_wahat_map_data.json`. Trees,
+planting pits, section counts, and irrigation-zone UUIDs come from the authenticated
+Supabase hierarchy or its private offline cache. Regenerate and audit geometry with:
+
+```sh
+python3 tool/generate_map_data.py --audit-only
+python3 tool/generate_map_data.py
+```
 
 ## Verification
 
@@ -53,9 +59,9 @@ flutter test test/integration/live_supabase_hierarchy_test.dart \
 ```
 
 The live gate intentionally enforces the declared 12 sections, 122 irrigation zones,
-and 1,567 trees, then resolves one active real QR token without printing it. A failure
-is a backend/product-data discrepancy, not permission to delete or deactivate rows
-automatically.
+and the current authoritative tree/pit snapshot, then resolves one active real QR
+token without printing it. A failure is a backend/product-data discrepancy, not
+permission to delete or deactivate rows automatically.
 
 See `REFERENCE_AUDIT.md`, `IMPLEMENTATION_PLAN.md`, and `FIDELITY_CHECKLIST.md` for
 verified reference facts, phase gates, and known blockers.

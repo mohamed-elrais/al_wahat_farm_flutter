@@ -30,11 +30,31 @@ void main() {
       MemoryFarmHierarchyCache(),
     ).load(CanonicalFarmHierarchyDataSource.farmId))
         .hierarchy;
+    final invalidTree = complete.trees.first;
     final incomplete = FarmHierarchy(
       farmId: complete.farmId,
       sections: complete.sections,
       zones: complete.zones,
-      trees: complete.trees.skip(1).toList(growable: false),
+      trees: <FarmTreeRecord>[
+        FarmTreeRecord(
+          id: invalidTree.id,
+          farmId: invalidTree.farmId,
+          sectionId: invalidTree.sectionId,
+          irrigationZoneId: invalidTree.irrigationZoneId,
+          treeCode: invalidTree.treeCode,
+          rowNumber: invalidTree.rowNumber,
+          treeNumber: invalidTree.treeNumber,
+          plantedOn: invalidTree.plantedOn,
+          healthStatus: invalidTree.healthStatus,
+          type: invalidTree.type,
+          notes: invalidTree.notes,
+          isActive: invalidTree.isActive,
+          createdAt: invalidTree.createdAt,
+          updatedAt: invalidTree.updatedAt,
+        ),
+        ...complete.trees.skip(1),
+      ],
+      plantingPits: complete.plantingPits,
     );
 
     await tester.pumpWidget(

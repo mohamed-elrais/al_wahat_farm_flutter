@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:al_wahat_farm_flutter/l10n/gen/app_localizations_en.dart';
 
 import 'package:al_wahat_farm_flutter/core/errors/operation_failure.dart';
+import 'package:al_wahat_farm_flutter/features/issues/data/tree_issue_repository.dart';
 import 'package:al_wahat_farm_flutter/features/issues/domain/issue_photo.dart';
 import 'package:al_wahat_farm_flutter/features/issues/domain/tree_issue_draft.dart';
 import 'package:al_wahat_farm_flutter/features/issues/presentation/issue_report_controller.dart';
@@ -57,6 +58,40 @@ void main() {
         isFalse,
       );
       expect(events.where((event) => event == 'report'), hasLength(1));
+    });
+
+    test('explains when a report confirms an existing active bucket', () async {
+      final confirmed = IssueReportController(
+        repository: FakeTreeIssueRepository(
+          reportResult: const ReportedTreeIssue(
+            issueId: 'existing-issue-id',
+            taskId: 'review-task-id',
+            confirmedExisting: true,
+          ),
+        ),
+        photoPicker: picker,
+        photoStorage: storage,
+        userId: 'user-id',
+        farmId: 'farm-id',
+        treeId: 'tree-id',
+      );
+      addTearDown(confirmed.dispose);
+
+      expect(
+        await confirmed.submit(
+          type: TreeIssueType.cloggedDripper,
+          severity: IssueSeverity.high,
+        ),
+        isTrue,
+      );
+      expect(
+        confirmed.message?.call(_enMessages),
+        contains('existing active issue was confirmed'),
+      );
+      expect(
+        confirmed.message?.call(_enMessages),
+        contains('severity was not changed'),
+      );
     });
 
     test('reports before uploading and registering selected evidence',

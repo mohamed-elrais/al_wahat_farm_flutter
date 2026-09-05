@@ -7,6 +7,7 @@ import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
 import 'package:al_wahat_farm_flutter/features/auth/presentation/authenticated_gate.dart';
 import 'package:al_wahat_farm_flutter/features/farm/domain/farm_hierarchy.dart';
 import 'package:al_wahat_farm_flutter/features/farm/presentation/farm_hierarchy_gate.dart';
+import 'package:al_wahat_farm_flutter/features/issues/presentation/task_issue_work_card.dart';
 import 'package:al_wahat_farm_flutter/features/reviews/data/engineer_review_repository.dart';
 import 'package:al_wahat_farm_flutter/features/reviews/data/offline_review_queue.dart';
 import 'package:al_wahat_farm_flutter/features/reviews/domain/engineer_review.dart';
@@ -239,6 +240,24 @@ class _ReviewDetailScreenState extends State<ReviewDetailScreen> {
           ),
         ),
         const SizedBox(height: 12),
+        TaskIssueWorkCard(
+          taskId: task.id,
+          readOnly: true,
+        ),
+        if (task.relatedTreeIssueId != null) ...<Widget>[
+          WahatCard(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                const Icon(Icons.verified_user_outlined,
+                    color: AppColors.green),
+                const SizedBox(width: 10),
+                Expanded(child: Text(context.l10n.reviewIssueScopeHint)),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
         _EvidenceCard(photos: details.photos),
         const SizedBox(height: 12),
         _ReviewHistoryCard(reviews: controller.reviews),

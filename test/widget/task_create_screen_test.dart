@@ -9,6 +9,40 @@ import 'package:flutter_test/flutter_test.dart';
 import '../support/task_fakes.dart';
 
 void main() {
+  testWidgets('generic tree inspection stays available and links guided setup',
+      (tester) async {
+    final store = InMemoryTaskStore();
+    final controller = TaskCreateController(
+      repository: FakeTaskRepository(
+        store: store,
+        viewerProfileId: 'manager-id',
+        canManage: true,
+      ),
+    );
+    addTearDown(controller.dispose);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: TaskCreateScreen(
+          controller: controller,
+          hierarchy: _hierarchy,
+          role: FarmRole.owner,
+          farmId: 'farm-id',
+          assignableMembers: store.members,
+        ),
+      ),
+    );
+
+    await tester.tap(find.byKey(const Key('task-type-field')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Tree inspection').last);
+    await tester.pumpAndSettle();
+
+    expect(
+        find.byKey(const Key('use-guided-inspection-button')), findsOneWidget);
+  });
+
   testWidgets('manager create form validates then persists task',
       (tester) async {
     tester.view.physicalSize = const Size(430, 932);

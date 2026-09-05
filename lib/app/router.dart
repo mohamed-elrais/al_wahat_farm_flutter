@@ -8,7 +8,11 @@ import 'package:al_wahat_farm_flutter/features/home/presentation/home_screen.dar
 import 'package:al_wahat_farm_flutter/features/inventory/presentation/inventory_item_form_screen.dart';
 import 'package:al_wahat_farm_flutter/features/inventory/presentation/inventory_item_screen.dart';
 import 'package:al_wahat_farm_flutter/features/inventory/presentation/inventory_screen.dart';
+import 'package:al_wahat_farm_flutter/features/inspections/presentation/inspection_create_screen.dart';
+import 'package:al_wahat_farm_flutter/features/inspections/presentation/inspection_runner_screen.dart';
+import 'package:al_wahat_farm_flutter/features/issues/presentation/issue_detail_screen.dart';
 import 'package:al_wahat_farm_flutter/features/issues/presentation/issue_report_screen.dart';
+import 'package:al_wahat_farm_flutter/features/issues/presentation/issues_screen.dart';
 import 'package:al_wahat_farm_flutter/features/map/presentation/farm_map_screen.dart';
 import 'package:al_wahat_farm_flutter/features/map/presentation/scanner_screen.dart';
 import 'package:al_wahat_farm_flutter/features/profile/presentation/profile_screen.dart';
@@ -61,6 +65,18 @@ GoRouter createRouter(AppConfig config) {
           StatefulShellBranch(
             routes: <RouteBase>[
               GoRoute(path: '/home', builder: (_, __) => const HomeScreen()),
+              GoRoute(
+                path: '/issues',
+                builder: (_, __) => const IssuesScreen(),
+                routes: <RouteBase>[
+                  GoRoute(
+                    path: ':issueId',
+                    builder: (_, state) => IssueDetailScreen(
+                      issueId: state.pathParameters['issueId']!,
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
           StatefulShellBranch(
@@ -109,6 +125,12 @@ GoRouter createRouter(AppConfig config) {
                     ),
                   ),
                   GoRoute(
+                    path: 'create-inspection',
+                    builder: (_, state) => InspectionCreateScreen(
+                      initialSectionId: state.uri.queryParameters['sectionId'],
+                    ),
+                  ),
+                  GoRoute(
                     path: 'reviews',
                     builder: (_, __) => const ReviewQueueScreen(),
                     routes: <RouteBase>[
@@ -125,6 +147,14 @@ GoRouter createRouter(AppConfig config) {
                     builder: (_, state) => TaskDetailScreen(
                       taskId: state.pathParameters['taskId']!,
                     ),
+                    routes: <RouteBase>[
+                      GoRoute(
+                        path: 'inspection',
+                        builder: (_, state) => InspectionRunnerScreen(
+                          taskId: state.pathParameters['taskId']!,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

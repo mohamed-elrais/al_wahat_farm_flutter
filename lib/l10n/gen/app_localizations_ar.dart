@@ -51,6 +51,15 @@ class AppLocalizationsAr extends AppLocalizations {
   String get commonLoading => 'جارٍ التحميل…';
 
   @override
+  String get commonAll => 'الكل';
+
+  @override
+  String get commonClear => 'مسح';
+
+  @override
+  String get commonApply => 'تطبيق';
+
+  @override
   String routeUnavailable(String path) {
     return 'المسار غير متاح: $path';
   }
@@ -144,6 +153,9 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get homeIrrigationZones => 'مناطق الري';
+
+  @override
+  String get homePlantingPits => 'حفر الزراعة';
 
   @override
   String get homeOpenMap => 'فتح خريطة الإحداثيات';
@@ -1109,6 +1121,10 @@ class AppLocalizationsAr extends AppLocalizations {
       'تم الإبلاغ عن المشكلة وإنشاء مهمة مراجعة للمهندس الزراعي.';
 
   @override
+  String get issueMsgConfirmedExisting =>
+      'تم تأكيد المشكلة النشطة الحالية دون تغيير درجة خطورتها.';
+
+  @override
   String get issueMsgReportedOffline =>
       'تم حفظ المشكلة دون اتصال. سيتم الإبلاغ عنها إلى المزرعة عند عودة الاتصال بالإنترنت.';
 
@@ -1118,6 +1134,10 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get issueMsgReportedWithPhoto =>
       'تم حفظ المشكلة ومهمة المراجعة ودليل الصورة.';
+
+  @override
+  String get issueMsgConfirmedExistingWithPhoto =>
+      'تم تأكيد المشكلة النشطة الحالية مع دليل صورة دون تغيير درجة خطورتها.';
 
   @override
   String get issueErrPartialPrefix =>
@@ -1323,6 +1343,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get mapLayerTrees => 'الأشجار';
 
   @override
+  String get mapLayerPlantingPits => 'حفر الزراعة';
+
+  @override
   String get mapLayerIrrigation => 'شبكة الري';
 
   @override
@@ -1408,6 +1431,128 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get mapSectionUnplanted => 'غير مزروع';
+
+  @override
+  String mapSectionPitCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count حفرة',
+      few: '$count حفر',
+      two: 'حفرتان',
+      one: 'حفرة واحدة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get plantingPitEyebrow => 'حفرة زراعة';
+
+  @override
+  String plantingPitSection(String section) {
+    return 'القسم $section';
+  }
+
+  @override
+  String plantingPitPosition(String row, String pit) {
+    return 'الصف $row · الحفرة $pit';
+  }
+
+  @override
+  String plantingPitCoordinates(String latitude, String longitude) {
+    return '$latitude، $longitude';
+  }
+
+  @override
+  String plantingPitPlannedFor(String date) {
+    return 'مخطط لها في $date';
+  }
+
+  @override
+  String get plantingPitStatusPlanned => 'مخططة';
+
+  @override
+  String get plantingPitStatusMarked => 'معلّمة';
+
+  @override
+  String get plantingPitStatusDug => 'محفورة';
+
+  @override
+  String get plantingPitStatusPrepared => 'مجهّزة';
+
+  @override
+  String get plantingPitStatusCompleted => 'مكتملة';
+
+  @override
+  String get plantingPitStatusCancelled => 'ملغاة';
+
+  @override
+  String plantingPitAdvanceTo(String status) {
+    return 'النقل إلى $status';
+  }
+
+  @override
+  String get plantingPitCancel => 'إلغاء الحفرة';
+
+  @override
+  String get plantingPitUpdating => 'جارٍ التحديث…';
+
+  @override
+  String get plantingPitUpdated => 'تم تحديث حفرة الزراعة.';
+
+  @override
+  String get plantingPitUpdateFailed => 'تعذّر تحديث حفرة الزراعة.';
+
+  @override
+  String plantingPitAddForSection(String section) {
+    return 'إضافة حفرة إلى القسم $section';
+  }
+
+  @override
+  String get plantingPitCreateTitle => 'إضافة حفرة زراعة';
+
+  @override
+  String get plantingPitCodeField => 'رمز الحفرة';
+
+  @override
+  String get plantingPitRowField => 'رقم الصف';
+
+  @override
+  String get plantingPitNumberField => 'رقم الحفرة';
+
+  @override
+  String get plantingPitLatitudeField => 'خط العرض';
+
+  @override
+  String get plantingPitLongitudeField => 'خط الطول';
+
+  @override
+  String get plantingPitPlannedDateField => 'التاريخ المخطط (اختياري)';
+
+  @override
+  String get plantingPitNotesField => 'ملاحظات (اختياري)';
+
+  @override
+  String get plantingPitSave => 'إضافة الحفرة';
+
+  @override
+  String get plantingPitSaving => 'جارٍ الإضافة…';
+
+  @override
+  String get plantingPitCreated => 'تمت إضافة حفرة الزراعة.';
+
+  @override
+  String get plantingPitCreateFailed => 'تعذّرت إضافة حفرة الزراعة.';
+
+  @override
+  String get plantingPitRequiredField => 'هذا الحقل مطلوب';
+
+  @override
+  String get plantingPitInvalidCoordinate => 'أدخل إحداثياً صحيحاً';
+
+  @override
+  String get plantingPitGridPairRequired =>
+      'أدخل رقم الصف ورقم الحفرة معاً أو اتركهما فارغين';
 
   @override
   String get mapSelectAnyTree => 'اختر أي شجرة';
@@ -1839,5 +1984,648 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String taskProductQuantity(String quantity, String unit) {
     return '$quantity $unit';
+  }
+
+  @override
+  String get issuesEyebrow => 'صحة الحقل';
+
+  @override
+  String get issuesTitle => 'مشكلات الأشجار النشطة';
+
+  @override
+  String get issuesUnavailable => 'مساحة عمل المشكلات غير متاحة.';
+
+  @override
+  String get issuesFilters => 'تصفية المشكلات';
+
+  @override
+  String get issuesAllTypes => 'كل أنواع المشكلات';
+
+  @override
+  String get issuesAllSeverities => 'كل درجات الخطورة';
+
+  @override
+  String get issuesOnlyUnclaimed => 'المشكلات المتاحة للاستلام فقط';
+
+  @override
+  String issuesTreeLocation(String section, String tree) {
+    return 'القسم $section · $tree';
+  }
+
+  @override
+  String get issuesOpenTree => 'فتح الشجرة';
+
+  @override
+  String get issuesClaim => 'استلام المشكلة';
+
+  @override
+  String get issuesClaimOnlineOnly => 'اتصل بالإنترنت لاستلام هذه المشكلة';
+
+  @override
+  String get issuesClaimed => 'تم استلامها';
+
+  @override
+  String get issuesClaimedByYou => 'مكلّف بها أنت';
+
+  @override
+  String get issuesDetailsAvailable => 'التفاصيل الكاملة متاحة';
+
+  @override
+  String get issuesSummaryOnly => 'ملخص آمن';
+
+  @override
+  String get issuesLoadFailed => 'تعذر تحميل المشكلات النشطة.';
+
+  @override
+  String get issuesEmpty => 'لا توجد مشكلات نشطة تطابق هذه التصفية.';
+
+  @override
+  String get issueDetailTitle => 'تفاصيل المشكلة';
+
+  @override
+  String get issueDetailHistory => 'سجل المشكلة';
+
+  @override
+  String get issueDetailDescription => 'الملاحظة الميدانية';
+
+  @override
+  String get issueDetailNoDescription => 'لم تُسجل ملاحظات لهذه المشكلة.';
+
+  @override
+  String get issueDetailViewHistory => 'عرض التفاصيل والسجل';
+
+  @override
+  String get issueDetailChangeSeverity => 'تغيير درجة الخطورة';
+
+  @override
+  String get issueDetailDismiss => 'استبعاد المشكلة';
+
+  @override
+  String get issueDetailDismissPrompt => 'لماذا يجب استبعاد هذه المشكلة؟';
+
+  @override
+  String get issueDetailDismissRequired => 'يجب إدخال سبب الاستبعاد.';
+
+  @override
+  String get issueDetailActionSaved =>
+      'تم حفظ إجراء المشكلة أو وضعه في قائمة المزامنة.';
+
+  @override
+  String get issueDetailOpenTask => 'فتح المهمة المرتبطة';
+
+  @override
+  String get issueDetailNoHistory => 'لا تتوفر أحداث لهذه المشكلة.';
+
+  @override
+  String get issueDetailLoadFailed => 'تعذر تحميل تفاصيل المشكلة المصرح بها.';
+
+  @override
+  String get issueDetailObservations => 'ملاحظات الفحص';
+
+  @override
+  String get issueDetailNoObservations =>
+      'لا توجد ملاحظات فحص مرتبطة بهذه المشكلة.';
+
+  @override
+  String get issueDetailLinkedTasks => 'المهام المرتبطة';
+
+  @override
+  String get issueDetailNoLinkedTasks => 'لا توجد مهام مرتبطة بهذه المشكلة.';
+
+  @override
+  String get issueDetailTaskRestricted =>
+      'تفاصيل المهمة متاحة فقط للمكلّفين بها ومديري المزرعة.';
+
+  @override
+  String issueDetailEvidence(int count) {
+    return 'أدلة المشكلة ($count)';
+  }
+
+  @override
+  String get issueObservationDetected => 'اكتُشفت أثناء الفحص';
+
+  @override
+  String get issueObservationConfirmed => 'تم تأكيدها أثناء الفحص';
+
+  @override
+  String get issueObservationNotObserved => 'لم تُلاحظ أثناء الفحص';
+
+  @override
+  String get issueObservationSeverityChanged => 'تم تغيير درجة الخطورة صراحةً';
+
+  @override
+  String get issueStatusOpen => 'مفتوحة';
+
+  @override
+  String get issueStatusInReview => 'قيد المراجعة';
+
+  @override
+  String get issueStatusResolved => 'تم حلها';
+
+  @override
+  String get issueStatusDismissed => 'مستبعدة';
+
+  @override
+  String get issueEventDetected => 'تم اكتشاف المشكلة';
+
+  @override
+  String get issueEventConfirmed => 'تم تأكيد المشكلة';
+
+  @override
+  String get issueEventNotObserved => 'لم تُلاحظ أثناء الفحص';
+
+  @override
+  String get issueEventSeverityChanged => 'تم تغيير درجة الخطورة';
+
+  @override
+  String get issueEventResolutionSubmitted => 'أُرسل الحل للمراجعة';
+
+  @override
+  String get issueEventResolved => 'تم حل المشكلة';
+
+  @override
+  String get issueEventUnableToFix => 'تم تسجيل تعذر الإصلاح';
+
+  @override
+  String get issueEventDismissed => 'تم استبعاد المشكلة';
+
+  @override
+  String get issueEventReviewReturned => 'أُعيدت المراجعة';
+
+  @override
+  String homeActiveIssues(int count) {
+    return 'المشكلات النشطة ($count)';
+  }
+
+  @override
+  String get failedOpsKindIssueWorkflow => 'إجراء لمشكلة شجرة';
+
+  @override
+  String get failedOpsKindInspection => 'إجراء فحص أشجار';
+
+  @override
+  String get inspectionCreateUnavailable =>
+      'يمكن لمديري المزرعة فقط إنشاء الفحوصات.';
+
+  @override
+  String get inspectionCreateTitle => 'إنشاء فحص للأشجار';
+
+  @override
+  String inspectionCreateForSection(String section) {
+    return 'فحص القسم $section';
+  }
+
+  @override
+  String get inspectionStandardTaskHint =>
+      'هذا ينشئ مهمة فحص عادية. لمسار موجّه شجرةً بشجرة، استخدم إعداد الفحص الموجّه.';
+
+  @override
+  String get inspectionGuidedCreateAction => 'إنشاء فحص موجّه';
+
+  @override
+  String get inspectionGuidedSessionMissing =>
+      'هذه مهمة عادية ولا تحتوي على مسار فحص موجّه.';
+
+  @override
+  String get inspectionBackToTask => 'العودة إلى المهمة';
+
+  @override
+  String get inspectionTitleLabel => 'عنوان الفحص';
+
+  @override
+  String get inspectionSectionLabel => 'القسم';
+
+  @override
+  String get inspectionInspectorLabel => 'المفتش المكلّف';
+
+  @override
+  String get inspectionChooseSchedule => 'اختيار تاريخ التنفيذ';
+
+  @override
+  String get inspectionScheduleRequired => 'تاريخ التنفيذ مطلوب.';
+
+  @override
+  String inspectionDefaultTitle(String section) {
+    return 'فحص الأشجار · $section';
+  }
+
+  @override
+  String get inspectionRequiresReview => 'يتطلب مراجعة المهندس';
+
+  @override
+  String get inspectionRequiresPhoto => 'طلب صورة لكل مشكلة محددة';
+
+  @override
+  String get inspectionPhotoRequirementHint =>
+      'تظل الصور اختيارية عند إيقاف هذا الخيار.';
+
+  @override
+  String get inspectionBuildRoute => 'إنشاء ومعاينة مسار المشي';
+
+  @override
+  String get inspectionSectionHasNoTrees =>
+      'لا توجد أشجار نشطة لفحصها في هذا القسم.';
+
+  @override
+  String get inspectionCreateAction => 'إنشاء الفحص';
+
+  @override
+  String get inspectionTitleRequired => 'أدخل عنوان الفحص.';
+
+  @override
+  String get inspectionQueuedOffline =>
+      'تم حفظ الفحص دون اتصال ووضعه في قائمة المزامنة.';
+
+  @override
+  String get inspectionRoutePreview => 'معاينة مسار المشي';
+
+  @override
+  String inspectionRouteCounts(int trees, int stations) {
+    return '$trees شجرة · $stations محطة';
+  }
+
+  @override
+  String inspectionStartsAt(String tree) {
+    return 'البداية عند $tree';
+  }
+
+  @override
+  String inspectionRoutePreviewSemantics(String tree, int trees, int stations) {
+    return 'يبدأ مسار المشي عند $tree ويغطي $trees شجرة ضمن $stations محطة. الخطوط الخضراء هي صفوف الأشجار والأسهم البرتقالية هي ممرات المشي.';
+  }
+
+  @override
+  String get inspectionRouteRowsLegend => 'صفوف الأشجار';
+
+  @override
+  String get inspectionRoutePathLegend => 'اتجاه المشي';
+
+  @override
+  String get inspectionPhysicalSidesHint =>
+      'اليسار واليمين جهتان فعليتان أثناء المشي ولا تنعكسان في الواجهة العربية.';
+
+  @override
+  String get inspectionOpenRunner => 'فتح الفحص';
+
+  @override
+  String get inspectionRunnerEyebrow => 'جولة القسم';
+
+  @override
+  String get inspectionRunnerTitle => 'فحص الأشجار';
+
+  @override
+  String inspectionProgress(int done, int total) {
+    return 'تم فحص $done من $total شجرة';
+  }
+
+  @override
+  String get inspectionStart => 'بدء الفحص';
+
+  @override
+  String get inspectionResume => 'استئناف الفحص';
+
+  @override
+  String get inspectionPause => 'إيقاف مؤقت';
+
+  @override
+  String get inspectionAssignedToAnotherInspector => 'الفحص مكلّف به مفتش آخر';
+
+  @override
+  String get inspectionTakeoverHint =>
+      'يتطلب استلام الفحص اتصالًا بالشبكة، ويستبدل المفتش المكلّف، ويُسجّل في سجل المهمة.';
+
+  @override
+  String get inspectionTakeover => 'استلام الفحص';
+
+  @override
+  String get inspectionPreviousStation => 'المحطة السابقة';
+
+  @override
+  String get inspectionSubmit => 'إرسال الفحص';
+
+  @override
+  String get inspectionSubmitted => 'تم إرسال هذا الفحص.';
+
+  @override
+  String get inspectionFinalReviewTitle => 'المراجعة قبل الإرسال';
+
+  @override
+  String inspectionFinalReviewMessage(int trees, int stations) {
+    return 'تم حفظ جميع الأشجار وعددها $trees ضمن $stations محطة. راجع المحطة السابقة أو أرسل الفحص.';
+  }
+
+  @override
+  String inspectionStation(int current, int total) {
+    return 'المحطة $current من $total';
+  }
+
+  @override
+  String get inspectionPhysicalLeft => 'الجهة اليسرى فعليًا';
+
+  @override
+  String get inspectionPhysicalRight => 'الجهة اليمنى فعليًا';
+
+  @override
+  String get inspectionSingleSide => 'جهة واحدة';
+
+  @override
+  String inspectionTreePosition(String row, String tree) {
+    return 'صف المصدر $row · الشجرة $tree';
+  }
+
+  @override
+  String inspectionCoordinates(String latitude, String longitude) {
+    return '$latitude، $longitude';
+  }
+
+  @override
+  String inspectionExistingIssues(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count مشكلات حالية',
+      one: 'مشكلة حالية واحدة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String inspectionTreeCardSemantics(String tree, String side, int issues) {
+    String _temp0 = intl.Intl.pluralLogic(
+      issues,
+      locale: localeName,
+      other: '$issues مشكلات حالية',
+      one: 'مشكلة حالية واحدة',
+      zero: 'لا توجد مشكلات حالية',
+    );
+    return 'الشجرة $tree، $side، $_temp0';
+  }
+
+  @override
+  String get inspectionSelectSeverity => 'اختر درجة الخطورة';
+
+  @override
+  String get inspectionNoNewIssue =>
+      'لم تُكتشف مشكلة جديدة. تظل المشكلات الحالية غير المحددة نشطة.';
+
+  @override
+  String get inspectionSaveNext => 'حفظ المحطة والمتابعة';
+
+  @override
+  String get inspectionPhotoRequiredError =>
+      'يتطلب هذا الفحص صورة لكل مشكلة محددة.';
+
+  @override
+  String get inspectionAddIssuePhoto => 'إضافة صورة للمشكلة (اختياري)';
+
+  @override
+  String get inspectionAddRequiredIssuePhoto => 'إضافة صورة مطلوبة للمشكلة';
+
+  @override
+  String get inspectionIssuePhotoReady => 'تم تجهيز صورة المشكلة';
+
+  @override
+  String get inspectionLoadFailed => 'تعذر تحميل الفحص.';
+
+  @override
+  String get issueWorkTitle => 'المشكلات في هذه المهمة';
+
+  @override
+  String get issueWorkIndividualHint =>
+      'راجع وسجّل نتيجة لكل مشكلة بشكل منفصل.';
+
+  @override
+  String get issueWorkPhotoRequired =>
+      'يلزم إرفاق صورة للحل قبل اختيار تم الحل.';
+
+  @override
+  String get issueWorkAddPhoto => 'إضافة صورة للنتيجة (اختياري)';
+
+  @override
+  String get issueWorkPhotoReady => 'تم تجهيز صورة النتيجة';
+
+  @override
+  String get issueWorkResolve => 'تم الحل';
+
+  @override
+  String get issueWorkUnable => 'تعذر الإصلاح';
+
+  @override
+  String get issueWorkUnableReason => 'لماذا تعذر إصلاحها؟';
+
+  @override
+  String get issueWorkNotes => 'ملاحظات';
+
+  @override
+  String get issueWorkPending => 'قيد الانتظار';
+
+  @override
+  String get issueWorkSubmitted => 'أُرسلت للمراجعة';
+
+  @override
+  String get issueWorkResolved => 'تم حلها';
+
+  @override
+  String get issueWorkUnableState => 'تعذر الإصلاح';
+
+  @override
+  String get issueWorkReturned => 'أُعيدت';
+
+  @override
+  String get reviewIssueScopeHint =>
+      'تؤثر الموافقة فقط في المشكلات المدرجة صراحةً في هذه المهمة. تبقى المشكلات الأخرى على الأشجار نفسها دون تغيير.';
+
+  @override
+  String get unableReasonReplacementPart => 'تحتاج قطعة بديلة';
+
+  @override
+  String get unableReasonSpecialist => 'تحتاج مختصًا';
+
+  @override
+  String get unableReasonAdditionalWorker => 'تحتاج عاملًا إضافيًا';
+
+  @override
+  String get unableReasonEquipment => 'المعدات غير متاحة';
+
+  @override
+  String get unableReasonInaccessible => 'لا يمكن الوصول إلى الشجرة';
+
+  @override
+  String get unableReasonIncorrectIssue => 'يُشتبه أن المشكلة غير صحيحة';
+
+  @override
+  String mapActiveIssueFilter(int count) {
+    return 'المشكلات النشطة ($count)';
+  }
+
+  @override
+  String get mapShowIssueMatchesOnly => 'إظهار الأشجار المطابقة فقط';
+
+  @override
+  String mapIssueFilters(int count) {
+    return 'عوامل التصفية ($count)';
+  }
+
+  @override
+  String mapIssueTreeSemantics(String tree, int count, String severity) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count مشكلات نشطة',
+      one: 'مشكلة نشطة واحدة',
+    );
+    return 'الشجرة $tree، $_temp0، أعلى خطورة $severity';
+  }
+
+  @override
+  String get mapIssueFiltersTitle => 'تصفية مشكلات الخريطة';
+
+  @override
+  String get mapIssueStatusFilter => 'حالة المشكلة';
+
+  @override
+  String mapIssueLayerSemantics(int trees, int issues) {
+    return 'طبقة المشكلات: $trees شجرة مطابقة بها $issues مشكلة نشطة';
+  }
+
+  @override
+  String treeActiveIssues(int count) {
+    return 'المشكلات النشطة ($count)';
+  }
+
+  @override
+  String treeActiveIssuesSemantics(int count) {
+    return 'توجد لهذه الشجرة $count مشكلة نشطة';
+  }
+
+  @override
+  String get treeIssueHistory => 'المشكلات السابقة';
+
+  @override
+  String get treeIssueHistoryEmpty => 'لا تتوفر مشكلات سابقة.';
+
+  @override
+  String get treeIssueHistoryLoadFailed => 'تعذر تحميل السجل. إعادة المحاولة';
+
+  @override
+  String treeIssueReportedDate(String date) {
+    return 'أُبلغ عنها في $date';
+  }
+
+  @override
+  String treeIssueOccurrenceDates(String reported, String closed) {
+    return 'أُبلغ عنها في $reported · أُغلقت في $closed';
+  }
+
+  @override
+  String treeIssueHistorySemantics(int count) {
+    return '$count مشكلة سابقة';
+  }
+
+  @override
+  String treeIssueOccurrenceSemantics(
+      String type, String severity, String status, String dates) {
+    return '$type، $severity، $status، $dates';
+  }
+
+  @override
+  String issuesActiveTab(int count) {
+    return 'النشطة ($count)';
+  }
+
+  @override
+  String issuesHistoryTab(int count) {
+    return 'السجل ($count)';
+  }
+
+  @override
+  String get issuesHistoryEmpty => 'لا توجد مشكلات سابقة تطابق عوامل التصفية.';
+
+  @override
+  String get issuesStatusFilter => 'الحالة';
+
+  @override
+  String get issuesAllStatuses => 'كل الحالات';
+
+  @override
+  String get issuesSectionFilter => 'القسم';
+
+  @override
+  String get issuesAllSections => 'كل الأقسام';
+
+  @override
+  String get issuesAgeFilter => 'عمر المشكلة';
+
+  @override
+  String get issuesAnyAge => 'أي مدة';
+
+  @override
+  String get issuesAgeSevenDays => 'منذ 7 أيام أو أكثر';
+
+  @override
+  String get issuesAgeThirtyDays => 'منذ 30 يومًا أو أكثر';
+
+  @override
+  String get issuesAgeNinetyDays => 'منذ 90 يومًا أو أكثر';
+
+  @override
+  String get issuesAssignmentFilter => 'التكليف';
+
+  @override
+  String get issuesAllAssignments => 'كل التكليفات';
+
+  @override
+  String get issuesAssigned => 'مكلّفة';
+
+  @override
+  String get issuesUnassigned => 'غير مكلّفة';
+
+  @override
+  String get issuesSourceFilter => 'المصدر';
+
+  @override
+  String get issuesAllSources => 'كل المصادر';
+
+  @override
+  String get issueSourceInspection => 'فحص';
+
+  @override
+  String get issueSourceQuickReport => 'بلاغ سريع';
+
+  @override
+  String get issuesResetFilters => 'إعادة ضبط التصفية';
+
+  @override
+  String get issuesAssign => 'تكليف';
+
+  @override
+  String get issuesAssignTitle => 'تكليف عمل المشكلة';
+
+  @override
+  String get issuesAssignTo => 'التكليف إلى';
+
+  @override
+  String get issuesRequireEngineerReview => 'طلب مراجعة المهندس قبل الإغلاق';
+
+  @override
+  String get issuesAssignmentOnlineOnly => 'اتصل بالإنترنت لتكليف هذه المشكلة';
+
+  @override
+  String get issuesNoAssignableMembers =>
+      'لا يوجد أعضاء تشغيليون نشطون متاحون.';
+
+  @override
+  String issuesAssignedTo(String name) {
+    return 'مكلّفة إلى $name';
+  }
+
+  @override
+  String issuesReportedOn(String date) {
+    return 'أُبلغ عنها في $date';
+  }
+
+  @override
+  String issuesClosedOn(String date) {
+    return 'أُغلقت في $date';
   }
 }

@@ -51,6 +51,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonLoading => 'Loading…';
 
   @override
+  String get commonAll => 'All';
+
+  @override
+  String get commonClear => 'Clear';
+
+  @override
+  String get commonApply => 'Apply';
+
+  @override
   String routeUnavailable(String path) {
     return 'Route unavailable: $path';
   }
@@ -144,6 +153,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeIrrigationZones => 'Irrigation zones';
+
+  @override
+  String get homePlantingPits => 'Planting pits';
 
   @override
   String get homeOpenMap => 'Open coordinate map';
@@ -1114,6 +1126,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Issue reported and engineer review task created.';
 
   @override
+  String get issueMsgConfirmedExisting =>
+      'The existing active issue was confirmed. Its severity was not changed.';
+
+  @override
   String get issueMsgReportedOffline =>
       'Issue saved offline. It will be reported to the farm when you\'re back online.';
 
@@ -1124,6 +1140,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get issueMsgReportedWithPhoto =>
       'Issue, review task, and photo evidence saved.';
+
+  @override
+  String get issueMsgConfirmedExistingWithPhoto =>
+      'The existing active issue was confirmed with photo evidence. Its severity was not changed.';
 
   @override
   String get issueErrPartialPrefix =>
@@ -1325,6 +1345,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mapLayerTrees => 'Trees';
 
   @override
+  String get mapLayerPlantingPits => 'Planting pits';
+
+  @override
   String get mapLayerIrrigation => 'Irrigation network';
 
   @override
@@ -1410,6 +1433,127 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mapSectionUnplanted => 'Unplanted';
+
+  @override
+  String mapSectionPitCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count pits',
+      one: '1 pit',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get plantingPitEyebrow => 'Planting pit';
+
+  @override
+  String plantingPitSection(String section) {
+    return 'Section $section';
+  }
+
+  @override
+  String plantingPitPosition(String row, String pit) {
+    return 'Row $row · Pit $pit';
+  }
+
+  @override
+  String plantingPitCoordinates(String latitude, String longitude) {
+    return '$latitude, $longitude';
+  }
+
+  @override
+  String plantingPitPlannedFor(String date) {
+    return 'Planned for $date';
+  }
+
+  @override
+  String get plantingPitStatusPlanned => 'Planned';
+
+  @override
+  String get plantingPitStatusMarked => 'Marked';
+
+  @override
+  String get plantingPitStatusDug => 'Dug';
+
+  @override
+  String get plantingPitStatusPrepared => 'Prepared';
+
+  @override
+  String get plantingPitStatusCompleted => 'Completed';
+
+  @override
+  String get plantingPitStatusCancelled => 'Cancelled';
+
+  @override
+  String plantingPitAdvanceTo(String status) {
+    return 'Move to $status';
+  }
+
+  @override
+  String get plantingPitCancel => 'Cancel pit';
+
+  @override
+  String get plantingPitUpdating => 'Updating…';
+
+  @override
+  String get plantingPitUpdated => 'Planting pit updated.';
+
+  @override
+  String get plantingPitUpdateFailed =>
+      'The planting pit could not be updated.';
+
+  @override
+  String plantingPitAddForSection(String section) {
+    return 'Add pit to Section $section';
+  }
+
+  @override
+  String get plantingPitCreateTitle => 'Add planting pit';
+
+  @override
+  String get plantingPitCodeField => 'Pit code';
+
+  @override
+  String get plantingPitRowField => 'Row number';
+
+  @override
+  String get plantingPitNumberField => 'Pit number';
+
+  @override
+  String get plantingPitLatitudeField => 'Latitude';
+
+  @override
+  String get plantingPitLongitudeField => 'Longitude';
+
+  @override
+  String get plantingPitPlannedDateField => 'Planned date (optional)';
+
+  @override
+  String get plantingPitNotesField => 'Notes (optional)';
+
+  @override
+  String get plantingPitSave => 'Add pit';
+
+  @override
+  String get plantingPitSaving => 'Adding…';
+
+  @override
+  String get plantingPitCreated => 'Planting pit added.';
+
+  @override
+  String get plantingPitCreateFailed => 'The planting pit could not be added.';
+
+  @override
+  String get plantingPitRequiredField => 'This field is required';
+
+  @override
+  String get plantingPitInvalidCoordinate => 'Enter a valid coordinate';
+
+  @override
+  String get plantingPitGridPairRequired =>
+      'Enter both row and pit numbers, or leave both empty';
 
   @override
   String get mapSelectAnyTree => 'Select any tree';
@@ -1842,5 +1986,655 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String taskProductQuantity(String quantity, String unit) {
     return '$quantity $unit';
+  }
+
+  @override
+  String get issuesEyebrow => 'FIELD HEALTH';
+
+  @override
+  String get issuesTitle => 'Active tree issues';
+
+  @override
+  String get issuesUnavailable => 'The issue workspace is unavailable.';
+
+  @override
+  String get issuesFilters => 'Filter issues';
+
+  @override
+  String get issuesAllTypes => 'All issue types';
+
+  @override
+  String get issuesAllSeverities => 'All severities';
+
+  @override
+  String get issuesOnlyUnclaimed => 'Only issues available to claim';
+
+  @override
+  String issuesTreeLocation(String section, String tree) {
+    return 'Section $section · $tree';
+  }
+
+  @override
+  String get issuesOpenTree => 'Open tree';
+
+  @override
+  String get issuesClaim => 'Claim issue';
+
+  @override
+  String get issuesClaimOnlineOnly =>
+      'Connect to the internet to claim this issue';
+
+  @override
+  String get issuesClaimed => 'Claimed';
+
+  @override
+  String get issuesClaimedByYou => 'Assigned to you';
+
+  @override
+  String get issuesDetailsAvailable => 'Full details available';
+
+  @override
+  String get issuesSummaryOnly => 'Safe summary';
+
+  @override
+  String get issuesLoadFailed => 'The active issues could not be loaded.';
+
+  @override
+  String get issuesEmpty => 'No active issues match these filters.';
+
+  @override
+  String get issueDetailTitle => 'Issue details';
+
+  @override
+  String get issueDetailHistory => 'Issue history';
+
+  @override
+  String get issueDetailDescription => 'Field observation';
+
+  @override
+  String get issueDetailNoDescription => 'No observation notes were recorded.';
+
+  @override
+  String get issueDetailViewHistory => 'View details and history';
+
+  @override
+  String get issueDetailChangeSeverity => 'Change severity';
+
+  @override
+  String get issueDetailDismiss => 'Dismiss issue';
+
+  @override
+  String get issueDetailDismissPrompt => 'Why should this issue be dismissed?';
+
+  @override
+  String get issueDetailDismissRequired => 'A dismissal reason is required.';
+
+  @override
+  String get issueDetailActionSaved =>
+      'The issue action was saved or queued for sync.';
+
+  @override
+  String get issueDetailOpenTask => 'Open related task';
+
+  @override
+  String get issueDetailNoHistory => 'No issue events are available.';
+
+  @override
+  String get issueDetailLoadFailed =>
+      'The authorized issue details could not be loaded.';
+
+  @override
+  String get issueDetailObservations => 'Inspection observations';
+
+  @override
+  String get issueDetailNoObservations =>
+      'No inspection observations are linked to this issue.';
+
+  @override
+  String get issueDetailLinkedTasks => 'Linked tasks';
+
+  @override
+  String get issueDetailNoLinkedTasks => 'No tasks are linked to this issue.';
+
+  @override
+  String get issueDetailTaskRestricted =>
+      'Task details are restricted to its assignees and farm managers.';
+
+  @override
+  String issueDetailEvidence(int count) {
+    return 'Issue evidence ($count)';
+  }
+
+  @override
+  String get issueObservationDetected => 'Detected during inspection';
+
+  @override
+  String get issueObservationConfirmed => 'Confirmed during inspection';
+
+  @override
+  String get issueObservationNotObserved => 'Not observed during inspection';
+
+  @override
+  String get issueObservationSeverityChanged => 'Severity explicitly changed';
+
+  @override
+  String get issueStatusOpen => 'Open';
+
+  @override
+  String get issueStatusInReview => 'In review';
+
+  @override
+  String get issueStatusResolved => 'Resolved';
+
+  @override
+  String get issueStatusDismissed => 'Dismissed';
+
+  @override
+  String get issueEventDetected => 'Issue detected';
+
+  @override
+  String get issueEventConfirmed => 'Issue confirmed';
+
+  @override
+  String get issueEventNotObserved => 'Not observed during inspection';
+
+  @override
+  String get issueEventSeverityChanged => 'Severity changed';
+
+  @override
+  String get issueEventResolutionSubmitted => 'Resolution submitted for review';
+
+  @override
+  String get issueEventResolved => 'Issue resolved';
+
+  @override
+  String get issueEventUnableToFix => 'Unable to fix recorded';
+
+  @override
+  String get issueEventDismissed => 'Issue dismissed';
+
+  @override
+  String get issueEventReviewReturned => 'Review returned';
+
+  @override
+  String homeActiveIssues(int count) {
+    return 'Active issues ($count)';
+  }
+
+  @override
+  String get failedOpsKindIssueWorkflow => 'Tree issue action';
+
+  @override
+  String get failedOpsKindInspection => 'Tree inspection action';
+
+  @override
+  String get inspectionCreateUnavailable =>
+      'Only farm managers can create inspections.';
+
+  @override
+  String get inspectionCreateTitle => 'Create tree inspection';
+
+  @override
+  String inspectionCreateForSection(String section) {
+    return 'Inspect section $section';
+  }
+
+  @override
+  String get inspectionStandardTaskHint =>
+      'This creates a standard task. For a guided tree-by-tree route, use guided inspection setup.';
+
+  @override
+  String get inspectionGuidedCreateAction => 'Create guided inspection';
+
+  @override
+  String get inspectionGuidedSessionMissing =>
+      'This is a standard task and has no guided inspection route.';
+
+  @override
+  String get inspectionBackToTask => 'Back to task';
+
+  @override
+  String get inspectionTitleLabel => 'Inspection title';
+
+  @override
+  String get inspectionSectionLabel => 'Section';
+
+  @override
+  String get inspectionInspectorLabel => 'Assigned inspector';
+
+  @override
+  String get inspectionChooseSchedule => 'Choose scheduled date';
+
+  @override
+  String get inspectionScheduleRequired => 'A scheduled date is required.';
+
+  @override
+  String inspectionDefaultTitle(String section) {
+    return 'Tree inspection · $section';
+  }
+
+  @override
+  String get inspectionRequiresReview => 'Require engineer review';
+
+  @override
+  String get inspectionRequiresPhoto =>
+      'Require a photo for every selected issue';
+
+  @override
+  String get inspectionPhotoRequirementHint =>
+      'Photos stay optional when this is off.';
+
+  @override
+  String get inspectionBuildRoute => 'Build and preview walking route';
+
+  @override
+  String get inspectionSectionHasNoTrees =>
+      'This section has no active trees to inspect.';
+
+  @override
+  String get inspectionCreateAction => 'Create inspection';
+
+  @override
+  String get inspectionTitleRequired => 'Enter an inspection title.';
+
+  @override
+  String get inspectionQueuedOffline =>
+      'Inspection saved offline and queued for sync.';
+
+  @override
+  String get inspectionRoutePreview => 'Walking route preview';
+
+  @override
+  String inspectionRouteCounts(int trees, int stations) {
+    return '$trees trees · $stations stations';
+  }
+
+  @override
+  String inspectionStartsAt(String tree) {
+    return 'Starts at $tree';
+  }
+
+  @override
+  String inspectionRoutePreviewSemantics(String tree, int trees, int stations) {
+    return 'Walking route starts at $tree and covers $trees trees across $stations stations. Green lines are tree rows and orange arrows are walking corridors.';
+  }
+
+  @override
+  String get inspectionRouteRowsLegend => 'Tree rows';
+
+  @override
+  String get inspectionRoutePathLegend => 'Walking direction';
+
+  @override
+  String get inspectionPhysicalSidesHint =>
+      'Left and right are physical sides while walking and do not change in Arabic.';
+
+  @override
+  String get inspectionOpenRunner => 'Open inspection';
+
+  @override
+  String get inspectionRunnerEyebrow => 'SECTION WALK';
+
+  @override
+  String get inspectionRunnerTitle => 'Tree inspection';
+
+  @override
+  String inspectionProgress(int done, int total) {
+    return '$done of $total trees inspected';
+  }
+
+  @override
+  String get inspectionStart => 'Start inspection';
+
+  @override
+  String get inspectionResume => 'Resume inspection';
+
+  @override
+  String get inspectionPause => 'Pause';
+
+  @override
+  String get inspectionAssignedToAnotherInspector =>
+      'Assigned to another inspector';
+
+  @override
+  String get inspectionTakeoverHint =>
+      'Taking over is online-only, replaces the assigned inspector, and is recorded in task history.';
+
+  @override
+  String get inspectionTakeover => 'Take over inspection';
+
+  @override
+  String get inspectionPreviousStation => 'Previous station';
+
+  @override
+  String get inspectionSubmit => 'Submit inspection';
+
+  @override
+  String get inspectionSubmitted => 'This inspection was submitted.';
+
+  @override
+  String get inspectionFinalReviewTitle => 'Review before submission';
+
+  @override
+  String inspectionFinalReviewMessage(int trees, int stations) {
+    return 'All $trees trees across $stations stations are saved. Review the previous station or submit the inspection.';
+  }
+
+  @override
+  String inspectionStation(int current, int total) {
+    return 'Station $current of $total';
+  }
+
+  @override
+  String get inspectionPhysicalLeft => 'Physical left';
+
+  @override
+  String get inspectionPhysicalRight => 'Physical right';
+
+  @override
+  String get inspectionSingleSide => 'Single side';
+
+  @override
+  String inspectionTreePosition(String row, String tree) {
+    return 'Source row $row · tree $tree';
+  }
+
+  @override
+  String inspectionCoordinates(String latitude, String longitude) {
+    return '$latitude, $longitude';
+  }
+
+  @override
+  String inspectionExistingIssues(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count existing issues',
+      one: '1 existing issue',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String inspectionTreeCardSemantics(String tree, String side, int issues) {
+    String _temp0 = intl.Intl.pluralLogic(
+      issues,
+      locale: localeName,
+      other: '$issues existing issues',
+      one: '1 existing issue',
+      zero: 'no existing issues',
+    );
+    return 'Tree $tree, $side, $_temp0';
+  }
+
+  @override
+  String get inspectionSelectSeverity => 'Select severity';
+
+  @override
+  String get inspectionNoNewIssue =>
+      'No new issue found. Existing deselected issues remain active.';
+
+  @override
+  String get inspectionSaveNext => 'Save station and continue';
+
+  @override
+  String get inspectionPhotoRequiredError =>
+      'This inspection requires a photo for every selected issue.';
+
+  @override
+  String get inspectionAddIssuePhoto => 'Add issue photo (optional)';
+
+  @override
+  String get inspectionAddRequiredIssuePhoto => 'Add required issue photo';
+
+  @override
+  String get inspectionIssuePhotoReady => 'Issue photo prepared';
+
+  @override
+  String get inspectionLoadFailed => 'The inspection could not be loaded.';
+
+  @override
+  String get issueWorkTitle => 'Issues in this task';
+
+  @override
+  String get issueWorkIndividualHint =>
+      'Review and record an outcome for each issue separately.';
+
+  @override
+  String get issueWorkPhotoRequired =>
+      'A resolution photo is required before Resolve.';
+
+  @override
+  String get issueWorkAddPhoto => 'Add outcome photo (optional)';
+
+  @override
+  String get issueWorkPhotoReady => 'Outcome photo prepared';
+
+  @override
+  String get issueWorkResolve => 'Resolve';
+
+  @override
+  String get issueWorkUnable => 'Unable to fix';
+
+  @override
+  String get issueWorkUnableReason => 'Why could this not be fixed?';
+
+  @override
+  String get issueWorkNotes => 'Notes';
+
+  @override
+  String get issueWorkPending => 'Pending';
+
+  @override
+  String get issueWorkSubmitted => 'Submitted for review';
+
+  @override
+  String get issueWorkResolved => 'Resolved';
+
+  @override
+  String get issueWorkUnableState => 'Unable to fix';
+
+  @override
+  String get issueWorkReturned => 'Returned';
+
+  @override
+  String get reviewIssueScopeHint =>
+      'Approval affects only the issues explicitly listed in this task. Other issues on the same trees remain unchanged.';
+
+  @override
+  String get unableReasonReplacementPart => 'Replacement part required';
+
+  @override
+  String get unableReasonSpecialist => 'Specialist required';
+
+  @override
+  String get unableReasonAdditionalWorker => 'Additional worker required';
+
+  @override
+  String get unableReasonEquipment => 'Equipment unavailable';
+
+  @override
+  String get unableReasonInaccessible => 'Tree inaccessible';
+
+  @override
+  String get unableReasonIncorrectIssue => 'Suspected incorrect issue';
+
+  @override
+  String mapActiveIssueFilter(int count) {
+    return 'Active issues ($count)';
+  }
+
+  @override
+  String get mapShowIssueMatchesOnly => 'Show matching trees only';
+
+  @override
+  String mapIssueFilters(int count) {
+    return 'Filters ($count)';
+  }
+
+  @override
+  String mapIssueTreeSemantics(String tree, int count, String severity) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count active issues',
+      one: '1 active issue',
+    );
+    return 'Tree $tree, $_temp0, highest severity $severity';
+  }
+
+  @override
+  String get mapIssueFiltersTitle => 'Map issue filters';
+
+  @override
+  String get mapIssueStatusFilter => 'Issue status';
+
+  @override
+  String mapIssueLayerSemantics(int trees, int issues) {
+    return 'Issue layer: $trees matching trees with $issues active issues';
+  }
+
+  @override
+  String treeActiveIssues(int count) {
+    return 'Active issues ($count)';
+  }
+
+  @override
+  String treeActiveIssuesSemantics(int count) {
+    return 'This tree has $count active issues';
+  }
+
+  @override
+  String get treeIssueHistory => 'Past issue occurrences';
+
+  @override
+  String get treeIssueHistoryEmpty => 'No past occurrences are available.';
+
+  @override
+  String get treeIssueHistoryLoadFailed => 'Could not load history. Retry';
+
+  @override
+  String treeIssueReportedDate(String date) {
+    return 'Reported $date';
+  }
+
+  @override
+  String treeIssueOccurrenceDates(String reported, String closed) {
+    return 'Reported $reported · Closed $closed';
+  }
+
+  @override
+  String treeIssueHistorySemantics(int count) {
+    return '$count past issue occurrences';
+  }
+
+  @override
+  String treeIssueOccurrenceSemantics(
+      String type, String severity, String status, String dates) {
+    return '$type, $severity, $status, $dates';
+  }
+
+  @override
+  String issuesActiveTab(int count) {
+    return 'Active ($count)';
+  }
+
+  @override
+  String issuesHistoryTab(int count) {
+    return 'History ($count)';
+  }
+
+  @override
+  String get issuesHistoryEmpty =>
+      'No historical issue occurrences match these filters.';
+
+  @override
+  String get issuesStatusFilter => 'Status';
+
+  @override
+  String get issuesAllStatuses => 'All statuses';
+
+  @override
+  String get issuesSectionFilter => 'Section';
+
+  @override
+  String get issuesAllSections => 'All sections';
+
+  @override
+  String get issuesAgeFilter => 'Issue age';
+
+  @override
+  String get issuesAnyAge => 'Any age';
+
+  @override
+  String get issuesAgeSevenDays => '7 days or older';
+
+  @override
+  String get issuesAgeThirtyDays => '30 days or older';
+
+  @override
+  String get issuesAgeNinetyDays => '90 days or older';
+
+  @override
+  String get issuesAssignmentFilter => 'Assignment';
+
+  @override
+  String get issuesAllAssignments => 'All assignments';
+
+  @override
+  String get issuesAssigned => 'Assigned';
+
+  @override
+  String get issuesUnassigned => 'Unassigned';
+
+  @override
+  String get issuesSourceFilter => 'Source';
+
+  @override
+  String get issuesAllSources => 'All sources';
+
+  @override
+  String get issueSourceInspection => 'Inspection';
+
+  @override
+  String get issueSourceQuickReport => 'Quick report';
+
+  @override
+  String get issuesResetFilters => 'Reset filters';
+
+  @override
+  String get issuesAssign => 'Assign';
+
+  @override
+  String get issuesAssignTitle => 'Assign issue work';
+
+  @override
+  String get issuesAssignTo => 'Assign to';
+
+  @override
+  String get issuesRequireEngineerReview =>
+      'Require engineer review before closing';
+
+  @override
+  String get issuesAssignmentOnlineOnly =>
+      'Connect to the internet to assign this issue';
+
+  @override
+  String get issuesNoAssignableMembers =>
+      'No active operational farm members are available.';
+
+  @override
+  String issuesAssignedTo(String name) {
+    return 'Assigned to $name';
+  }
+
+  @override
+  String issuesReportedOn(String date) {
+    return 'Reported $date';
+  }
+
+  @override
+  String issuesClosedOn(String date) {
+    return 'Closed $date';
   }
 }

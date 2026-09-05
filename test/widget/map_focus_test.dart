@@ -1,5 +1,4 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_theme.dart';
-import 'package:al_wahat_farm_flutter/features/map/data/map_asset_repository.dart';
 import 'package:al_wahat_farm_flutter/features/map/domain/projected_map.dart';
 import 'package:al_wahat_farm_flutter/features/map/presentation/farm_map_painter.dart';
 import 'package:al_wahat_farm_flutter/features/map/presentation/farm_map_screen.dart';
@@ -7,10 +6,10 @@ import 'package:al_wahat_farm_flutter/features/trees/presentation/tree_detail_sh
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../support/projected_farm_map_fixture.dart';
+
 Future<ProjectedFarmMap> _loadMap(WidgetTester tester) async =>
-    (await tester.runAsync(
-      () => const MapAssetRepository().load().then(ProjectedFarmMap.new),
-    ))!;
+    (await tester.runAsync(loadComposedFarmMap))!;
 
 Future<void> _pump(
   WidgetTester tester,

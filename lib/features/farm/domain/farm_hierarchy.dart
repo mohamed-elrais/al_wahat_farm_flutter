@@ -1,3 +1,5 @@
+import 'package:al_wahat_farm_flutter/features/planting_pits/domain/planting_pit.dart';
+
 enum TreeHealthStatus {
   healthy,
   needsMonitoring,
@@ -203,9 +205,11 @@ class FarmHierarchy {
     required List<FarmSection> sections,
     required List<IrrigationZone> zones,
     required List<FarmTreeRecord> trees,
+    List<PlantingPit> plantingPits = const <PlantingPit>[],
   })  : sections = List<FarmSection>.unmodifiable(sections),
         zones = List<IrrigationZone>.unmodifiable(zones),
-        trees = List<FarmTreeRecord>.unmodifiable(trees) {
+        trees = List<FarmTreeRecord>.unmodifiable(trees),
+        plantingPits = List<PlantingPit>.unmodifiable(plantingPits) {
     _validateRelationships();
   }
 
@@ -213,6 +217,7 @@ class FarmHierarchy {
   final List<FarmSection> sections;
   final List<IrrigationZone> zones;
   final List<FarmTreeRecord> trees;
+  final List<PlantingPit> plantingPits;
 
   FarmSection? sectionByCode(String code) {
     for (final section in sections) {
@@ -236,6 +241,8 @@ class FarmHierarchy {
             sections.map((section) => section.toJson()).toList(growable: false),
         'zones': zones.map((zone) => zone.toJson()).toList(growable: false),
         'trees': trees.map((tree) => tree.toJson()).toList(growable: false),
+        'planting_pits':
+            plantingPits.map((pit) => pit.toJson()).toList(growable: false),
       };
 
   factory FarmHierarchy.fromCacheJson(Map<String, Object?> json) =>
@@ -256,6 +263,13 @@ class FarmHierarchy {
                   Map<String, Object?>.from(row! as Map),
                 ))
             .toList(growable: false),
+        // Absent in caches written before planting-pit support.
+        plantingPits:
+            ((json['planting_pits'] as List<Object?>?) ?? const <Object?>[])
+                .map((row) => PlantingPit.fromJson(
+                      Map<String, Object?>.from(row! as Map),
+                    ))
+                .toList(growable: false),
       );
 
   void _validateRelationships() {
@@ -272,6 +286,7 @@ class FarmHierarchy {
     }
 
     final zoneIds = <String>{};
+    final zoneSectionById = <String, String>{};
     for (final zone in zones) {
       if (!sectionIds.contains(zone.sectionId)) {
         throw FormatException('Zone ${zone.id} references an unknown section');
@@ -279,6 +294,7 @@ class FarmHierarchy {
       if (!zoneIds.add(zone.id)) {
         throw FormatException('Duplicate irrigation zone ${zone.id}');
       }
+      zoneSectionById[zone.id] = zone.sectionId;
     }
 
     final treeIds = <String>{};
@@ -293,6 +309,37 @@ class FarmHierarchy {
       }
       if (!treeIds.add(tree.id) || !treeCodes.add(tree.treeCode)) {
         throw FormatException('Duplicate tree ${tree.id}/${tree.treeCode}');
+      }
+    }
+
+    final pitIds = <String>{};
+    final pitCodes = <String>{};
+    final gridPositions = <(String, int, int)>{};
+    for (final pit in plantingPits) {
+      if (pit.farmId != farmId || !sectionIds.contains(pit.sectionId)) {
+        throw FormatException(
+          'Planting pit ${pit.id} has an invalid farm hierarchy',
+        );
+      }
+      final zoneId = pit.irrigationZoneId;
+      if (zoneId != null && zoneSectionById[zoneId] != pit.sectionId) {
+        throw FormatException(
+          'Planting pit ${pit.id} references a zone outside its section',
+        );
+      }
+      if (!pitIds.add(pit.id) || !pitCodes.add(pit.pitCode)) {
+        throw FormatException(
+          'Duplicate planting pit ${pit.id}/${pit.pitCode}',
+        );
+      }
+      final row = pit.rowNumber;
+      final number = pit.pitNumber;
+      if (row != null &&
+          number != null &&
+          !gridPositions.add((pit.sectionId, row, number))) {
+        throw FormatException(
+          'Duplicate planting pit position ${pit.sectionId}/$row/$number',
+        );
       }
     }
   }

@@ -92,7 +92,9 @@ class _TaskCreateScreenState extends State<TaskCreateScreen> {
         widget.assignableMembers == null &&
         _workspace != null) {
       _membersRequested = true;
-      _workspace!.loadAssignableMembers();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _workspace?.loadAssignableMembers();
+      });
     }
 
     final treeId = widget.initialTreeId;
@@ -246,6 +248,19 @@ class _TaskCreateScreenState extends State<TaskCreateScreen> {
                       ? null
                       : (value) => setState(() => _type = value ?? _type),
                 ),
+                if (_type == TaskType.treeInspection) ...<Widget>[
+                  const SizedBox(height: 8),
+                  Text(context.l10n.inspectionStandardTaskHint),
+                  Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: TextButton.icon(
+                      key: const Key('use-guided-inspection-button'),
+                      onPressed: () => context.go('/tasks/create-inspection'),
+                      icon: const Icon(Icons.route_outlined),
+                      label: Text(context.l10n.inspectionGuidedCreateAction),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _descriptionController,

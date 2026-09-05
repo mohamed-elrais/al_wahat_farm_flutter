@@ -73,6 +73,27 @@ class TreeIssue {
         createdAt: DateTime.parse(json['created_at']! as String),
         updatedAt: DateTime.parse(json['updated_at']! as String),
       );
+
+  Map<String, Object?> toJson() => <String, Object?>{
+        'id': id,
+        'farm_id': farmId,
+        'tree_id': treeId,
+        'issue_type': type.wireValue,
+        'severity': severity.name,
+        'status':
+            status == TreeIssueStatus.inReview ? 'in_review' : status.name,
+        'description': description,
+        'reported_by_profile_id': reportedByProfileId,
+        'reported_at': reportedAt.toIso8601String(),
+        'reviewed_by_profile_id': reviewedByProfileId,
+        'reviewed_at': reviewedAt?.toIso8601String(),
+        'resolved_by_profile_id': resolvedByProfileId,
+        'resolved_at': resolvedAt?.toIso8601String(),
+        'resolution_notes': resolutionNotes,
+        'linked_task_id': linkedTaskId,
+        'created_at': createdAt.toIso8601String(),
+        'updated_at': updatedAt.toIso8601String(),
+      };
 }
 
 DateTime? _optionalDate(Object? value) =>

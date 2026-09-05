@@ -182,6 +182,24 @@ abstract class AppLocalizations {
   /// **'Loading…'**
   String get commonLoading;
 
+  /// No description provided for @commonAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get commonAll;
+
+  /// No description provided for @commonClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get commonClear;
+
+  /// No description provided for @commonApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get commonApply;
+
   /// No description provided for @routeUnavailable.
   ///
   /// In en, this message translates to:
@@ -361,6 +379,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Irrigation zones'**
   String get homeIrrigationZones;
+
+  /// No description provided for @homePlantingPits.
+  ///
+  /// In en, this message translates to:
+  /// **'Planting pits'**
+  String get homePlantingPits;
 
   /// No description provided for @homeOpenMap.
   ///
@@ -2090,6 +2114,12 @@ abstract class AppLocalizations {
   /// **'Issue reported and engineer review task created.'**
   String get issueMsgReported;
 
+  /// No description provided for @issueMsgConfirmedExisting.
+  ///
+  /// In en, this message translates to:
+  /// **'The existing active issue was confirmed. Its severity was not changed.'**
+  String get issueMsgConfirmedExisting;
+
   /// No description provided for @issueMsgReportedOffline.
   ///
   /// In en, this message translates to:
@@ -2107,6 +2137,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Issue, review task, and photo evidence saved.'**
   String get issueMsgReportedWithPhoto;
+
+  /// No description provided for @issueMsgConfirmedExistingWithPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'The existing active issue was confirmed with photo evidence. Its severity was not changed.'**
+  String get issueMsgConfirmedExistingWithPhoto;
 
   /// No description provided for @issueErrPartialPrefix.
   ///
@@ -2408,6 +2444,12 @@ abstract class AppLocalizations {
   /// **'Trees'**
   String get mapLayerTrees;
 
+  /// No description provided for @mapLayerPlantingPits.
+  ///
+  /// In en, this message translates to:
+  /// **'Planting pits'**
+  String get mapLayerPlantingPits;
+
   /// No description provided for @mapLayerIrrigation.
   ///
   /// In en, this message translates to:
@@ -2521,6 +2563,204 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Unplanted'**
   String get mapSectionUnplanted;
+
+  /// No description provided for @mapSectionPitCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 pit} other{{count} pits}}'**
+  String mapSectionPitCount(int count);
+
+  /// No description provided for @plantingPitEyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Planting pit'**
+  String get plantingPitEyebrow;
+
+  /// No description provided for @plantingPitSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Section {section}'**
+  String plantingPitSection(String section);
+
+  /// No description provided for @plantingPitPosition.
+  ///
+  /// In en, this message translates to:
+  /// **'Row {row} · Pit {pit}'**
+  String plantingPitPosition(String row, String pit);
+
+  /// No description provided for @plantingPitCoordinates.
+  ///
+  /// In en, this message translates to:
+  /// **'{latitude}, {longitude}'**
+  String plantingPitCoordinates(String latitude, String longitude);
+
+  /// No description provided for @plantingPitPlannedFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Planned for {date}'**
+  String plantingPitPlannedFor(String date);
+
+  /// No description provided for @plantingPitStatusPlanned.
+  ///
+  /// In en, this message translates to:
+  /// **'Planned'**
+  String get plantingPitStatusPlanned;
+
+  /// No description provided for @plantingPitStatusMarked.
+  ///
+  /// In en, this message translates to:
+  /// **'Marked'**
+  String get plantingPitStatusMarked;
+
+  /// No description provided for @plantingPitStatusDug.
+  ///
+  /// In en, this message translates to:
+  /// **'Dug'**
+  String get plantingPitStatusDug;
+
+  /// No description provided for @plantingPitStatusPrepared.
+  ///
+  /// In en, this message translates to:
+  /// **'Prepared'**
+  String get plantingPitStatusPrepared;
+
+  /// No description provided for @plantingPitStatusCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get plantingPitStatusCompleted;
+
+  /// No description provided for @plantingPitStatusCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get plantingPitStatusCancelled;
+
+  /// No description provided for @plantingPitAdvanceTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Move to {status}'**
+  String plantingPitAdvanceTo(String status);
+
+  /// No description provided for @plantingPitCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel pit'**
+  String get plantingPitCancel;
+
+  /// No description provided for @plantingPitUpdating.
+  ///
+  /// In en, this message translates to:
+  /// **'Updating…'**
+  String get plantingPitUpdating;
+
+  /// No description provided for @plantingPitUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Planting pit updated.'**
+  String get plantingPitUpdated;
+
+  /// No description provided for @plantingPitUpdateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The planting pit could not be updated.'**
+  String get plantingPitUpdateFailed;
+
+  /// No description provided for @plantingPitAddForSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Add pit to Section {section}'**
+  String plantingPitAddForSection(String section);
+
+  /// No description provided for @plantingPitCreateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add planting pit'**
+  String get plantingPitCreateTitle;
+
+  /// No description provided for @plantingPitCodeField.
+  ///
+  /// In en, this message translates to:
+  /// **'Pit code'**
+  String get plantingPitCodeField;
+
+  /// No description provided for @plantingPitRowField.
+  ///
+  /// In en, this message translates to:
+  /// **'Row number'**
+  String get plantingPitRowField;
+
+  /// No description provided for @plantingPitNumberField.
+  ///
+  /// In en, this message translates to:
+  /// **'Pit number'**
+  String get plantingPitNumberField;
+
+  /// No description provided for @plantingPitLatitudeField.
+  ///
+  /// In en, this message translates to:
+  /// **'Latitude'**
+  String get plantingPitLatitudeField;
+
+  /// No description provided for @plantingPitLongitudeField.
+  ///
+  /// In en, this message translates to:
+  /// **'Longitude'**
+  String get plantingPitLongitudeField;
+
+  /// No description provided for @plantingPitPlannedDateField.
+  ///
+  /// In en, this message translates to:
+  /// **'Planned date (optional)'**
+  String get plantingPitPlannedDateField;
+
+  /// No description provided for @plantingPitNotesField.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes (optional)'**
+  String get plantingPitNotesField;
+
+  /// No description provided for @plantingPitSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Add pit'**
+  String get plantingPitSave;
+
+  /// No description provided for @plantingPitSaving.
+  ///
+  /// In en, this message translates to:
+  /// **'Adding…'**
+  String get plantingPitSaving;
+
+  /// No description provided for @plantingPitCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Planting pit added.'**
+  String get plantingPitCreated;
+
+  /// No description provided for @plantingPitCreateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The planting pit could not be added.'**
+  String get plantingPitCreateFailed;
+
+  /// No description provided for @plantingPitRequiredField.
+  ///
+  /// In en, this message translates to:
+  /// **'This field is required'**
+  String get plantingPitRequiredField;
+
+  /// No description provided for @plantingPitInvalidCoordinate.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid coordinate'**
+  String get plantingPitInvalidCoordinate;
+
+  /// No description provided for @plantingPitGridPairRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter both row and pit numbers, or leave both empty'**
+  String get plantingPitGridPairRequired;
 
   /// No description provided for @mapSelectAnyTree.
   ///
@@ -3277,6 +3517,1099 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{quantity} {unit}'**
   String taskProductQuantity(String quantity, String unit);
+
+  /// No description provided for @issuesEyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'FIELD HEALTH'**
+  String get issuesEyebrow;
+
+  /// No description provided for @issuesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Active tree issues'**
+  String get issuesTitle;
+
+  /// No description provided for @issuesUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'The issue workspace is unavailable.'**
+  String get issuesUnavailable;
+
+  /// No description provided for @issuesFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter issues'**
+  String get issuesFilters;
+
+  /// No description provided for @issuesAllTypes.
+  ///
+  /// In en, this message translates to:
+  /// **'All issue types'**
+  String get issuesAllTypes;
+
+  /// No description provided for @issuesAllSeverities.
+  ///
+  /// In en, this message translates to:
+  /// **'All severities'**
+  String get issuesAllSeverities;
+
+  /// No description provided for @issuesOnlyUnclaimed.
+  ///
+  /// In en, this message translates to:
+  /// **'Only issues available to claim'**
+  String get issuesOnlyUnclaimed;
+
+  /// No description provided for @issuesTreeLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Section {section} · {tree}'**
+  String issuesTreeLocation(String section, String tree);
+
+  /// No description provided for @issuesOpenTree.
+  ///
+  /// In en, this message translates to:
+  /// **'Open tree'**
+  String get issuesOpenTree;
+
+  /// No description provided for @issuesClaim.
+  ///
+  /// In en, this message translates to:
+  /// **'Claim issue'**
+  String get issuesClaim;
+
+  /// No description provided for @issuesClaimOnlineOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to the internet to claim this issue'**
+  String get issuesClaimOnlineOnly;
+
+  /// No description provided for @issuesClaimed.
+  ///
+  /// In en, this message translates to:
+  /// **'Claimed'**
+  String get issuesClaimed;
+
+  /// No description provided for @issuesClaimedByYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Assigned to you'**
+  String get issuesClaimedByYou;
+
+  /// No description provided for @issuesDetailsAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Full details available'**
+  String get issuesDetailsAvailable;
+
+  /// No description provided for @issuesSummaryOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Safe summary'**
+  String get issuesSummaryOnly;
+
+  /// No description provided for @issuesLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The active issues could not be loaded.'**
+  String get issuesLoadFailed;
+
+  /// No description provided for @issuesEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No active issues match these filters.'**
+  String get issuesEmpty;
+
+  /// No description provided for @issueDetailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Issue details'**
+  String get issueDetailTitle;
+
+  /// No description provided for @issueDetailHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Issue history'**
+  String get issueDetailHistory;
+
+  /// No description provided for @issueDetailDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Field observation'**
+  String get issueDetailDescription;
+
+  /// No description provided for @issueDetailNoDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'No observation notes were recorded.'**
+  String get issueDetailNoDescription;
+
+  /// No description provided for @issueDetailViewHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'View details and history'**
+  String get issueDetailViewHistory;
+
+  /// No description provided for @issueDetailChangeSeverity.
+  ///
+  /// In en, this message translates to:
+  /// **'Change severity'**
+  String get issueDetailChangeSeverity;
+
+  /// No description provided for @issueDetailDismiss.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismiss issue'**
+  String get issueDetailDismiss;
+
+  /// No description provided for @issueDetailDismissPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Why should this issue be dismissed?'**
+  String get issueDetailDismissPrompt;
+
+  /// No description provided for @issueDetailDismissRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'A dismissal reason is required.'**
+  String get issueDetailDismissRequired;
+
+  /// No description provided for @issueDetailActionSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'The issue action was saved or queued for sync.'**
+  String get issueDetailActionSaved;
+
+  /// No description provided for @issueDetailOpenTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Open related task'**
+  String get issueDetailOpenTask;
+
+  /// No description provided for @issueDetailNoHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'No issue events are available.'**
+  String get issueDetailNoHistory;
+
+  /// No description provided for @issueDetailLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The authorized issue details could not be loaded.'**
+  String get issueDetailLoadFailed;
+
+  /// No description provided for @issueDetailObservations.
+  ///
+  /// In en, this message translates to:
+  /// **'Inspection observations'**
+  String get issueDetailObservations;
+
+  /// No description provided for @issueDetailNoObservations.
+  ///
+  /// In en, this message translates to:
+  /// **'No inspection observations are linked to this issue.'**
+  String get issueDetailNoObservations;
+
+  /// No description provided for @issueDetailLinkedTasks.
+  ///
+  /// In en, this message translates to:
+  /// **'Linked tasks'**
+  String get issueDetailLinkedTasks;
+
+  /// No description provided for @issueDetailNoLinkedTasks.
+  ///
+  /// In en, this message translates to:
+  /// **'No tasks are linked to this issue.'**
+  String get issueDetailNoLinkedTasks;
+
+  /// No description provided for @issueDetailTaskRestricted.
+  ///
+  /// In en, this message translates to:
+  /// **'Task details are restricted to its assignees and farm managers.'**
+  String get issueDetailTaskRestricted;
+
+  /// No description provided for @issueDetailEvidence.
+  ///
+  /// In en, this message translates to:
+  /// **'Issue evidence ({count})'**
+  String issueDetailEvidence(int count);
+
+  /// No description provided for @issueObservationDetected.
+  ///
+  /// In en, this message translates to:
+  /// **'Detected during inspection'**
+  String get issueObservationDetected;
+
+  /// No description provided for @issueObservationConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmed during inspection'**
+  String get issueObservationConfirmed;
+
+  /// No description provided for @issueObservationNotObserved.
+  ///
+  /// In en, this message translates to:
+  /// **'Not observed during inspection'**
+  String get issueObservationNotObserved;
+
+  /// No description provided for @issueObservationSeverityChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Severity explicitly changed'**
+  String get issueObservationSeverityChanged;
+
+  /// No description provided for @issueStatusOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get issueStatusOpen;
+
+  /// No description provided for @issueStatusInReview.
+  ///
+  /// In en, this message translates to:
+  /// **'In review'**
+  String get issueStatusInReview;
+
+  /// No description provided for @issueStatusResolved.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolved'**
+  String get issueStatusResolved;
+
+  /// No description provided for @issueStatusDismissed.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismissed'**
+  String get issueStatusDismissed;
+
+  /// No description provided for @issueEventDetected.
+  ///
+  /// In en, this message translates to:
+  /// **'Issue detected'**
+  String get issueEventDetected;
+
+  /// No description provided for @issueEventConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Issue confirmed'**
+  String get issueEventConfirmed;
+
+  /// No description provided for @issueEventNotObserved.
+  ///
+  /// In en, this message translates to:
+  /// **'Not observed during inspection'**
+  String get issueEventNotObserved;
+
+  /// No description provided for @issueEventSeverityChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Severity changed'**
+  String get issueEventSeverityChanged;
+
+  /// No description provided for @issueEventResolutionSubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolution submitted for review'**
+  String get issueEventResolutionSubmitted;
+
+  /// No description provided for @issueEventResolved.
+  ///
+  /// In en, this message translates to:
+  /// **'Issue resolved'**
+  String get issueEventResolved;
+
+  /// No description provided for @issueEventUnableToFix.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to fix recorded'**
+  String get issueEventUnableToFix;
+
+  /// No description provided for @issueEventDismissed.
+  ///
+  /// In en, this message translates to:
+  /// **'Issue dismissed'**
+  String get issueEventDismissed;
+
+  /// No description provided for @issueEventReviewReturned.
+  ///
+  /// In en, this message translates to:
+  /// **'Review returned'**
+  String get issueEventReviewReturned;
+
+  /// No description provided for @homeActiveIssues.
+  ///
+  /// In en, this message translates to:
+  /// **'Active issues ({count})'**
+  String homeActiveIssues(int count);
+
+  /// No description provided for @failedOpsKindIssueWorkflow.
+  ///
+  /// In en, this message translates to:
+  /// **'Tree issue action'**
+  String get failedOpsKindIssueWorkflow;
+
+  /// No description provided for @failedOpsKindInspection.
+  ///
+  /// In en, this message translates to:
+  /// **'Tree inspection action'**
+  String get failedOpsKindInspection;
+
+  /// No description provided for @inspectionCreateUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Only farm managers can create inspections.'**
+  String get inspectionCreateUnavailable;
+
+  /// No description provided for @inspectionCreateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create tree inspection'**
+  String get inspectionCreateTitle;
+
+  /// No description provided for @inspectionCreateForSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Inspect section {section}'**
+  String inspectionCreateForSection(String section);
+
+  /// No description provided for @inspectionStandardTaskHint.
+  ///
+  /// In en, this message translates to:
+  /// **'This creates a standard task. For a guided tree-by-tree route, use guided inspection setup.'**
+  String get inspectionStandardTaskHint;
+
+  /// No description provided for @inspectionGuidedCreateAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Create guided inspection'**
+  String get inspectionGuidedCreateAction;
+
+  /// No description provided for @inspectionGuidedSessionMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'This is a standard task and has no guided inspection route.'**
+  String get inspectionGuidedSessionMissing;
+
+  /// No description provided for @inspectionBackToTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to task'**
+  String get inspectionBackToTask;
+
+  /// No description provided for @inspectionTitleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Inspection title'**
+  String get inspectionTitleLabel;
+
+  /// No description provided for @inspectionSectionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Section'**
+  String get inspectionSectionLabel;
+
+  /// No description provided for @inspectionInspectorLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Assigned inspector'**
+  String get inspectionInspectorLabel;
+
+  /// No description provided for @inspectionChooseSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose scheduled date'**
+  String get inspectionChooseSchedule;
+
+  /// No description provided for @inspectionScheduleRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'A scheduled date is required.'**
+  String get inspectionScheduleRequired;
+
+  /// No description provided for @inspectionDefaultTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tree inspection · {section}'**
+  String inspectionDefaultTitle(String section);
+
+  /// No description provided for @inspectionRequiresReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Require engineer review'**
+  String get inspectionRequiresReview;
+
+  /// No description provided for @inspectionRequiresPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Require a photo for every selected issue'**
+  String get inspectionRequiresPhoto;
+
+  /// No description provided for @inspectionPhotoRequirementHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos stay optional when this is off.'**
+  String get inspectionPhotoRequirementHint;
+
+  /// No description provided for @inspectionBuildRoute.
+  ///
+  /// In en, this message translates to:
+  /// **'Build and preview walking route'**
+  String get inspectionBuildRoute;
+
+  /// No description provided for @inspectionSectionHasNoTrees.
+  ///
+  /// In en, this message translates to:
+  /// **'This section has no active trees to inspect.'**
+  String get inspectionSectionHasNoTrees;
+
+  /// No description provided for @inspectionCreateAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Create inspection'**
+  String get inspectionCreateAction;
+
+  /// No description provided for @inspectionTitleRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter an inspection title.'**
+  String get inspectionTitleRequired;
+
+  /// No description provided for @inspectionQueuedOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Inspection saved offline and queued for sync.'**
+  String get inspectionQueuedOffline;
+
+  /// No description provided for @inspectionRoutePreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Walking route preview'**
+  String get inspectionRoutePreview;
+
+  /// No description provided for @inspectionRouteCounts.
+  ///
+  /// In en, this message translates to:
+  /// **'{trees} trees · {stations} stations'**
+  String inspectionRouteCounts(int trees, int stations);
+
+  /// No description provided for @inspectionStartsAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Starts at {tree}'**
+  String inspectionStartsAt(String tree);
+
+  /// No description provided for @inspectionRoutePreviewSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Walking route starts at {tree} and covers {trees} trees across {stations} stations. Green lines are tree rows and orange arrows are walking corridors.'**
+  String inspectionRoutePreviewSemantics(String tree, int trees, int stations);
+
+  /// No description provided for @inspectionRouteRowsLegend.
+  ///
+  /// In en, this message translates to:
+  /// **'Tree rows'**
+  String get inspectionRouteRowsLegend;
+
+  /// No description provided for @inspectionRoutePathLegend.
+  ///
+  /// In en, this message translates to:
+  /// **'Walking direction'**
+  String get inspectionRoutePathLegend;
+
+  /// No description provided for @inspectionPhysicalSidesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Left and right are physical sides while walking and do not change in Arabic.'**
+  String get inspectionPhysicalSidesHint;
+
+  /// No description provided for @inspectionOpenRunner.
+  ///
+  /// In en, this message translates to:
+  /// **'Open inspection'**
+  String get inspectionOpenRunner;
+
+  /// No description provided for @inspectionRunnerEyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'SECTION WALK'**
+  String get inspectionRunnerEyebrow;
+
+  /// No description provided for @inspectionRunnerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tree inspection'**
+  String get inspectionRunnerTitle;
+
+  /// No description provided for @inspectionProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'{done} of {total} trees inspected'**
+  String inspectionProgress(int done, int total);
+
+  /// No description provided for @inspectionStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start inspection'**
+  String get inspectionStart;
+
+  /// No description provided for @inspectionResume.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume inspection'**
+  String get inspectionResume;
+
+  /// No description provided for @inspectionPause.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get inspectionPause;
+
+  /// No description provided for @inspectionAssignedToAnotherInspector.
+  ///
+  /// In en, this message translates to:
+  /// **'Assigned to another inspector'**
+  String get inspectionAssignedToAnotherInspector;
+
+  /// No description provided for @inspectionTakeoverHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Taking over is online-only, replaces the assigned inspector, and is recorded in task history.'**
+  String get inspectionTakeoverHint;
+
+  /// No description provided for @inspectionTakeover.
+  ///
+  /// In en, this message translates to:
+  /// **'Take over inspection'**
+  String get inspectionTakeover;
+
+  /// No description provided for @inspectionPreviousStation.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous station'**
+  String get inspectionPreviousStation;
+
+  /// No description provided for @inspectionSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit inspection'**
+  String get inspectionSubmit;
+
+  /// No description provided for @inspectionSubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'This inspection was submitted.'**
+  String get inspectionSubmitted;
+
+  /// No description provided for @inspectionFinalReviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Review before submission'**
+  String get inspectionFinalReviewTitle;
+
+  /// No description provided for @inspectionFinalReviewMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'All {trees} trees across {stations} stations are saved. Review the previous station or submit the inspection.'**
+  String inspectionFinalReviewMessage(int trees, int stations);
+
+  /// No description provided for @inspectionStation.
+  ///
+  /// In en, this message translates to:
+  /// **'Station {current} of {total}'**
+  String inspectionStation(int current, int total);
+
+  /// No description provided for @inspectionPhysicalLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'Physical left'**
+  String get inspectionPhysicalLeft;
+
+  /// No description provided for @inspectionPhysicalRight.
+  ///
+  /// In en, this message translates to:
+  /// **'Physical right'**
+  String get inspectionPhysicalRight;
+
+  /// No description provided for @inspectionSingleSide.
+  ///
+  /// In en, this message translates to:
+  /// **'Single side'**
+  String get inspectionSingleSide;
+
+  /// No description provided for @inspectionTreePosition.
+  ///
+  /// In en, this message translates to:
+  /// **'Source row {row} · tree {tree}'**
+  String inspectionTreePosition(String row, String tree);
+
+  /// No description provided for @inspectionCoordinates.
+  ///
+  /// In en, this message translates to:
+  /// **'{latitude}, {longitude}'**
+  String inspectionCoordinates(String latitude, String longitude);
+
+  /// No description provided for @inspectionExistingIssues.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 existing issue} other{{count} existing issues}}'**
+  String inspectionExistingIssues(int count);
+
+  /// No description provided for @inspectionTreeCardSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Tree {tree}, {side}, {issues, plural, =0{no existing issues} =1{1 existing issue} other{{issues} existing issues}}'**
+  String inspectionTreeCardSemantics(String tree, String side, int issues);
+
+  /// No description provided for @inspectionSelectSeverity.
+  ///
+  /// In en, this message translates to:
+  /// **'Select severity'**
+  String get inspectionSelectSeverity;
+
+  /// No description provided for @inspectionNoNewIssue.
+  ///
+  /// In en, this message translates to:
+  /// **'No new issue found. Existing deselected issues remain active.'**
+  String get inspectionNoNewIssue;
+
+  /// No description provided for @inspectionSaveNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Save station and continue'**
+  String get inspectionSaveNext;
+
+  /// No description provided for @inspectionPhotoRequiredError.
+  ///
+  /// In en, this message translates to:
+  /// **'This inspection requires a photo for every selected issue.'**
+  String get inspectionPhotoRequiredError;
+
+  /// No description provided for @inspectionAddIssuePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Add issue photo (optional)'**
+  String get inspectionAddIssuePhoto;
+
+  /// No description provided for @inspectionAddRequiredIssuePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Add required issue photo'**
+  String get inspectionAddRequiredIssuePhoto;
+
+  /// No description provided for @inspectionIssuePhotoReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Issue photo prepared'**
+  String get inspectionIssuePhotoReady;
+
+  /// No description provided for @inspectionLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The inspection could not be loaded.'**
+  String get inspectionLoadFailed;
+
+  /// No description provided for @issueWorkTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Issues in this task'**
+  String get issueWorkTitle;
+
+  /// No description provided for @issueWorkIndividualHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Review and record an outcome for each issue separately.'**
+  String get issueWorkIndividualHint;
+
+  /// No description provided for @issueWorkPhotoRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'A resolution photo is required before Resolve.'**
+  String get issueWorkPhotoRequired;
+
+  /// No description provided for @issueWorkAddPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Add outcome photo (optional)'**
+  String get issueWorkAddPhoto;
+
+  /// No description provided for @issueWorkPhotoReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Outcome photo prepared'**
+  String get issueWorkPhotoReady;
+
+  /// No description provided for @issueWorkResolve.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolve'**
+  String get issueWorkResolve;
+
+  /// No description provided for @issueWorkUnable.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to fix'**
+  String get issueWorkUnable;
+
+  /// No description provided for @issueWorkUnableReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Why could this not be fixed?'**
+  String get issueWorkUnableReason;
+
+  /// No description provided for @issueWorkNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes'**
+  String get issueWorkNotes;
+
+  /// No description provided for @issueWorkPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get issueWorkPending;
+
+  /// No description provided for @issueWorkSubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Submitted for review'**
+  String get issueWorkSubmitted;
+
+  /// No description provided for @issueWorkResolved.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolved'**
+  String get issueWorkResolved;
+
+  /// No description provided for @issueWorkUnableState.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to fix'**
+  String get issueWorkUnableState;
+
+  /// No description provided for @issueWorkReturned.
+  ///
+  /// In en, this message translates to:
+  /// **'Returned'**
+  String get issueWorkReturned;
+
+  /// No description provided for @reviewIssueScopeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Approval affects only the issues explicitly listed in this task. Other issues on the same trees remain unchanged.'**
+  String get reviewIssueScopeHint;
+
+  /// No description provided for @unableReasonReplacementPart.
+  ///
+  /// In en, this message translates to:
+  /// **'Replacement part required'**
+  String get unableReasonReplacementPart;
+
+  /// No description provided for @unableReasonSpecialist.
+  ///
+  /// In en, this message translates to:
+  /// **'Specialist required'**
+  String get unableReasonSpecialist;
+
+  /// No description provided for @unableReasonAdditionalWorker.
+  ///
+  /// In en, this message translates to:
+  /// **'Additional worker required'**
+  String get unableReasonAdditionalWorker;
+
+  /// No description provided for @unableReasonEquipment.
+  ///
+  /// In en, this message translates to:
+  /// **'Equipment unavailable'**
+  String get unableReasonEquipment;
+
+  /// No description provided for @unableReasonInaccessible.
+  ///
+  /// In en, this message translates to:
+  /// **'Tree inaccessible'**
+  String get unableReasonInaccessible;
+
+  /// No description provided for @unableReasonIncorrectIssue.
+  ///
+  /// In en, this message translates to:
+  /// **'Suspected incorrect issue'**
+  String get unableReasonIncorrectIssue;
+
+  /// No description provided for @mapActiveIssueFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Active issues ({count})'**
+  String mapActiveIssueFilter(int count);
+
+  /// No description provided for @mapShowIssueMatchesOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Show matching trees only'**
+  String get mapShowIssueMatchesOnly;
+
+  /// No description provided for @mapIssueFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Filters ({count})'**
+  String mapIssueFilters(int count);
+
+  /// No description provided for @mapIssueTreeSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Tree {tree}, {count, plural, =1{1 active issue} other{{count} active issues}}, highest severity {severity}'**
+  String mapIssueTreeSemantics(String tree, int count, String severity);
+
+  /// No description provided for @mapIssueFiltersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Map issue filters'**
+  String get mapIssueFiltersTitle;
+
+  /// No description provided for @mapIssueStatusFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Issue status'**
+  String get mapIssueStatusFilter;
+
+  /// No description provided for @mapIssueLayerSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Issue layer: {trees} matching trees with {issues} active issues'**
+  String mapIssueLayerSemantics(int trees, int issues);
+
+  /// No description provided for @treeActiveIssues.
+  ///
+  /// In en, this message translates to:
+  /// **'Active issues ({count})'**
+  String treeActiveIssues(int count);
+
+  /// No description provided for @treeActiveIssuesSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'This tree has {count} active issues'**
+  String treeActiveIssuesSemantics(int count);
+
+  /// No description provided for @treeIssueHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Past issue occurrences'**
+  String get treeIssueHistory;
+
+  /// No description provided for @treeIssueHistoryEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No past occurrences are available.'**
+  String get treeIssueHistoryEmpty;
+
+  /// No description provided for @treeIssueHistoryLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load history. Retry'**
+  String get treeIssueHistoryLoadFailed;
+
+  /// No description provided for @treeIssueReportedDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Reported {date}'**
+  String treeIssueReportedDate(String date);
+
+  /// No description provided for @treeIssueOccurrenceDates.
+  ///
+  /// In en, this message translates to:
+  /// **'Reported {reported} · Closed {closed}'**
+  String treeIssueOccurrenceDates(String reported, String closed);
+
+  /// No description provided for @treeIssueHistorySemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} past issue occurrences'**
+  String treeIssueHistorySemantics(int count);
+
+  /// No description provided for @treeIssueOccurrenceSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'{type}, {severity}, {status}, {dates}'**
+  String treeIssueOccurrenceSemantics(
+      String type, String severity, String status, String dates);
+
+  /// No description provided for @issuesActiveTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Active ({count})'**
+  String issuesActiveTab(int count);
+
+  /// No description provided for @issuesHistoryTab.
+  ///
+  /// In en, this message translates to:
+  /// **'History ({count})'**
+  String issuesHistoryTab(int count);
+
+  /// No description provided for @issuesHistoryEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No historical issue occurrences match these filters.'**
+  String get issuesHistoryEmpty;
+
+  /// No description provided for @issuesStatusFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get issuesStatusFilter;
+
+  /// No description provided for @issuesAllStatuses.
+  ///
+  /// In en, this message translates to:
+  /// **'All statuses'**
+  String get issuesAllStatuses;
+
+  /// No description provided for @issuesSectionFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Section'**
+  String get issuesSectionFilter;
+
+  /// No description provided for @issuesAllSections.
+  ///
+  /// In en, this message translates to:
+  /// **'All sections'**
+  String get issuesAllSections;
+
+  /// No description provided for @issuesAgeFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Issue age'**
+  String get issuesAgeFilter;
+
+  /// No description provided for @issuesAnyAge.
+  ///
+  /// In en, this message translates to:
+  /// **'Any age'**
+  String get issuesAnyAge;
+
+  /// No description provided for @issuesAgeSevenDays.
+  ///
+  /// In en, this message translates to:
+  /// **'7 days or older'**
+  String get issuesAgeSevenDays;
+
+  /// No description provided for @issuesAgeThirtyDays.
+  ///
+  /// In en, this message translates to:
+  /// **'30 days or older'**
+  String get issuesAgeThirtyDays;
+
+  /// No description provided for @issuesAgeNinetyDays.
+  ///
+  /// In en, this message translates to:
+  /// **'90 days or older'**
+  String get issuesAgeNinetyDays;
+
+  /// No description provided for @issuesAssignmentFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Assignment'**
+  String get issuesAssignmentFilter;
+
+  /// No description provided for @issuesAllAssignments.
+  ///
+  /// In en, this message translates to:
+  /// **'All assignments'**
+  String get issuesAllAssignments;
+
+  /// No description provided for @issuesAssigned.
+  ///
+  /// In en, this message translates to:
+  /// **'Assigned'**
+  String get issuesAssigned;
+
+  /// No description provided for @issuesUnassigned.
+  ///
+  /// In en, this message translates to:
+  /// **'Unassigned'**
+  String get issuesUnassigned;
+
+  /// No description provided for @issuesSourceFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Source'**
+  String get issuesSourceFilter;
+
+  /// No description provided for @issuesAllSources.
+  ///
+  /// In en, this message translates to:
+  /// **'All sources'**
+  String get issuesAllSources;
+
+  /// No description provided for @issueSourceInspection.
+  ///
+  /// In en, this message translates to:
+  /// **'Inspection'**
+  String get issueSourceInspection;
+
+  /// No description provided for @issueSourceQuickReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick report'**
+  String get issueSourceQuickReport;
+
+  /// No description provided for @issuesResetFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset filters'**
+  String get issuesResetFilters;
+
+  /// No description provided for @issuesAssign.
+  ///
+  /// In en, this message translates to:
+  /// **'Assign'**
+  String get issuesAssign;
+
+  /// No description provided for @issuesAssignTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Assign issue work'**
+  String get issuesAssignTitle;
+
+  /// No description provided for @issuesAssignTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Assign to'**
+  String get issuesAssignTo;
+
+  /// No description provided for @issuesRequireEngineerReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Require engineer review before closing'**
+  String get issuesRequireEngineerReview;
+
+  /// No description provided for @issuesAssignmentOnlineOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to the internet to assign this issue'**
+  String get issuesAssignmentOnlineOnly;
+
+  /// No description provided for @issuesNoAssignableMembers.
+  ///
+  /// In en, this message translates to:
+  /// **'No active operational farm members are available.'**
+  String get issuesNoAssignableMembers;
+
+  /// No description provided for @issuesAssignedTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Assigned to {name}'**
+  String issuesAssignedTo(String name);
+
+  /// No description provided for @issuesReportedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Reported {date}'**
+  String issuesReportedOn(String date);
+
+  /// No description provided for @issuesClosedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed {date}'**
+  String issuesClosedOn(String date);
 }
 
 class _AppLocalizationsDelegate

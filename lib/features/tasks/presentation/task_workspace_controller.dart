@@ -2,6 +2,7 @@ import 'package:al_wahat_farm_flutter/core/errors/operation_failure.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/data/task_repository.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/farm_task.dart';
+import 'package:al_wahat_farm_flutter/features/sync/domain/sync_engine.dart';
 import 'package:flutter/widgets.dart';
 
 enum TaskWorkspaceStatus { idle, loading, ready, failure }
@@ -159,12 +160,14 @@ class TaskWorkspaceProvider extends StatefulWidget {
     required this.farmId,
     required this.repository,
     required this.child,
+    this.syncEngine,
     super.key,
   });
 
   final String farmId;
   final TaskRepository repository;
   final Widget child;
+  final SyncEngine? syncEngine;
 
   @override
   State<TaskWorkspaceProvider> createState() => _TaskWorkspaceProviderState();
@@ -172,16 +175,22 @@ class TaskWorkspaceProvider extends StatefulWidget {
 
 class _TaskWorkspaceProviderState extends State<TaskWorkspaceProvider> {
   late TaskWorkspaceController _controller;
+  int? _lastSyncMillis;
 
   @override
   void initState() {
     super.initState();
     _controller = _createController();
+    _listenToSync();
   }
 
   @override
   void didUpdateWidget(TaskWorkspaceProvider oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.syncEngine != widget.syncEngine) {
+      oldWidget.syncEngine?.removeListener(_handleSync);
+      _listenToSync();
+    }
     if (oldWidget.farmId != widget.farmId ||
         oldWidget.repository != widget.repository) {
       _controller.dispose();
@@ -196,6 +205,7 @@ class _TaskWorkspaceProviderState extends State<TaskWorkspaceProvider> {
 
   @override
   void dispose() {
+    widget.syncEngine?.removeListener(_handleSync);
     _controller.dispose();
     super.dispose();
   }
@@ -205,6 +215,26 @@ class _TaskWorkspaceProviderState extends State<TaskWorkspaceProvider> {
         controller: _controller,
         child: widget.child,
       );
+
+  void _listenToSync() {
+    _lastSyncMillis = widget.syncEngine?.lastSyncedAtMillis;
+    widget.syncEngine?.addListener(_handleSync);
+  }
+
+  void _handleSync() {
+    final engine = widget.syncEngine;
+    final completedAt = engine?.lastSyncedAtMillis;
+    if (engine == null ||
+        engine.isSyncing ||
+        completedAt == null ||
+        completedAt == _lastSyncMillis) {
+      return;
+    }
+    _lastSyncMillis = completedAt;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _controller.refresh();
+    });
+  }
 }
 
 String taskFailureMessage(AppLocalizations l10n, Object? error) =>

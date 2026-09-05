@@ -10,117 +10,108 @@ import '../../support/farm_hierarchy_fixture.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  late FarmMapData asset;
+  late FarmMapData geometry;
   late FarmHierarchy live;
 
   setUpAll(() async {
-    asset = await const MapAssetRepository().load();
-    final source = CanonicalFarmHierarchyDataSource.load();
+    geometry = await const MapAssetRepository().load();
     live = (await DefaultFarmHierarchyRepository(
-      source,
+      CanonicalFarmHierarchyDataSource.load(),
       MemoryFarmHierarchyCache(),
     ).load(CanonicalFarmHierarchyDataSource.farmId))
         .hierarchy;
   });
 
-  test('matches the complete canonical fixture by UUID', () {
-    final result = const TreeReconciler().reconcile(asset, live);
+  test('composes the complete live hierarchy over static geometry', () {
+    final result = const FarmMapComposer().compose(geometry, live);
 
-    expect(result.trees, hasLength(1567));
-    expect(result.matchedById, 1567);
-    expect(result.matchedByCode, 0);
+    expect(geometry.trees, isEmpty);
+    expect(result.data.trees, hasLength(1539));
+    expect(result.data.sections, hasLength(12));
+    expect(result.data.sections.firstWhere((item) => item.id == 'C').treeCount,
+        185);
+    expect(result.data.sections.firstWhere((item) => item.id == 'F').treeCount,
+        351);
+    expect(result.data.sections.firstWhere((item) => item.id == 'G').treeCount,
+        72);
+    expect(result.resolvedMapZones, 122);
     expect(result.discrepancies, isEmpty);
   });
 
-  test('falls back to tree code and reports an ID mismatch', () {
-    final original = live.trees.first;
-    final changed = _copyTree(original, id: 'live-tree-id');
+  test('uses live trees as the complete authority', () {
+    final removed = live.trees.first;
     final hierarchy = _copyHierarchy(
       live,
-      trees: <FarmTreeRecord>[changed, ...live.trees.skip(1)],
+      trees: live.trees.skip(1).toList(growable: false),
     );
 
-    final result = const TreeReconciler().reconcile(asset, hierarchy);
+    final result = const FarmMapComposer().compose(geometry, hierarchy);
 
-    expect(result.matchedById, 1566);
-    expect(result.matchedByCode, 1);
-    expect(result.trees.first.id, 'live-tree-id');
+    expect(result.data.trees, hasLength(1538));
+    expect(result.data.trees.any((tree) => tree.id == removed.id), isFalse);
+  });
+
+  test('binds map features and trees to the current live zone UUID', () {
+    final originalZone = live.zones.firstWhere(
+      (zone) => geometry.valves.any((valve) => valve.zoneId == zone.code),
+    );
+    const replacementId = 'replacement-live-zone-uuid';
+    final replacementZone = IrrigationZone(
+      id: replacementId,
+      sectionId: originalZone.sectionId,
+      code: originalZone.code,
+      name: originalZone.name,
+      valveCode: originalZone.valveCode,
+      notes: originalZone.notes,
+      isActive: originalZone.isActive,
+      createdAt: originalZone.createdAt,
+      updatedAt: originalZone.updatedAt,
+    );
+    final trees = <FarmTreeRecord>[
+      for (final tree in live.trees)
+        tree.irrigationZoneId == originalZone.id
+            ? _copyTree(tree, irrigationZoneId: replacementId)
+            : tree,
+    ];
+    final hierarchy = FarmHierarchy(
+      farmId: live.farmId,
+      sections: live.sections,
+      zones: <IrrigationZone>[
+        replacementZone,
+        ...live.zones.where((zone) => zone.id != originalZone.id),
+      ],
+      trees: trees,
+      plantingPits: live.plantingPits,
+    );
+
+    final result = const FarmMapComposer().compose(geometry, hierarchy);
+    final valve = result.data.valves.firstWhere(
+      (item) => item.zoneId == originalZone.code,
+    );
+
+    expect(valve.zoneUuid, replacementId);
     expect(
-      result.discrepancyCounts[TreeDiscrepancyType.idMismatch],
-      1,
+      result.data.trees.where((tree) => tree.zoneId == replacementId).length,
+      trees.where((tree) => tree.irrigationZoneId == replacementId).length,
     );
   });
 
-  test('keeps missing asset geometry and never fabricates unexpected rows', () {
+  test('skips and reports a live tree without coordinates', () {
     final original = live.trees.first;
-    final unexpected = _copyTree(
-      original,
-      id: 'unexpected-id',
-      treeCode: 'TREE-X-999',
-    );
     final hierarchy = _copyHierarchy(
       live,
-      trees: <FarmTreeRecord>[...live.trees.skip(1), unexpected],
+      trees: <FarmTreeRecord>[
+        _copyTree(original, clearCoordinates: true),
+        ...live.trees.skip(1),
+      ],
     );
 
-    final result = const TreeReconciler().reconcile(asset, hierarchy);
+    final result = const FarmMapComposer().compose(geometry, hierarchy);
 
-    expect(result.trees, hasLength(1567));
-    expect(result.trees.first.id, asset.trees.first.id);
-    expect(result.trees.where((tree) => tree.id == 'unexpected-id'), isEmpty);
+    expect(result.data.trees, hasLength(1538));
     expect(
-      result.discrepancyCounts[TreeDiscrepancyType.missingLiveTree],
+      result.discrepancyCounts[MapDataDiscrepancyType.missingTreeCoordinates],
       1,
-    );
-    expect(
-      result.discrepancyCounts[TreeDiscrepancyType.unexpectedLiveTree],
-      1,
-    );
-  });
-
-  test('enriches display state and reports coordinate drift', () {
-    final original = live.trees.first;
-    final changed = _copyTree(
-      original,
-      latitude: original.latitude! + 0.00001,
-      healthStatus: TreeHealthStatus.needsEngineerReview,
-      type: 'olive',
-    );
-    final hierarchy = _copyHierarchy(
-      live,
-      trees: <FarmTreeRecord>[changed, ...live.trees.skip(1)],
-    );
-
-    final result = const TreeReconciler().reconcile(asset, hierarchy);
-
-    expect(result.trees.first.health, 'needs_engineer_review');
-    expect(result.trees.first.type, 'olive');
-    expect(result.trees.first.latitude, changed.latitude);
-    expect(
-      result.discrepancyCounts[TreeDiscrepancyType.coordinateMismatch],
-      1,
-    );
-  });
-
-  test('6-decimal backend rounding is within tolerance (no false drift)', () {
-    final original = live.trees.first;
-    // Rounding an 8-decimal asset value to the backend's 6 decimals shifts it by
-    // up to 5e-7 (~7 cm) — this must NOT be reported as coordinate drift.
-    final rounded = _copyTree(
-      original,
-      latitude: original.latitude! + 0.0000005,
-      longitude: original.longitude! - 0.0000005,
-    );
-    final hierarchy = _copyHierarchy(
-      live,
-      trees: <FarmTreeRecord>[rounded, ...live.trees.skip(1)],
-    );
-
-    final result = const TreeReconciler().reconcile(asset, hierarchy);
-
-    expect(
-      result.discrepancyCounts[TreeDiscrepancyType.coordinateMismatch],
-      isNull,
     );
   });
 }
@@ -134,30 +125,27 @@ FarmHierarchy _copyHierarchy(
       sections: source.sections,
       zones: source.zones,
       trees: trees,
+      plantingPits: source.plantingPits,
     );
 
 FarmTreeRecord _copyTree(
   FarmTreeRecord source, {
-  String? id,
-  String? treeCode,
-  double? latitude,
-  double? longitude,
-  TreeHealthStatus? healthStatus,
-  String? type,
+  String? irrigationZoneId,
+  bool clearCoordinates = false,
 }) =>
     FarmTreeRecord(
-      id: id ?? source.id,
+      id: source.id,
       farmId: source.farmId,
       sectionId: source.sectionId,
-      irrigationZoneId: source.irrigationZoneId,
-      treeCode: treeCode ?? source.treeCode,
+      irrigationZoneId: irrigationZoneId ?? source.irrigationZoneId,
+      treeCode: source.treeCode,
       rowNumber: source.rowNumber,
       treeNumber: source.treeNumber,
       plantedOn: source.plantedOn,
-      latitude: latitude ?? source.latitude,
-      longitude: longitude ?? source.longitude,
-      healthStatus: healthStatus ?? source.healthStatus,
-      type: type ?? source.type,
+      latitude: clearCoordinates ? null : source.latitude,
+      longitude: clearCoordinates ? null : source.longitude,
+      healthStatus: source.healthStatus,
+      type: source.type,
       notes: source.notes,
       isActive: source.isActive,
       createdAt: source.createdAt,

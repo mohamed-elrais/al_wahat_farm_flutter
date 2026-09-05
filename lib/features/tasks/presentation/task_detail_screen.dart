@@ -7,6 +7,7 @@ import 'package:al_wahat_farm_flutter/core/app_services.dart';
 import 'package:al_wahat_farm_flutter/features/auth/presentation/authenticated_gate.dart';
 import 'package:al_wahat_farm_flutter/features/farm/domain/farm_hierarchy.dart';
 import 'package:al_wahat_farm_flutter/features/inventory/domain/inventory_models.dart';
+import 'package:al_wahat_farm_flutter/features/issues/presentation/task_issue_work_card.dart';
 import 'package:al_wahat_farm_flutter/features/schedules/domain/schedule_models.dart';
 import 'package:al_wahat_farm_flutter/features/sync/presentation/sync_scope.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/data/offline_evidence_queue.dart';
@@ -62,6 +63,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
   TaskWorkspaceController? _workspace;
   bool _ownsController = false;
   bool _membersRequested = false;
+  bool _issueWorkBlocksCompletion = false;
   TaskPhotoUrlProvider? _photoUrls;
   bool _photoUrlsResolved = false;
 
@@ -125,7 +127,9 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
         widget.assignableMembers == null &&
         _workspace != null) {
       _membersRequested = true;
-      _workspace!.loadAssignableMembers();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _workspace?.loadAssignableMembers();
+      });
     }
   }
 
@@ -364,6 +368,14 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
           onEdit: () => _editAssignments(controller, details),
         ),
         const SizedBox(height: 12),
+        TaskIssueWorkCard(
+          taskId: task.id,
+          onPendingChanged: (value) {
+            if (mounted && value != _issueWorkBlocksCompletion) {
+              setState(() => _issueWorkBlocksCompletion = value);
+            }
+          },
+        ),
         WahatCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -375,7 +387,29 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                 spacing: 10,
                 runSpacing: 10,
                 children: <Widget>[
-                  if (task.status.canStart)
+                  if (task.hasInspectionSetup && !task.status.isClosed)
+                    FilledButton.icon(
+                      key: const Key('open-inspection-runner-button'),
+                      onPressed: controller.isBusy
+                          ? null
+                          : () => context.go(
+                                '/tasks/${task.id}/inspection',
+                              ),
+                      icon: const Icon(Icons.route_outlined),
+                      label: Text(context.l10n.inspectionOpenRunner),
+                    ),
+                  if (task.type == TaskType.treeInspection &&
+                      !task.hasInspectionSetup &&
+                      role.canManageTasks)
+                    FilledButton.icon(
+                      key: const Key('create-valid-inspection-button'),
+                      onPressed: controller.isBusy
+                          ? null
+                          : () => context.go('/tasks/create-inspection'),
+                      icon: const Icon(Icons.assignment_add),
+                      label: Text(context.l10n.inspectionCreateTitle),
+                    ),
+                  if (!task.hasInspectionSetup && task.status.canStart)
                     FilledButton.icon(
                       key: const Key('task-start-button'),
                       onPressed:
@@ -383,10 +417,10 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                       icon: const Icon(Icons.play_arrow),
                       label: Text(context.l10n.startTask),
                     ),
-                  if (task.status.canComplete)
+                  if (!task.hasInspectionSetup && task.status.canComplete)
                     FilledButton.icon(
                       key: const Key('task-complete-button'),
-                      onPressed: controller.isBusy
+                      onPressed: controller.isBusy || _issueWorkBlocksCompletion
                           ? null
                           : () => _showCompleteSheet(controller),
                       icon: const Icon(Icons.check_circle_outline),

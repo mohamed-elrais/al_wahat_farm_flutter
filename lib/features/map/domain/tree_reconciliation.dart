@@ -1,201 +1,293 @@
+import 'dart:ui';
+
 import 'package:al_wahat_farm_flutter/features/farm/domain/farm_hierarchy.dart';
 import 'package:al_wahat_farm_flutter/features/map/domain/farm_map_data.dart';
 
-enum TreeDiscrepancyType {
-  missingLiveTree,
-  unexpectedLiveTree,
-  idMismatch,
-  codeMismatch,
-  sectionMismatch,
-  zoneMismatch,
-  coordinateMismatch,
+enum MapDataDiscrepancyType {
+  unknownSection,
+  unknownZone,
+  missingTreeCoordinates,
+  missingTreeGridPosition,
+  missingZoneStyle,
+  unresolvedMapZone,
 }
 
-class TreeDataDiscrepancy {
-  const TreeDataDiscrepancy({
+class MapDataDiscrepancy {
+  const MapDataDiscrepancy({
     required this.type,
-    required this.treeCode,
-    this.assetTreeId,
-    this.liveTreeId,
+    required this.entityCode,
   });
 
-  final TreeDiscrepancyType type;
-  final String treeCode;
-  final String? assetTreeId;
-  final String? liveTreeId;
+  final MapDataDiscrepancyType type;
+  final String entityCode;
 
   Map<String, Object?> toLogFields() => <String, Object?>{
         'type': type.name,
-        'tree_code': treeCode,
-        'asset_tree_id': assetTreeId,
-        'live_tree_id': liveTreeId,
+        'entity_code': entityCode,
       };
 }
 
-class TreeReconciliationResult {
-  TreeReconciliationResult({
-    required List<FarmTree> trees,
-    required List<TreeDataDiscrepancy> discrepancies,
-    required this.matchedById,
-    required this.matchedByCode,
-  })  : trees = List<FarmTree>.unmodifiable(trees),
-        discrepancies = List<TreeDataDiscrepancy>.unmodifiable(discrepancies);
+class FarmMapCompositionResult {
+  FarmMapCompositionResult({
+    required this.data,
+    required List<MapDataDiscrepancy> discrepancies,
+    required this.resolvedMapZones,
+  }) : discrepancies = List<MapDataDiscrepancy>.unmodifiable(discrepancies);
 
-  final List<FarmTree> trees;
-  final List<TreeDataDiscrepancy> discrepancies;
-  final int matchedById;
-  final int matchedByCode;
+  final FarmMapData data;
+  final List<MapDataDiscrepancy> discrepancies;
+  final int resolvedMapZones;
 
   bool get hasDiscrepancies => discrepancies.isNotEmpty;
 
-  Map<TreeDiscrepancyType, int> get discrepancyCounts {
-    final counts = <TreeDiscrepancyType, int>{};
+  Map<MapDataDiscrepancyType, int> get discrepancyCounts {
+    final counts = <MapDataDiscrepancyType, int>{};
     for (final discrepancy in discrepancies) {
       counts.update(discrepancy.type, (count) => count + 1, ifAbsent: () => 1);
     }
-    return Map<TreeDiscrepancyType, int>.unmodifiable(counts);
+    return Map<MapDataDiscrepancyType, int>.unmodifiable(counts);
   }
 }
 
-class TreeReconciler {
-  // The backend stores tree latitude/longitude at 6-decimal precision, so a
-  // value can differ from the higher-precision reference asset by up to 5e-7°
-  // (~7 cm) purely from rounding. The tolerance sits above that (1e-6° ≈ 11 cm)
-  // so rounding is not reported as drift, while a real misplacement — which is
-  // at least a tree slot away (metres) — still is.
-  const TreeReconciler({this.coordinateTolerance = 0.000001});
+/// Combines immutable KMZ geometry with mutable Supabase/cache hierarchy data.
+///
+/// Stable irrigation-zone codes join both sources. Supabase UUIDs never need
+/// to be embedded in the generated asset, and live trees are never discarded
+/// merely because an older static snapshot did not contain them.
+class FarmMapComposer {
+  const FarmMapComposer({
+    this.fallbackTreeColor = const Color(0xFF2E7D32),
+  });
 
-  final double coordinateTolerance;
+  final Color fallbackTreeColor;
 
-  TreeReconciliationResult reconcile(
-    FarmMapData asset,
-    FarmHierarchy live,
+  FarmMapCompositionResult compose(
+    FarmMapData geometry,
+    FarmHierarchy hierarchy,
   ) {
-    final liveById = <String, FarmTreeRecord>{
-      for (final tree in live.trees) tree.id: tree,
+    final discrepancies = <MapDataDiscrepancy>[];
+    final geometrySections = <String, FarmSectionGeometry>{
+      for (final section in geometry.sections) section.id: section,
     };
-    final liveByCode = <String, FarmTreeRecord>{
-      for (final tree in live.trees) tree.treeCode: tree,
+    final liveSectionsById = <String, FarmSection>{
+      for (final section in hierarchy.sections) section.id: section,
     };
-    final usedLiveIds = <String>{};
-    final reconciled = <FarmTree>[];
-    final discrepancies = <TreeDataDiscrepancy>[];
-    var matchedById = 0;
-    var matchedByCode = 0;
+    final liveSectionsByCode = <String, FarmSection>{
+      for (final section in hierarchy.sections) section.code: section,
+    };
+    final zonesById = <String, IrrigationZone>{
+      for (final zone in hierarchy.zones) zone.id: zone,
+    };
+    final zonesByCode = <String, IrrigationZone>{
+      for (final zone in hierarchy.zones) zone.code: zone,
+    };
+    final colorsByZoneCode = _zoneColors(geometry);
 
-    for (final assetTree in asset.trees) {
-      var liveTree = liveById[assetTree.id];
-      if (liveTree != null && !usedLiveIds.contains(liveTree.id)) {
-        matchedById++;
-      } else {
-        liveTree = liveByCode[assetTree.code];
-        if (liveTree != null && !usedLiveIds.contains(liveTree.id)) {
-          matchedByCode++;
-          if (liveTree.id != assetTree.id) {
-            discrepancies.add(
-              TreeDataDiscrepancy(
-                type: TreeDiscrepancyType.idMismatch,
-                treeCode: assetTree.code,
-                assetTreeId: assetTree.id,
-                liveTreeId: liveTree.id,
-              ),
-            );
-          }
-        }
-      }
-
-      if (liveTree == null || usedLiveIds.contains(liveTree.id)) {
+    final trees = <FarmTree>[];
+    final treeCounts = <String, int>{};
+    for (final record in hierarchy.trees) {
+      final section = liveSectionsById[record.sectionId];
+      if (section == null || !geometrySections.containsKey(section.code)) {
         discrepancies.add(
-          TreeDataDiscrepancy(
-            type: TreeDiscrepancyType.missingLiveTree,
-            treeCode: assetTree.code,
-            assetTreeId: assetTree.id,
+          MapDataDiscrepancy(
+            type: MapDataDiscrepancyType.unknownSection,
+            entityCode: record.treeCode,
           ),
         );
-        reconciled.add(assetTree);
         continue;
       }
-
-      usedLiveIds.add(liveTree.id);
-      final sectionCode = live.sectionById(liveTree.sectionId)!.code;
-      if (liveTree.treeCode != assetTree.code) {
+      final zoneId = record.irrigationZoneId;
+      final zone = zoneId == null ? null : zonesById[zoneId];
+      if (zone == null) {
         discrepancies.add(
-          TreeDataDiscrepancy(
-            type: TreeDiscrepancyType.codeMismatch,
-            treeCode: assetTree.code,
-            assetTreeId: assetTree.id,
-            liveTreeId: liveTree.id,
+          MapDataDiscrepancy(
+            type: MapDataDiscrepancyType.unknownZone,
+            entityCode: record.treeCode,
+          ),
+        );
+        continue;
+      }
+      final latitude = record.latitude;
+      final longitude = record.longitude;
+      if (latitude == null || longitude == null) {
+        discrepancies.add(
+          MapDataDiscrepancy(
+            type: MapDataDiscrepancyType.missingTreeCoordinates,
+            entityCode: record.treeCode,
+          ),
+        );
+        continue;
+      }
+      final row = record.rowNumber;
+      final number = record.treeNumber;
+      if (row == null || number == null) {
+        discrepancies.add(
+          MapDataDiscrepancy(
+            type: MapDataDiscrepancyType.missingTreeGridPosition,
+            entityCode: record.treeCode,
+          ),
+        );
+        continue;
+      }
+      final color = colorsByZoneCode[zone.code];
+      if (color == null) {
+        discrepancies.add(
+          MapDataDiscrepancy(
+            type: MapDataDiscrepancyType.missingZoneStyle,
+            entityCode: record.treeCode,
           ),
         );
       }
-      if (sectionCode != assetTree.section) {
-        discrepancies.add(
-          TreeDataDiscrepancy(
-            type: TreeDiscrepancyType.sectionMismatch,
-            treeCode: assetTree.code,
-            assetTreeId: assetTree.id,
-            liveTreeId: liveTree.id,
-          ),
-        );
-      }
-      if (liveTree.irrigationZoneId != null &&
-          liveTree.irrigationZoneId != assetTree.zoneId) {
-        discrepancies.add(
-          TreeDataDiscrepancy(
-            type: TreeDiscrepancyType.zoneMismatch,
-            treeCode: assetTree.code,
-            assetTreeId: assetTree.id,
-            liveTreeId: liveTree.id,
-          ),
-        );
-      }
-      final latitude = liveTree.latitude ?? assetTree.latitude;
-      final longitude = liveTree.longitude ?? assetTree.longitude;
-      if ((latitude - assetTree.latitude).abs() > coordinateTolerance ||
-          (longitude - assetTree.longitude).abs() > coordinateTolerance) {
-        discrepancies.add(
-          TreeDataDiscrepancy(
-            type: TreeDiscrepancyType.coordinateMismatch,
-            treeCode: assetTree.code,
-            assetTreeId: assetTree.id,
-            liveTreeId: liveTree.id,
-          ),
-        );
-      }
-
-      reconciled.add(
+      trees.add(
         FarmTree(
-          id: liveTree.id,
-          code: liveTree.treeCode,
-          section: sectionCode,
-          zoneId: liveTree.irrigationZoneId ?? assetTree.zoneId,
-          row: liveTree.rowNumber ?? assetTree.row,
-          number: liveTree.treeNumber ?? assetTree.number,
+          id: record.id,
+          code: record.treeCode,
+          section: section.code,
+          zoneId: zone.id,
+          row: row,
+          number: number,
           latitude: latitude,
           longitude: longitude,
-          health: liveTree.healthStatus.wireValue,
-          type: liveTree.type,
-          color: assetTree.color,
+          health: record.healthStatus.wireValue,
+          type: record.type,
+          color: color ?? fallbackTreeColor,
         ),
       );
+      treeCounts.update(section.code, (count) => count + 1, ifAbsent: () => 1);
     }
+    trees.sort((left, right) => left.code.compareTo(right.code));
 
-    for (final liveTree in live.trees) {
-      if (usedLiveIds.contains(liveTree.id)) continue;
-      discrepancies.add(
-        TreeDataDiscrepancy(
-          type: TreeDiscrepancyType.unexpectedLiveTree,
-          treeCode: liveTree.treeCode,
-          liveTreeId: liveTree.id,
+    final sections = <FarmSectionGeometry>[
+      for (final section in geometry.sections)
+        FarmSectionGeometry(
+          id: section.id,
+          name: liveSectionsByCode[section.id]?.name ?? section.name,
+          area: liveSectionsByCode[section.id]?.areaM2 ?? section.area,
+          planted: (treeCounts[section.id] ?? 0) > 0,
+          treeCount: treeCounts[section.id] ?? 0,
+          polygon: section.polygon,
         ),
-      );
-    }
+    ];
 
-    return TreeReconciliationResult(
-      trees: reconciled,
+    final resolvedMapZoneCodes = <String>{};
+    final branchLines = <BranchLine>[
+      for (final line in geometry.branchLines)
+        _bindBranchLine(
+          line,
+          zonesByCode,
+          discrepancies,
+          onResolved: resolvedMapZoneCodes.add,
+        ),
+    ];
+    final valves = <NetworkValve>[
+      for (final valve in geometry.valves)
+        _bindValve(
+          valve,
+          zonesByCode,
+          discrepancies,
+          onResolved: resolvedMapZoneCodes.add,
+        ),
+    ];
+
+    return FarmMapCompositionResult(
+      data: FarmMapData(
+        generatedFrom: geometry.generatedFrom,
+        bounds: geometry.bounds,
+        sections: sections,
+        trees: trees,
+        layout: geometry.layout,
+        utilities: geometry.utilities,
+        waterLines: geometry.waterLines,
+        branchLines: branchLines,
+        valves: valves,
+        flushValves: geometry.flushValves,
+        risers: geometry.risers,
+        waterSupply: geometry.waterSupply,
+      ),
       discrepancies: discrepancies,
-      matchedById: matchedById,
-      matchedByCode: matchedByCode,
+      resolvedMapZones: resolvedMapZoneCodes.length,
+    );
+  }
+
+  Map<String, Color> _zoneColors(FarmMapData geometry) {
+    final colors = <String, Color>{};
+    for (final line in geometry.branchLines) {
+      final zoneCode = line.zoneId;
+      final color = line.color;
+      if (zoneCode != null && color != null) colors[zoneCode] = color;
+    }
+    for (final valve in geometry.valves) {
+      final zoneCode = valve.zoneId;
+      final color = valve.color;
+      if (zoneCode != null && color != null) colors[zoneCode] = color;
+    }
+    return colors;
+  }
+
+  BranchLine _bindBranchLine(
+    BranchLine line,
+    Map<String, IrrigationZone> zonesByCode,
+    List<MapDataDiscrepancy> discrepancies, {
+    required void Function(String) onResolved,
+  }) {
+    final zoneCode = line.zoneId;
+    final zone = zoneCode == null ? null : zonesByCode[zoneCode];
+    if (zoneCode != null && zone == null) {
+      discrepancies.add(
+        MapDataDiscrepancy(
+          type: MapDataDiscrepancyType.unresolvedMapZone,
+          entityCode: line.assetId,
+        ),
+      );
+    } else if (zone != null) {
+      onResolved(zone.code);
+    }
+    return BranchLine(
+      assetId: line.assetId,
+      name: line.name,
+      section: line.section,
+      submain: line.submain,
+      coordinates: line.coordinates,
+      zoneId: line.zoneId,
+      zoneUuid: zone?.id,
+      color: line.color,
+      status: line.status,
+    );
+  }
+
+  NetworkValve _bindValve(
+    NetworkValve valve,
+    Map<String, IrrigationZone> zonesByCode,
+    List<MapDataDiscrepancy> discrepancies, {
+    required void Function(String) onResolved,
+  }) {
+    final zoneCode = valve.zoneId;
+    final zone = zoneCode == null ? null : zonesByCode[zoneCode];
+    if (valve.isZoneControl && zone == null) {
+      discrepancies.add(
+        MapDataDiscrepancy(
+          type: MapDataDiscrepancyType.unresolvedMapZone,
+          entityCode: valve.assetId,
+        ),
+      );
+    } else if (zone != null) {
+      onResolved(zone.code);
+    }
+    return NetworkValve(
+      assetId: valve.assetId,
+      name: valve.name,
+      type: valve.type,
+      latitude: valve.latitude,
+      longitude: valve.longitude,
+      section: valve.section,
+      submain: valve.submain,
+      zoneId: valve.zoneId,
+      zoneUuid: zone?.id,
+      color: valve.color,
+      zoneTreeCount: valve.zoneTreeCount,
+      status: valve.status,
+      downstreamSubmains: valve.downstreamSubmains,
+      downstreamLine: valve.downstreamLine,
     );
   }
 }

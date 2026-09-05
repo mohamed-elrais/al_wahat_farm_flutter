@@ -1,15 +1,14 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_theme.dart';
-import 'package:al_wahat_farm_flutter/features/map/data/map_asset_repository.dart';
 import 'package:al_wahat_farm_flutter/features/map/domain/projected_map.dart';
 import 'package:al_wahat_farm_flutter/features/map/presentation/farm_map_painter.dart';
 import 'package:al_wahat_farm_flutter/features/map/presentation/farm_map_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../support/projected_farm_map_fixture.dart';
+
 Future<ProjectedFarmMap> _loadMap(WidgetTester tester) async =>
-    (await tester.runAsync(
-      () => const MapAssetRepository().load().then(ProjectedFarmMap.new),
-    ))!;
+    (await tester.runAsync(loadComposedFarmMap))!;
 
 Widget _app(ProjectedFarmMap map, {String? focus, bool visible = true}) =>
     MaterialApp(
@@ -88,15 +87,20 @@ void main() {
     final controller = tester
         .widget<InteractiveViewer>(find.byType(InteractiveViewer))
         .transformationController!;
+    final initialScale = controller.value.getMaxScaleOnAxis();
+    expect(find.byKey(const Key('map-zoom-in')), findsOneWidget);
+    expect(find.byKey(const Key('map-zoom-out')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('map-zoom-in')));
+    await tester.pump();
+    expect(controller.value.getMaxScaleOnAxis(), greaterThan(initialScale));
     final cameraBefore = controller.value.clone();
 
-    // The zoom buttons are gone; full screen replaces them.
-    expect(find.byIcon(Icons.add), findsNothing);
-    expect(find.byIcon(Icons.remove), findsNothing);
     await tester.tap(find.byIcon(Icons.fullscreen));
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('map-exit-full-screen')), findsOneWidget);
+    expect(find.byKey(const Key('map-zoom-in')), findsOneWidget);
+    expect(find.byKey(const Key('map-zoom-out')), findsOneWidget);
     // Same controller, same camera, selection still highlighted.
     final fullScreenViewer = tester
         .widget<InteractiveViewer>(find.byType(InteractiveViewer).last)
@@ -105,10 +109,18 @@ void main() {
     expect(controller.value, cameraBefore);
     expect(_painter(tester).selectedValveId, target.valve.assetId);
 
+    await tester.tap(find.byKey(const Key('map-zoom-out')));
+    await tester.pump();
+    expect(
+      controller.value.getMaxScaleOnAxis(),
+      lessThan(cameraBefore.getMaxScaleOnAxis()),
+    );
+    final cameraAfterFullScreenZoom = controller.value.clone();
+
     await tester.tap(find.byKey(const Key('map-exit-full-screen')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('map-exit-full-screen')), findsNothing);
     expect(_painter(tester).selectedValveId, target.valve.assetId);
-    expect(controller.value, cameraBefore);
+    expect(controller.value, cameraAfterFullScreenZoom);
   });
 }

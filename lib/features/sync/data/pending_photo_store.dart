@@ -10,6 +10,7 @@ abstract interface class PendingPhotoStore {
   Future<PendingPhoto?> get(String opId);
   Future<void> markUploaded(String opId, String path);
   Future<void> delete(String opId);
+  Future<void> deleteForOperation(String opId);
   Future<void> clear();
 }
 
@@ -71,6 +72,15 @@ class SqflitePendingPhotoStore implements PendingPhotoStore {
   }
 
   @override
+  Future<void> deleteForOperation(String opId) async {
+    await _database.db.delete(
+      AppDatabase.pendingPhotosTable,
+      where: 'op_id = ? OR op_id LIKE ?',
+      whereArgs: <Object?>[opId, '$opId::%'],
+    );
+  }
+
+  @override
   Future<void> clear() async {
     await _database.db.delete(AppDatabase.pendingPhotosTable);
   }
@@ -127,6 +137,13 @@ class InMemoryPendingPhotoStore implements PendingPhotoStore {
   @override
   Future<void> delete(String opId) async {
     _entries.remove(opId);
+  }
+
+  @override
+  Future<void> deleteForOperation(String opId) async {
+    _entries.removeWhere(
+      (key, _) => key == opId || key.startsWith('$opId::'),
+    );
   }
 
   @override

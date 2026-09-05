@@ -61,4 +61,19 @@ void main() {
     expect(await store.get('b'), isNull);
     expect(await store.get('c'), isNull);
   });
+
+  test('deleteForOperation removes every photo for a multi-photo op', () async {
+    await store.put(_photo('operation::tree-1|pest'));
+    await store.put(_photo('operation::tree-2|fungus'));
+    await store.put(_photo('different-operation::tree-3|pest'));
+
+    await store.deleteForOperation('operation');
+
+    expect(await store.get('operation::tree-1|pest'), isNull);
+    expect(await store.get('operation::tree-2|fungus'), isNull);
+    expect(
+      await store.get('different-operation::tree-3|pest'),
+      isNotNull,
+    );
+  });
 }

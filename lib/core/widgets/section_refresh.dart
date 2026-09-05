@@ -14,6 +14,7 @@ import 'package:flutter/widgets.dart';
 mixin SectionReturnAware<T extends StatefulWidget> on State<T> {
   ValueListenable<bool>? _sectionVisibility;
   bool _sectionVisible = true;
+  bool _returnCallbackScheduled = false;
 
   /// Called on each hidden -> visible transition of this section.
   void onSectionReturn();
@@ -31,7 +32,15 @@ mixin SectionReturnAware<T extends StatefulWidget> on State<T> {
 
   void _handleSectionVisibility() {
     final visible = _sectionVisibility?.value ?? true;
-    if (visible && !_sectionVisible && mounted) onSectionReturn();
+    if (visible && !_sectionVisible && mounted && !_returnCallbackScheduled) {
+      _returnCallbackScheduled = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _returnCallbackScheduled = false;
+        if (mounted && (_sectionVisibility?.value ?? true)) {
+          onSectionReturn();
+        }
+      });
+    }
     _sectionVisible = visible;
   }
 

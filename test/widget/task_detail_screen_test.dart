@@ -13,6 +13,124 @@ import 'package:go_router/go_router.dart';
 import '../support/task_fakes.dart';
 
 void main() {
+  testWidgets('plain tree task retains normal actions without guided runner',
+      (tester) async {
+    tester.view.physicalSize = const Size(430, 1200);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final store = InMemoryTaskStore();
+    final manager = FakeTaskRepository(
+      store: store,
+      viewerProfileId: 'manager-id',
+      canManage: true,
+    );
+    final taskId = await manager.create(
+      const TaskDraft(
+        farmId: 'farm-id',
+        type: TaskType.treeInspection,
+        title: 'Invalid generic inspection',
+        sectionId: 'section-1',
+        assigneeProfileIds: <String>['worker-id'],
+      ),
+    );
+    final controller = TaskDetailController(
+      repository: manager,
+      evidencePicker: FakeTaskEvidencePicker(),
+      evidenceStorage: FakeTaskEvidenceStorage(),
+      taskId: taskId,
+      farmId: 'farm-id',
+      userId: 'manager-id',
+    );
+    addTearDown(controller.dispose);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: TaskDetailScreen(
+          taskId: taskId,
+          controller: controller,
+          hierarchy: _hierarchy,
+          role: FarmRole.owner,
+          userId: 'manager-id',
+          farmId: 'farm-id',
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('create-valid-inspection-button')),
+      400,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(
+        find.byKey(const Key('open-inspection-runner-button')), findsNothing);
+    expect(find.byKey(const Key('create-valid-inspection-button')),
+        findsOneWidget);
+    expect(find.byKey(const Key('task-start-button')), findsOneWidget);
+  });
+
+  testWidgets('guided tree inspection opens only the dedicated runner',
+      (tester) async {
+    tester.view.physicalSize = const Size(430, 1200);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final store = InMemoryTaskStore();
+    final manager = FakeTaskRepository(
+      store: store,
+      viewerProfileId: 'manager-id',
+      canManage: true,
+    );
+    final taskId = await manager.create(
+      const TaskDraft(
+        farmId: 'farm-id',
+        type: TaskType.treeInspection,
+        title: 'Guided inspection',
+        sectionId: 'section-1',
+        instructions: <String, Object?>{'inspection_route_version': 1},
+        assigneeProfileIds: <String>['worker-id'],
+      ),
+    );
+    final controller = TaskDetailController(
+      repository: manager,
+      evidencePicker: FakeTaskEvidencePicker(),
+      evidenceStorage: FakeTaskEvidenceStorage(),
+      taskId: taskId,
+      farmId: 'farm-id',
+      userId: 'manager-id',
+    );
+    addTearDown(controller.dispose);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: TaskDetailScreen(
+          taskId: taskId,
+          controller: controller,
+          hierarchy: _hierarchy,
+          role: FarmRole.owner,
+          userId: 'manager-id',
+          farmId: 'farm-id',
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('open-inspection-runner-button')),
+      400,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(
+      find.byKey(const Key('open-inspection-runner-button')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const Key('task-start-button')), findsNothing);
+    expect(find.byKey(const Key('task-complete-button')), findsNothing);
+  });
+
   testWidgets('assigned worker starts task and activity refreshes',
       (tester) async {
     tester.view.physicalSize = const Size(430, 932);

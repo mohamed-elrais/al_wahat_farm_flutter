@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:al_wahat_farm_flutter/core/cache/local_cache_store.dart';
 import 'package:al_wahat_farm_flutter/core/logging/safe_log.dart';
 import 'package:al_wahat_farm_flutter/features/farm/domain/farm_hierarchy.dart';
+import 'package:al_wahat_farm_flutter/features/planting_pits/domain/planting_pit.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 abstract interface class FarmHierarchyDataSource {
@@ -13,7 +14,15 @@ abstract interface class FarmHierarchyDataSource {
   Future<List<Map<String, Object?>>> fetchTrees(String farmId);
 }
 
-class SupabaseFarmHierarchyDataSource implements FarmHierarchyDataSource {
+/// Optional extension implemented by data sources that can load planting
+/// pits. Keeping it separate preserves compatibility with lightweight test
+/// and offline data sources that predate the feature.
+abstract interface class PlantingPitHierarchyDataSource {
+  Future<List<Map<String, Object?>>> fetchPlantingPits(String farmId);
+}
+
+class SupabaseFarmHierarchyDataSource
+    implements FarmHierarchyDataSource, PlantingPitHierarchyDataSource {
   const SupabaseFarmHierarchyDataSource(this._client);
 
   static const sectionColumns =
@@ -26,7 +35,13 @@ class SupabaseFarmHierarchyDataSource implements FarmHierarchyDataSource {
       'id, farm_id, section_id, irrigation_zone_id, tree_code, row_number, '
       'tree_number, planted_on, latitude, longitude, health_status, type, '
       'notes, is_active, created_at, updated_at';
+  static const plantingPitColumns =
+      'id, farm_id, section_id, irrigation_zone_id, pit_code, row_number, '
+      'pit_number, latitude, longitude, planned_for, status, marked_at, '
+      'dug_at, prepared_at, completed_at, cancelled_at, notes, '
+      'created_by_profile_id, created_at, updated_at';
   static const treePageSize = 1000;
+  static const plantingPitPageSize = 1000;
 
   final SupabaseClient _client;
 
@@ -71,6 +86,25 @@ class SupabaseFarmHierarchyDataSource implements FarmHierarchyDataSource {
       rows.addAll(page);
       if (page.length < treePageSize) break;
       offset += treePageSize;
+    }
+    return List<Map<String, Object?>>.unmodifiable(rows);
+  }
+
+  @override
+  Future<List<Map<String, Object?>>> fetchPlantingPits(String farmId) async {
+    final rows = <Map<String, Object?>>[];
+    var offset = 0;
+    while (true) {
+      final result = await _client
+          .from('planting_pits')
+          .select(plantingPitColumns)
+          .eq('farm_id', farmId)
+          .order('pit_code')
+          .range(offset, offset + plantingPitPageSize - 1);
+      final page = _rows(result);
+      rows.addAll(page);
+      if (page.length < plantingPitPageSize) break;
+      offset += plantingPitPageSize;
     }
     return List<Map<String, Object?>>.unmodifiable(rows);
   }
@@ -184,11 +218,16 @@ class DefaultFarmHierarchyRepository implements FarmHierarchyRepository {
         sections.map((section) => section.id).toList(growable: false),
       );
       final treeRows = await _dataSource.fetchTrees(farmId);
+      final pitRows = _dataSource is PlantingPitHierarchyDataSource
+          ? await (_dataSource as PlantingPitHierarchyDataSource)
+              .fetchPlantingPits(farmId)
+          : const <Map<String, Object?>>[];
       final hierarchy = FarmHierarchy(
         farmId: farmId,
         sections: sections,
         zones: zoneRows.map(IrrigationZone.fromJson).toList(growable: false),
         trees: treeRows.map(FarmTreeRecord.fromJson).toList(growable: false),
+        plantingPits: pitRows.map(PlantingPit.fromJson).toList(growable: false),
       );
       await _cache.write(hierarchy);
       return FarmHierarchySnapshot(

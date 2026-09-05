@@ -8,7 +8,15 @@ enum PendingMutationKind {
   addTaskPhoto,
   createTask,
   reportIssue,
-  reviewTask;
+  reviewTask,
+  changeIssueSeverity,
+  dismissIssue,
+  resolveIssue,
+  unableToFixIssue,
+  createInspection,
+  setInspectionStatus,
+  saveInspectionStation,
+  submitInspection;
 
   factory PendingMutationKind.fromWire(String value) => switch (value) {
         'start_task' => startTask,
@@ -18,6 +26,14 @@ enum PendingMutationKind {
         'create_task' => createTask,
         'report_tree_issue' => reportIssue,
         'review_task' => reviewTask,
+        'change_tree_issue_severity' => changeIssueSeverity,
+        'dismiss_tree_issue' => dismissIssue,
+        'resolve_tree_issue' => resolveIssue,
+        'unable_to_fix_tree_issue' => unableToFixIssue,
+        'create_inspection' => createInspection,
+        'set_inspection_status' => setInspectionStatus,
+        'save_inspection_station' => saveInspectionStation,
+        'submit_inspection' => submitInspection,
         _ => throw FormatException('Unknown mutation kind: $value'),
       };
 
@@ -29,6 +45,14 @@ enum PendingMutationKind {
         createTask => 'create_task',
         reportIssue => 'report_tree_issue',
         reviewTask => 'review_task',
+        changeIssueSeverity => 'change_tree_issue_severity',
+        dismissIssue => 'dismiss_tree_issue',
+        resolveIssue => 'resolve_tree_issue',
+        unableToFixIssue => 'unable_to_fix_tree_issue',
+        createInspection => 'create_inspection',
+        setInspectionStatus => 'set_inspection_status',
+        saveInspectionStation => 'save_inspection_station',
+        submitInspection => 'submit_inspection',
       };
 }
 

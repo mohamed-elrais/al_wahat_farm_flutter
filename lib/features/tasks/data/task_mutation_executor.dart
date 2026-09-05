@@ -61,6 +61,14 @@ class TaskMutationExecutor implements MutationExecutor {
         return; // _executeCreate reconciles the list cache itself
       case PendingMutationKind.reportIssue:
       case PendingMutationKind.reviewTask:
+      case PendingMutationKind.changeIssueSeverity:
+      case PendingMutationKind.dismissIssue:
+      case PendingMutationKind.resolveIssue:
+      case PendingMutationKind.unableToFixIssue:
+      case PendingMutationKind.createInspection:
+      case PendingMutationKind.setInspectionStatus:
+      case PendingMutationKind.saveInspectionStation:
+      case PendingMutationKind.submitInspection:
         // Routed to the issue / review executor by CompositeMutationExecutor.
         throw StateError('TaskMutationExecutor cannot run ${mutation.kind}');
     }

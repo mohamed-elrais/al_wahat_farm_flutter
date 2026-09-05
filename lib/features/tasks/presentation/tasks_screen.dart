@@ -27,6 +27,7 @@ class TasksScreen extends StatefulWidget {
     this.hierarchy,
     this.now,
     this.onOpenTask,
+    this.onOpenInspection,
     this.onCreateTask,
     this.onOpenReviews,
     super.key,
@@ -37,6 +38,7 @@ class TasksScreen extends StatefulWidget {
   final FarmHierarchy? hierarchy;
   final DateTime Function()? now;
   final ValueChanged<String>? onOpenTask;
+  final ValueChanged<String>? onOpenInspection;
   final VoidCallback? onCreateTask;
   final VoidCallback? onOpenReviews;
 
@@ -138,6 +140,18 @@ class _TasksScreenState extends State<TasksScreen> with SectionReturnAware {
             ],
           ),
           const SizedBox(height: 18),
+          if (role.canManageTasks) ...<Widget>[
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: OutlinedButton.icon(
+                key: const Key('create-inspection-button'),
+                onPressed: () => context.go('/tasks/create-inspection'),
+                icon: const Icon(Icons.route_outlined),
+                label: Text(context.l10n.inspectionCreateTitle),
+              ),
+            ),
+            const SizedBox(height: 10),
+          ],
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -183,6 +197,12 @@ class _TasksScreenState extends State<TasksScreen> with SectionReturnAware {
                   onSelected: (_) => setState(() => _view = TaskListView.all),
                 ),
               ],
+              OutlinedButton.icon(
+                key: const Key('tasks-issues-shortcut'),
+                onPressed: () => context.go('/issues'),
+                icon: const Icon(Icons.report_problem_outlined, size: 18),
+                label: Text(context.l10n.issuesTitle),
+              ),
             ],
           ),
           if (role.canReview) ...<Widget>[
@@ -311,6 +331,15 @@ class _TasksScreenState extends State<TasksScreen> with SectionReturnAware {
 
   void _openTask(BuildContext context, FarmTask task) {
     if (task.isPendingSync) {
+      if (task.hasInspectionSetup) {
+        final callback = widget.onOpenInspection;
+        if (callback != null) {
+          callback(task.id);
+        } else {
+          context.go('/tasks/${task.id}/inspection');
+        }
+        return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(context.l10n.taskPendingSyncOpen)),
       );
