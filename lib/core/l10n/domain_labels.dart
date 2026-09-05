@@ -1,5 +1,7 @@
 import 'package:al_wahat_farm_flutter/l10n/gen/app_localizations.dart';
 import 'package:al_wahat_farm_flutter/features/inventory/domain/inventory_models.dart';
+import 'package:al_wahat_farm_flutter/features/issues/domain/issue_workspace.dart';
+import 'package:al_wahat_farm_flutter/features/issues/domain/tree_issue.dart';
 import 'package:al_wahat_farm_flutter/features/issues/domain/tree_issue_draft.dart';
 import 'package:al_wahat_farm_flutter/features/reviews/domain/engineer_review.dart';
 import 'package:al_wahat_farm_flutter/features/schedules/domain/schedule_models.dart';
@@ -100,6 +102,40 @@ extension IssueSeverityL10n on IssueSeverity {
         IssueSeverity.medium => l10n.priorityMedium,
         IssueSeverity.high => l10n.priorityHigh,
         IssueSeverity.urgent => l10n.priorityUrgent,
+      };
+}
+
+extension TreeIssueStatusL10n on TreeIssueStatus {
+  String localizedLabel(AppLocalizations l10n) => switch (this) {
+        TreeIssueStatus.open => l10n.issueStatusOpen,
+        TreeIssueStatus.inReview => l10n.issueStatusInReview,
+        TreeIssueStatus.resolved => l10n.issueStatusResolved,
+        TreeIssueStatus.dismissed => l10n.issueStatusDismissed,
+      };
+}
+
+extension TreeIssueEventTypeL10n on TreeIssueEventType {
+  String localizedLabel(AppLocalizations l10n) => switch (this) {
+        TreeIssueEventType.detected => l10n.issueEventDetected,
+        TreeIssueEventType.confirmed => l10n.issueEventConfirmed,
+        TreeIssueEventType.notObserved => l10n.issueEventNotObserved,
+        TreeIssueEventType.severityChanged => l10n.issueEventSeverityChanged,
+        TreeIssueEventType.resolutionSubmitted =>
+          l10n.issueEventResolutionSubmitted,
+        TreeIssueEventType.resolved => l10n.issueEventResolved,
+        TreeIssueEventType.unableToFix => l10n.issueEventUnableToFix,
+        TreeIssueEventType.dismissed => l10n.issueEventDismissed,
+        TreeIssueEventType.reviewReturned => l10n.issueEventReviewReturned,
+      };
+}
+
+extension InspectionObservationOutcomeL10n on InspectionObservationOutcome {
+  String localizedLabel(AppLocalizations l10n) => switch (this) {
+        InspectionObservationOutcome.detected => l10n.issueObservationDetected,
+        InspectionObservationOutcome.confirmed =>
+          l10n.issueObservationConfirmed,
+        InspectionObservationOutcome.notObserved =>
+          l10n.issueObservationNotObserved,
       };
 }
 

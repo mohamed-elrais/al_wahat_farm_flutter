@@ -271,4 +271,14 @@ String _kindLabel(AppLocalizations l10n, PendingMutationKind kind) =>
       PendingMutationKind.createTask => l10n.failedOpsKindCreateTask,
       PendingMutationKind.reportIssue => l10n.failedOpsKindReportIssue,
       PendingMutationKind.reviewTask => l10n.failedOpsKindReviewTask,
+      PendingMutationKind.changeIssueSeverity ||
+      PendingMutationKind.dismissIssue ||
+      PendingMutationKind.resolveIssue ||
+      PendingMutationKind.unableToFixIssue =>
+        l10n.failedOpsKindIssueWorkflow,
+      PendingMutationKind.createInspection ||
+      PendingMutationKind.setInspectionStatus ||
+      PendingMutationKind.saveInspectionStation ||
+      PendingMutationKind.submitInspection =>
+        l10n.failedOpsKindInspection,
     };

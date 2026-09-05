@@ -4,9 +4,14 @@ import 'package:al_wahat_farm_flutter/features/issues/domain/tree_issue_draft.da
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ReportedTreeIssue {
-  const ReportedTreeIssue({required this.issueId, required this.taskId});
+  const ReportedTreeIssue({
+    required this.issueId,
+    required this.taskId,
+    this.confirmedExisting = false,
+  });
   final String issueId;
   final String taskId;
+  final bool confirmedExisting;
 }
 
 abstract interface class TreeIssueRepository {
@@ -62,12 +67,34 @@ class SupabaseTreeIssueRepository implements TreeIssueRepository {
         throw const FormatException('Issue RPC returned no result');
       }
       final row = Map<String, Object?>.from(rows.first! as Map);
+      final confirmedExisting =
+          await _confirmedExisting(row['task_id']! as String);
       return ReportedTreeIssue(
         issueId: row['tree_issue_id']! as String,
         taskId: row['task_id']! as String,
+        confirmedExisting: confirmedExisting,
       );
     } on PostgrestException catch (error) {
       throw _translateIssueError(error);
+    }
+  }
+
+  Future<bool> _confirmedExisting(String taskId) async {
+    try {
+      final row = await _client
+          .from('task_activity_log')
+          .select('metadata')
+          .eq('task_id', taskId)
+          .eq('action', 'created')
+          .order('created_at')
+          .limit(1)
+          .maybeSingle();
+      final metadata = row?['metadata'];
+      return metadata is Map && metadata['confirmed_existing'] == true;
+    } catch (_) {
+      // The report itself has committed. A non-critical audit read must never
+      // turn that successful mutation into a retryable submission failure.
+      return false;
     }
   }
 

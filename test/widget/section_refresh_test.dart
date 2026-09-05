@@ -65,6 +65,7 @@ void main() {
     await tester.pumpWidget(_app(visible: true, controller: controller));
     await tester.pumpAndSettle();
     expect(repository.listCalls, 2);
+    expect(tester.takeException(), isNull);
 
     // Rapid toggles: each return refreshes once, never more.
     await tester.pumpWidget(_app(visible: false, controller: controller));
@@ -72,5 +73,6 @@ void main() {
     await tester.pumpWidget(_app(visible: true, controller: controller));
     await tester.pumpAndSettle();
     expect(repository.listCalls, 3);
+    expect(tester.takeException(), isNull);
   });
 }

@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:al_wahat_farm_flutter/core/cache/local_cache_store.dart';
 import 'package:al_wahat_farm_flutter/core/connectivity/connectivity_service.dart';
+import 'package:al_wahat_farm_flutter/features/inspections/data/inspection_repository.dart';
 import 'package:al_wahat_farm_flutter/features/sync/data/outbox_store.dart';
 import 'package:al_wahat_farm_flutter/features/sync/data/pending_photo_store.dart';
 import 'package:al_wahat_farm_flutter/features/sync/domain/mutation_executor.dart';
@@ -146,5 +147,51 @@ void main() {
     final rows = jsonDecode(rawList!) as List<Object?>;
     expect(rows, isEmpty); // ghost provisional row removed
     expect(h.controller.ops, isEmpty);
+  });
+
+  test('discard removes a failed provisional inspection and cached route',
+      () async {
+    final h = await _harness();
+    const localId = 'local:inspection-create';
+    await h.cache.write(
+      CachingTaskRepository.listKeyFor('farm-id'),
+      jsonEncode(<Object?>[
+        <String, Object?>{'id': localId, 'title': 'Ghost inspection'},
+      ]),
+    );
+    await h.cache.write(
+      OfflineInspectionRepository.cacheKey(localId),
+      '{"route":"cached"}',
+    );
+    await h.cache.write(
+      OfflineInspectionRepository.sessionIndexKey(localId),
+      localId,
+    );
+    await _enqueueFailed(
+      h.outbox,
+      const PendingMutation(
+        opId: 'inspection-create',
+        kind: PendingMutationKind.createInspection,
+        payload: <String, Object?>{
+          'draft': <String, Object?>{'farm_id': 'farm-id'},
+        },
+        createdAt: 0,
+      ),
+    );
+    await h.controller.load();
+
+    await h.controller.discard(h.controller.ops.single);
+
+    expect(
+      await h.cache.read(OfflineInspectionRepository.cacheKey(localId)),
+      isNull,
+    );
+    expect(
+      await h.cache.read(OfflineInspectionRepository.sessionIndexKey(localId)),
+      isNull,
+    );
+    final rawList =
+        await h.cache.read(CachingTaskRepository.listKeyFor('farm-id'));
+    expect(jsonDecode(rawList!) as List<Object?>, isEmpty);
   });
 }

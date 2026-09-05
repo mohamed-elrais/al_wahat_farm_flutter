@@ -1,5 +1,6 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
+import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
 import 'package:al_wahat_farm_flutter/core/logging/safe_log.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
@@ -12,6 +13,10 @@ import 'package:al_wahat_farm_flutter/features/map/domain/map_projection.dart';
 import 'package:al_wahat_farm_flutter/features/map/domain/projected_map.dart';
 import 'package:al_wahat_farm_flutter/features/map/domain/tree_reconciliation.dart';
 import 'package:al_wahat_farm_flutter/features/map/presentation/farm_map_painter.dart';
+import 'package:al_wahat_farm_flutter/features/issues/presentation/issue_workspace_controller.dart';
+import 'package:al_wahat_farm_flutter/features/issues/domain/issue_workspace.dart';
+import 'package:al_wahat_farm_flutter/features/issues/domain/tree_issue.dart';
+import 'package:al_wahat_farm_flutter/features/issues/domain/tree_issue_draft.dart';
 import 'package:al_wahat_farm_flutter/features/planting_pits/data/planting_pit_repository.dart';
 import 'package:al_wahat_farm_flutter/features/planting_pits/domain/planting_pit.dart';
 import 'package:al_wahat_farm_flutter/features/trees/domain/tree_identity.dart';
@@ -55,6 +60,11 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
   bool _valves = true;
   bool _flushValves = false;
   bool _waterSupply = false;
+  bool _issueFilter = false;
+  bool _showIssueMatchesOnly = false;
+  TreeIssueType? _issueType;
+  IssueSeverity? _issueSeverity;
+  TreeIssueStatus? _issueStatus;
   ProjectedFarmMap? _lastAssetMap;
   FarmHierarchy? _lastLiveHierarchy;
   ProjectedFarmMap? _lastReconciledMap;
@@ -138,6 +148,14 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
                 FarmHierarchyScope.maybeOf(context)?.hierarchy;
             final map = _effectiveMap(assetMap, liveHierarchy);
             final plantingPits = _projectPlantingPits(map, liveHierarchy);
+            final issueController = IssueWorkspaceScope.maybeOf(context);
+            final allIssues =
+                issueController?.allIssues ?? const <TreeIssueSummary>[];
+            final activeIssueTreeIds =
+                allIssues.map((issue) => issue.treeId).toSet();
+            final matchingIssues = _matchingIssues(allIssues);
+            final issueMarkers =
+                _issueFilter ? _issueMarkers(matchingIssues) : null;
             final pitCountsBySection = <String, int>{};
             for (final projected in plantingPits) {
               if (projected.pit.status == PlantingPitStatus.cancelled) continue;
@@ -187,6 +205,16 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
                   highlightZones: highlights.zones,
                   highlightSubmains: highlights.submains,
                   highlightLine: highlights.line,
+                  issueMarkers: issueMarkers,
+                  issueSemanticLabels:
+                      _issueSemanticLabels(context, map, issueMarkers),
+                  issueSemanticsLabel: issueMarkers == null
+                      ? null
+                      : context.l10n.mapIssueLayerSemantics(
+                          issueMarkers.length,
+                          matchingIssues.length,
+                        ),
+                  showIssueMatchesOnly: _showIssueMatchesOnly,
                   showTrees: _trees,
                   showPlantingPits: _plantingPits,
                   showIrrigation: _irrigation,
@@ -254,11 +282,52 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
                           _fit(map, section, constraints.biggest);
                         },
                       ),
+                      if (activeIssueTreeIds.isNotEmpty) ...<Widget>[
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: <Widget>[
+                            FilterChip(
+                              key: const Key('map-active-issue-layer'),
+                              selected: _issueFilter,
+                              avatar: const Icon(
+                                Icons.report_problem_outlined,
+                                size: 18,
+                              ),
+                              label: Text(context.l10n.mapActiveIssueFilter(
+                                activeIssueTreeIds.length,
+                              )),
+                              onSelected: (value) => setState(() {
+                                _issueFilter = value;
+                                if (!value) _showIssueMatchesOnly = false;
+                              }),
+                            ),
+                            if (_issueFilter)
+                              OutlinedButton.icon(
+                                key: const Key('map-issue-filters'),
+                                onPressed: () => _showIssueFilters(
+                                  sections: map.data.sections
+                                      .map((section) => section.id)
+                                      .toList(growable: false),
+                                ),
+                                icon: const Icon(Icons.tune, size: 18),
+                                label: Text(context.l10n.mapIssueFilters(
+                                  _activeIssueFilterCount,
+                                )),
+                              ),
+                          ],
+                        ),
+                      ],
                       if (manager && _liveSectionFor(_section) != null) ...[
                         const SizedBox(height: 8),
                         _SectionActions(
                           createTaskLabel:
                               context.l10n.mapCreateTaskForSection(_section!),
+                          createInspectionLabel:
+                              context.l10n.inspectionCreateForSection(
+                            _section!,
+                          ),
                           addPitLabel:
                               context.l10n.plantingPitAddForSection(_section!),
                           onCreateTask: () => context.go(
@@ -267,6 +336,10 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
                           ),
                           onAddPit: () => _showCreatePlantingPit(
                             _liveSectionFor(_section)!,
+                          ),
+                          onCreateInspection: () => context.go(
+                            '/tasks/create-inspection?sectionId='
+                            '${_liveSectionFor(_section)!.id}',
                           ),
                         ),
                       ],
@@ -374,6 +447,25 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
     return reconciledMap;
   }
 
+  Map<String, String>? _issueSemanticLabels(
+    BuildContext context,
+    ProjectedFarmMap map,
+    Map<String, FarmMapIssueMarker>? markers,
+  ) {
+    if (markers == null) return null;
+    final labels = <String, String>{};
+    for (final tree in map.trees) {
+      final marker = markers[tree.tree.id];
+      if (marker == null) continue;
+      labels[tree.tree.id] = context.l10n.mapIssueTreeSemantics(
+        tree.tree.code,
+        marker.count,
+        marker.severity.localizedLabel(context.l10n),
+      );
+    }
+    return labels;
+  }
+
   void _selectTree(FarmTree tree, {BuildContext? presentationContext}) {
     setState(() {
       _selectedTree = tree;
@@ -399,12 +491,26 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
     );
     final canManageTasks =
         operational?.selectedMembership.role.canManageTasks ?? false;
+    final issueController = IssueWorkspaceScope.maybeOf(context);
+    final activeIssues = issueController?.allIssues
+            .where((issue) => issue.treeId == tree.id)
+            .toList(growable: false) ??
+        const <TreeIssueSummary>[];
     showModalBottomSheet<void>(
       context: presentationContext ?? context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (sheetContext) => TreeDetailSheet(
         tree: identity,
+        activeIssues: activeIssues,
+        loadHistory: issueController == null
+            ? null
+            : () => issueController.listTreeHistory(tree.id),
+        onOpenIssue: (issueId) {
+          Navigator.of(sheetContext).pop();
+          _leaveFullScreenIfOpen();
+          context.go('/issues/$issueId');
+        },
         onAttachTask: isLive && canManageTasks
             ? () {
                 Navigator.of(sheetContext).pop();
@@ -421,6 +527,72 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
             : null,
       ),
     );
+  }
+
+  List<TreeIssueSummary> _matchingIssues(List<TreeIssueSummary> issues) =>
+      issues
+          .where((issue) =>
+              (_issueType == null || issue.type == _issueType) &&
+              (_issueSeverity == null || issue.severity == _issueSeverity) &&
+              (_issueStatus == null || issue.status == _issueStatus) &&
+              (_section == null || issue.sectionCode == _section))
+          .toList(growable: false);
+
+  Map<String, FarmMapIssueMarker> _issueMarkers(
+    List<TreeIssueSummary> issues,
+  ) {
+    final grouped = <String, List<TreeIssueSummary>>{};
+    for (final issue in issues) {
+      grouped.putIfAbsent(issue.treeId, () => <TreeIssueSummary>[]).add(issue);
+    }
+    return <String, FarmMapIssueMarker>{
+      for (final entry in grouped.entries)
+        entry.key: FarmMapIssueMarker(
+          count: entry.value.length,
+          severity:
+              entry.value.map((issue) => issue.severity).reduce(_moreSevere),
+        ),
+    };
+  }
+
+  IssueSeverity _moreSevere(IssueSeverity left, IssueSeverity right) =>
+      left.index >= right.index ? left : right;
+
+  int get _activeIssueFilterCount => <Object?>[
+        _issueType,
+        _issueSeverity,
+        _issueStatus,
+        _section,
+      ].where((value) => value != null).length;
+
+  Future<void> _showIssueFilters({
+    BuildContext? presentationContext,
+    required List<String> sections,
+  }) async {
+    final result = await showModalBottomSheet<_MapIssueFilterSelection>(
+      context: presentationContext ?? context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _MapIssueFiltersSheet(
+        selection: _MapIssueFilterSelection(
+          type: _issueType,
+          severity: _issueSeverity,
+          status: _issueStatus,
+          section: _section,
+          matchesOnly: _showIssueMatchesOnly,
+        ),
+        sections: sections,
+      ),
+    );
+    if (result == null || !mounted) return;
+    setState(() {
+      _issueFilter = true;
+      _issueType = result.type;
+      _issueSeverity = result.severity;
+      _issueStatus = result.status;
+      _section = result.section;
+      _showIssueMatchesOnly = result.matchesOnly;
+    });
   }
 
   void _selectPlantingPit(
@@ -854,6 +1026,181 @@ class _DiscrepancyBanner extends StatelessWidget {
   }
 }
 
+class _MapIssueFilterSelection {
+  const _MapIssueFilterSelection({
+    required this.type,
+    required this.severity,
+    required this.status,
+    required this.section,
+    required this.matchesOnly,
+  });
+
+  final TreeIssueType? type;
+  final IssueSeverity? severity;
+  final TreeIssueStatus? status;
+  final String? section;
+  final bool matchesOnly;
+}
+
+class _MapIssueFiltersSheet extends StatefulWidget {
+  const _MapIssueFiltersSheet({
+    required this.selection,
+    required this.sections,
+  });
+
+  final _MapIssueFilterSelection selection;
+  final List<String> sections;
+
+  @override
+  State<_MapIssueFiltersSheet> createState() => _MapIssueFiltersSheetState();
+}
+
+class _MapIssueFiltersSheetState extends State<_MapIssueFiltersSheet> {
+  late TreeIssueType? _type = widget.selection.type;
+  late IssueSeverity? _severity = widget.selection.severity;
+  late TreeIssueStatus? _status = widget.selection.status;
+  late String? _section = widget.selection.section;
+  late bool _matchesOnly = widget.selection.matchesOnly;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          14,
+          0,
+          14,
+          14 + MediaQuery.viewInsetsOf(context).bottom,
+        ),
+        child: WahatCard(
+          key: const Key('map-issue-filters-sheet'),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                Text(
+                  l10n.mapIssueFiltersTitle,
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<TreeIssueType?>(
+                  key: const Key('map-issue-type-filter'),
+                  value: _type,
+                  isExpanded: true,
+                  decoration: InputDecoration(labelText: l10n.issueTypeLabel),
+                  items: <DropdownMenuItem<TreeIssueType?>>[
+                    DropdownMenuItem(value: null, child: Text(l10n.commonAll)),
+                    for (final type in TreeIssueType.values)
+                      DropdownMenuItem(
+                        value: type,
+                        child: Text(type.localizedLabel(l10n)),
+                      ),
+                  ],
+                  onChanged: (value) => setState(() => _type = value),
+                ),
+                const SizedBox(height: 10),
+                DropdownButtonFormField<IssueSeverity?>(
+                  key: const Key('map-issue-severity-filter'),
+                  value: _severity,
+                  isExpanded: true,
+                  decoration:
+                      InputDecoration(labelText: l10n.issueSeverityLabel),
+                  items: <DropdownMenuItem<IssueSeverity?>>[
+                    DropdownMenuItem(value: null, child: Text(l10n.commonAll)),
+                    for (final severity in IssueSeverity.values)
+                      DropdownMenuItem(
+                        value: severity,
+                        child: Text(severity.localizedLabel(l10n)),
+                      ),
+                  ],
+                  onChanged: (value) => setState(() => _severity = value),
+                ),
+                const SizedBox(height: 10),
+                DropdownButtonFormField<TreeIssueStatus?>(
+                  key: const Key('map-issue-status-filter'),
+                  value: _status,
+                  isExpanded: true,
+                  decoration:
+                      InputDecoration(labelText: l10n.mapIssueStatusFilter),
+                  items: <DropdownMenuItem<TreeIssueStatus?>>[
+                    DropdownMenuItem(value: null, child: Text(l10n.commonAll)),
+                    for (final status in <TreeIssueStatus>[
+                      TreeIssueStatus.open,
+                      TreeIssueStatus.inReview,
+                    ])
+                      DropdownMenuItem(
+                        value: status,
+                        child: Text(status.localizedLabel(l10n)),
+                      ),
+                  ],
+                  onChanged: (value) => setState(() => _status = value),
+                ),
+                const SizedBox(height: 10),
+                DropdownButtonFormField<String?>(
+                  key: const Key('map-issue-section-filter'),
+                  value: _section,
+                  isExpanded: true,
+                  decoration:
+                      InputDecoration(labelText: l10n.treeDetailSection),
+                  items: <DropdownMenuItem<String?>>[
+                    DropdownMenuItem(value: null, child: Text(l10n.commonAll)),
+                    for (final section in widget.sections)
+                      DropdownMenuItem(
+                        value: section,
+                        child: Text(l10n.mapSectionName(section)),
+                      ),
+                  ],
+                  onChanged: (value) => setState(() => _section = value),
+                ),
+                const SizedBox(height: 4),
+                SwitchListTile.adaptive(
+                  key: const Key('map-issue-matches-only'),
+                  contentPadding: EdgeInsets.zero,
+                  value: _matchesOnly,
+                  title: Text(l10n.mapShowIssueMatchesOnly),
+                  onChanged: (value) => setState(() => _matchesOnly = value),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: <Widget>[
+                    TextButton(
+                      key: const Key('map-issue-filters-clear'),
+                      onPressed: () => setState(() {
+                        _type = null;
+                        _severity = null;
+                        _status = null;
+                        _section = null;
+                        _matchesOnly = false;
+                      }),
+                      child: Text(l10n.commonClear),
+                    ),
+                    const Spacer(),
+                    FilledButton(
+                      key: const Key('map-issue-filters-apply'),
+                      onPressed: () => Navigator.of(context).pop(
+                        _MapIssueFilterSelection(
+                          type: _type,
+                          severity: _severity,
+                          status: _status,
+                          section: _section,
+                          matchesOnly: _matchesOnly,
+                        ),
+                      ),
+                      child: Text(l10n.commonApply),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _MapPanel extends StatefulWidget {
   const _MapPanel({
     required this.map,
@@ -866,6 +1213,10 @@ class _MapPanel extends StatefulWidget {
     required this.highlightZones,
     required this.highlightSubmains,
     required this.highlightLine,
+    required this.issueMarkers,
+    required this.issueSemanticLabels,
+    required this.issueSemanticsLabel,
+    required this.showIssueMatchesOnly,
     required this.showTrees,
     required this.showPlantingPits,
     required this.showIrrigation,
@@ -893,6 +1244,10 @@ class _MapPanel extends StatefulWidget {
   final Set<String>? highlightZones;
   final Set<String>? highlightSubmains;
   final List<Offset>? highlightLine;
+  final Map<String, FarmMapIssueMarker>? issueMarkers;
+  final Map<String, String>? issueSemanticLabels;
+  final String? issueSemanticsLabel;
+  final bool showIssueMatchesOnly;
   final bool showTrees;
   final bool showPlantingPits;
   final bool showIrrigation;
@@ -1034,6 +1389,13 @@ class _MapPanelState extends State<_MapPanel> {
                             section: widget.section,
                           );
                           if (nearest != null) {
+                            if (widget.showIssueMatchesOnly &&
+                                !(widget.issueMarkers
+                                        ?.containsKey(nearest.tree.id) ??
+                                    false)) {
+                              widget.onTapMiss();
+                              return;
+                            }
                             widget.onTapTree(nearest.tree);
                             return;
                           }
@@ -1044,35 +1406,46 @@ class _MapPanelState extends State<_MapPanel> {
                       // pixel coordinates, so it must never be mirrored in
                       // RTL locales. Only this map subtree is locked to LTR;
                       // the surrounding chrome keeps the ambient direction.
-                      child: Directionality(
-                        textDirection: TextDirection.ltr,
-                        child: InteractiveViewer(
-                          constrained: false,
-                          minScale: _minScale,
-                          maxScale: _maxScale,
-                          transformationController: widget.transformation,
-                          boundaryMargin: const EdgeInsets.all(220),
-                          child: RepaintBoundary(
-                            child: CustomPaint(
-                              size: MapProjection.canvasSize,
-                              painter: FarmMapPainter(
-                                map: widget.map,
-                                selectedSection: widget.section,
-                                selectedTreeId: widget.selectedTree?.id,
-                                plantingPits: widget.plantingPits,
-                                selectedPlantingPitId:
-                                    widget.selectedPlantingPit?.id,
-                                showTrees: widget.showTrees,
-                                showPlantingPits: widget.showPlantingPits,
-                                showIrrigation: widget.showIrrigation,
-                                showUtilities: widget.showUtilities,
-                                showValves: widget.showValves,
-                                showFlushValves: widget.showFlushValves,
-                                showWaterSupply: widget.showWaterSupply,
-                                selectedValveId: widget.selectedValveId,
-                                highlightZoneUuids: widget.highlightZones,
-                                highlightSubmains: widget.highlightSubmains,
-                                highlightLine: widget.highlightLine,
+                      child: Semantics(
+                        container: true,
+                        label: widget.issueSemanticsLabel,
+                        child: Directionality(
+                          textDirection: TextDirection.ltr,
+                          child: InteractiveViewer(
+                            constrained: false,
+                            minScale: _minScale,
+                            maxScale: _maxScale,
+                            transformationController: widget.transformation,
+                            boundaryMargin: const EdgeInsets.all(220),
+                            child: RepaintBoundary(
+                              child: CustomPaint(
+                                size: MapProjection.canvasSize,
+                                painter: FarmMapPainter(
+                                  map: widget.map,
+                                  selectedSection: widget.section,
+                                  selectedTreeId: widget.selectedTree?.id,
+                                  plantingPits: widget.plantingPits,
+                                  selectedPlantingPitId:
+                                      widget.selectedPlantingPit?.id,
+                                  showTrees: widget.showTrees,
+                                  showPlantingPits: widget.showPlantingPits,
+                                  showIrrigation: widget.showIrrigation,
+                                  showUtilities: widget.showUtilities,
+                                  showValves: widget.showValves,
+                                  showFlushValves: widget.showFlushValves,
+                                  showWaterSupply: widget.showWaterSupply,
+                                  selectedValveId: widget.selectedValveId,
+                                  highlightZoneUuids: widget.highlightZones,
+                                  highlightSubmains: widget.highlightSubmains,
+                                  highlightLine: widget.highlightLine,
+                                  issueMarkers: widget.issueMarkers,
+                                  issueSemanticLabels:
+                                      widget.issueSemanticLabels,
+                                  issueSemanticsTextDirection:
+                                      Directionality.of(context),
+                                  showIssueMatchesOnly:
+                                      widget.showIssueMatchesOnly,
+                                ),
                               ),
                             ),
                           ),
@@ -1160,6 +1533,11 @@ class _FullScreenMapState extends State<_FullScreenMap> {
     // of relying on inherited data from this route.
     final hierarchy = FarmHierarchyScope.maybeOf(host.context)?.hierarchy;
     final plantingPits = host._projectPlantingPits(widget.map, hierarchy);
+    final allIssues = IssueWorkspaceScope.maybeOf(host.context)?.allIssues ??
+        const <TreeIssueSummary>[];
+    final matchingIssues = host._matchingIssues(allIssues);
+    final issueMarkers =
+        host._issueFilter ? host._issueMarkers(matchingIssues) : null;
     return Scaffold(
       backgroundColor: AppColors.sand,
       body: SafeArea(
@@ -1177,6 +1555,16 @@ class _FullScreenMapState extends State<_FullScreenMap> {
                 highlightZones: highlights.zones,
                 highlightSubmains: highlights.submains,
                 highlightLine: highlights.line,
+                issueMarkers: issueMarkers,
+                issueSemanticLabels: host._issueSemanticLabels(
+                    context, widget.map, issueMarkers),
+                issueSemanticsLabel: issueMarkers == null
+                    ? null
+                    : context.l10n.mapIssueLayerSemantics(
+                        issueMarkers.length,
+                        matchingIssues.length,
+                      ),
+                showIssueMatchesOnly: host._showIssueMatchesOnly,
                 showTrees: host._trees,
                 showPlantingPits: host._plantingPits,
                 showIrrigation: host._irrigation,
@@ -1230,6 +1618,56 @@ class _FullScreenMapState extends State<_FullScreenMap> {
                 ),
               ),
             ),
+            if (allIssues.isNotEmpty)
+              PositionedDirectional(
+                top: 10,
+                start: 10,
+                child: Material(
+                  color: AppColors.card.withOpacity(0.92),
+                  borderRadius: BorderRadius.circular(22),
+                  elevation: 2,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      IconButton(
+                        key: const Key('fullscreen-map-issue-layer'),
+                        tooltip: context.l10n.mapActiveIssueFilter(
+                          allIssues.map((issue) => issue.treeId).toSet().length,
+                        ),
+                        isSelected: host._issueFilter,
+                        onPressed: () {
+                          // ignore: invalid_use_of_protected_member
+                          host.setState(() {
+                            host._issueFilter = !host._issueFilter;
+                            if (!host._issueFilter) {
+                              host._showIssueMatchesOnly = false;
+                            }
+                          });
+                          setState(() {});
+                        },
+                        icon: const Icon(Icons.report_problem_outlined),
+                      ),
+                      if (host._issueFilter)
+                        IconButton(
+                          key: const Key('fullscreen-map-issue-filters'),
+                          tooltip: context.l10n.mapIssueFilters(
+                            host._activeIssueFilterCount,
+                          ),
+                          onPressed: () async {
+                            await host._showIssueFilters(
+                              presentationContext: context,
+                              sections: widget.map.data.sections
+                                  .map((section) => section.id)
+                                  .toList(growable: false),
+                            );
+                            if (mounted) setState(() {});
+                          },
+                          icon: const Icon(Icons.tune),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
           ],
         ),
       ),
@@ -1418,48 +1856,64 @@ class _Control extends StatelessWidget {
 class _SectionActions extends StatelessWidget {
   const _SectionActions({
     required this.createTaskLabel,
+    required this.createInspectionLabel,
     required this.addPitLabel,
     required this.onCreateTask,
+    required this.onCreateInspection,
     required this.onAddPit,
   });
 
   final String createTaskLabel;
+  final String createInspectionLabel;
   final String addPitLabel;
   final VoidCallback onCreateTask;
+  final VoidCallback onCreateInspection;
   final VoidCallback onAddPit;
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
         builder: (context, constraints) {
           if (constraints.maxWidth < 520) {
-            return Row(
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                Expanded(
-                  child: Tooltip(
-                    message: createTaskLabel,
-                    child: OutlinedButton(
-                      key: const Key('map-section-create-task'),
-                      onPressed: onCreateTask,
-                      child: _CompactActionLabel(
-                        icon: Icons.assignment_add,
-                        label: createTaskLabel,
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Tooltip(
+                        message: createTaskLabel,
+                        child: OutlinedButton(
+                          key: const Key('map-section-create-task'),
+                          onPressed: onCreateTask,
+                          child: _CompactActionLabel(
+                            icon: Icons.assignment_add,
+                            label: createTaskLabel,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Tooltip(
+                        message: addPitLabel,
+                        child: FilledButton(
+                          key: const Key('map-section-add-pit'),
+                          onPressed: onAddPit,
+                          child: _CompactActionLabel(
+                            icon: Icons.add_location_alt,
+                            label: addPitLabel,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Tooltip(
-                    message: addPitLabel,
-                    child: FilledButton(
-                      key: const Key('map-section-add-pit'),
-                      onPressed: onAddPit,
-                      child: _CompactActionLabel(
-                        icon: Icons.add_location_alt,
-                        label: addPitLabel,
-                      ),
-                    ),
-                  ),
+                const SizedBox(height: 8),
+                OutlinedButton.icon(
+                  key: const Key('map-section-create-inspection'),
+                  onPressed: onCreateInspection,
+                  icon: const Icon(Icons.route_outlined),
+                  label: Text(createInspectionLabel),
                 ),
               ],
             );
@@ -1475,6 +1929,12 @@ class _SectionActions extends StatelessWidget {
                   onPressed: onCreateTask,
                   icon: const Icon(Icons.assignment_add, size: 18),
                   label: Text(createTaskLabel),
+                ),
+                OutlinedButton.icon(
+                  key: const Key('map-section-create-inspection'),
+                  onPressed: onCreateInspection,
+                  icon: const Icon(Icons.route_outlined, size: 18),
+                  label: Text(createInspectionLabel),
                 ),
                 FilledButton.icon(
                   key: const Key('map-section-add-pit'),

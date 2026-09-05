@@ -1,24 +1,51 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
+import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
+import 'package:al_wahat_farm_flutter/features/issues/domain/issue_workspace.dart';
+import 'package:al_wahat_farm_flutter/features/issues/domain/tree_issue.dart';
+import 'package:al_wahat_farm_flutter/features/issues/domain/tree_issue_draft.dart';
 import 'package:al_wahat_farm_flutter/features/trees/domain/tree_identity.dart';
 import 'package:flutter/material.dart';
 
-class TreeDetailSheet extends StatelessWidget {
+class TreeDetailSheet extends StatefulWidget {
   const TreeDetailSheet({
     required this.tree,
     required this.onReportIssue,
+    this.activeIssues = const <TreeIssueSummary>[],
+    this.loadHistory,
+    this.onOpenIssue,
     this.onAttachTask,
     super.key,
   });
 
   final TreeIdentity tree;
+  final List<TreeIssueSummary> activeIssues;
+  final Future<List<TreeIssueOccurrence>> Function()? loadHistory;
+  final ValueChanged<String>? onOpenIssue;
   final VoidCallback? onAttachTask;
   final VoidCallback? onReportIssue;
 
   @override
+  State<TreeDetailSheet> createState() => _TreeDetailSheetState();
+}
+
+class _TreeDetailSheetState extends State<TreeDetailSheet> {
+  Future<List<TreeIssueOccurrence>>? _history;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadHistory();
+  }
+
+  void _loadHistory() {
+    _history = widget.loadHistory?.call();
+  }
+
+  @override
   Widget build(BuildContext context) => DraggableScrollableSheet(
-        initialChildSize: 0.52,
+        initialChildSize: 0.64,
         minChildSize: 0.3,
         maxChildSize: 0.88,
         expand: false,
@@ -42,19 +69,34 @@ class TreeDetailSheet extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 18),
-              TreeDetailContent(tree: tree),
+              TreeDetailContent(tree: widget.tree),
+              if (widget.activeIssues.isNotEmpty) ...<Widget>[
+                const SizedBox(height: 18),
+                _ActiveIssues(
+                  issues: widget.activeIssues,
+                  onOpenIssue: widget.onOpenIssue,
+                ),
+              ],
+              if (_history != null) ...<Widget>[
+                const SizedBox(height: 18),
+                _TreeIssueHistory(
+                  history: _history!,
+                  onOpenIssue: widget.onOpenIssue,
+                  onRetry: () => setState(_loadHistory),
+                ),
+              ],
               const SizedBox(height: 16),
-              if (onAttachTask != null)
+              if (widget.onAttachTask != null)
                 FilledButton.icon(
                   key: const Key('tree-attach-task'),
-                  onPressed: onAttachTask,
+                  onPressed: widget.onAttachTask,
                   icon: const Icon(Icons.assignment_add),
                   label: Text(context.l10n.attachTask),
                 ),
-              if (onReportIssue != null)
+              if (widget.onReportIssue != null)
                 OutlinedButton.icon(
                   key: const Key('tree-report-issue'),
-                  onPressed: onReportIssue,
+                  onPressed: widget.onReportIssue,
                   icon: const Icon(Icons.report_outlined),
                   label: Text(context.l10n.reportAnIssue),
                 )
@@ -64,6 +106,195 @@ class TreeDetailSheet extends StatelessWidget {
           ),
         ),
       );
+}
+
+class _ActiveIssues extends StatelessWidget {
+  const _ActiveIssues({required this.issues, required this.onOpenIssue});
+
+  final List<TreeIssueSummary> issues;
+  final ValueChanged<String>? onOpenIssue;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+        container: true,
+        label: context.l10n.treeActiveIssuesSemantics(issues.length),
+        child: Column(
+          key: const Key('tree-active-issues'),
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            Text(
+              context.l10n.treeActiveIssues(issues.length),
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            for (final issue in issues) ...<Widget>[
+              _IssueOccurrence(
+                type: issue.type,
+                severity: issue.severity,
+                status: issue.status,
+                date: issue.reportedAt,
+                onTap: issue.canViewDetails && onOpenIssue != null
+                    ? () => onOpenIssue!(issue.id)
+                    : null,
+              ),
+              const SizedBox(height: 7),
+            ],
+          ],
+        ),
+      );
+}
+
+class _TreeIssueHistory extends StatelessWidget {
+  const _TreeIssueHistory({
+    required this.history,
+    required this.onOpenIssue,
+    required this.onRetry,
+  });
+
+  final Future<List<TreeIssueOccurrence>> history;
+  final ValueChanged<String>? onOpenIssue;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) => Column(
+        key: const Key('tree-issue-history'),
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          Text(
+            context.l10n.treeIssueHistory,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          FutureBuilder<List<TreeIssueOccurrence>>(
+            future: history,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState != ConnectionState.done) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (snapshot.hasError) {
+                return OutlinedButton.icon(
+                  key: const Key('tree-issue-history-retry'),
+                  onPressed: onRetry,
+                  icon: const Icon(Icons.refresh),
+                  label: Text(context.l10n.treeIssueHistoryLoadFailed),
+                );
+              }
+              final occurrences =
+                  (snapshot.data ?? const <TreeIssueOccurrence>[])
+                      .where((issue) =>
+                          issue.status == TreeIssueStatus.resolved ||
+                          issue.status == TreeIssueStatus.dismissed)
+                      .toList(growable: false);
+              if (occurrences.isEmpty) {
+                return Text(context.l10n.treeIssueHistoryEmpty);
+              }
+              return Semantics(
+                container: true,
+                label:
+                    context.l10n.treeIssueHistorySemantics(occurrences.length),
+                child: Column(
+                  children: <Widget>[
+                    for (final issue in occurrences) ...<Widget>[
+                      _IssueOccurrence(
+                        type: issue.type,
+                        severity: issue.severity,
+                        status: issue.status,
+                        date: issue.reportedAt,
+                        closedAt: issue.closedAt,
+                        onTap: onOpenIssue == null
+                            ? null
+                            : () => onOpenIssue!(issue.id),
+                      ),
+                      const SizedBox(height: 7),
+                    ],
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+      );
+}
+
+class _IssueOccurrence extends StatelessWidget {
+  const _IssueOccurrence({
+    required this.type,
+    required this.severity,
+    required this.status,
+    required this.date,
+    this.closedAt,
+    required this.onTap,
+  });
+
+  final TreeIssueType type;
+  final IssueSeverity severity;
+  final TreeIssueStatus status;
+  final DateTime date;
+  final DateTime? closedAt;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final dateLabel = MaterialLocalizations.of(context).formatShortDate(date);
+    final closedDateLabel = closedAt == null
+        ? null
+        : MaterialLocalizations.of(context).formatShortDate(closedAt!);
+    final datesLabel = closedDateLabel == null
+        ? l10n.treeIssueReportedDate(dateLabel)
+        : l10n.treeIssueOccurrenceDates(dateLabel, closedDateLabel);
+    final semanticLabel = l10n.treeIssueOccurrenceSemantics(
+      type.localizedLabel(l10n),
+      severity.localizedLabel(l10n),
+      status.localizedLabel(l10n),
+      datesLabel,
+    );
+    return Semantics(
+      button: onTap != null,
+      label: semanticLabel,
+      excludeSemantics: true,
+      child: Material(
+        color: const Color(0xFFF1EADC),
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(10),
+            child: Row(
+              children: <Widget>[
+                const Icon(Icons.report_problem_outlined,
+                    color: AppColors.issue),
+                const SizedBox(width: 9),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        type.localizedLabel(l10n),
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${severity.localizedLabel(l10n)} · '
+                        '${status.localizedLabel(l10n)}',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      Text(
+                        datesLabel,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
+                  ),
+                ),
+                if (onTap != null) const Icon(Icons.chevron_right),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class TreeDetailContent extends StatelessWidget {

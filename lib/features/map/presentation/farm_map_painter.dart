@@ -2,9 +2,11 @@ import 'dart:math' as math;
 import 'dart:ui' show PointMode;
 
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
+import 'package:al_wahat_farm_flutter/features/issues/domain/tree_issue_draft.dart';
 import 'package:al_wahat_farm_flutter/features/map/domain/projected_map.dart';
 import 'package:al_wahat_farm_flutter/features/planting_pits/domain/planting_pit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 
 class FarmMapPainter extends CustomPainter {
   const FarmMapPainter({
@@ -24,6 +26,10 @@ class FarmMapPainter extends CustomPainter {
     this.highlightZoneUuids,
     this.highlightSubmains,
     this.highlightLine,
+    this.issueMarkers,
+    this.issueSemanticLabels,
+    this.issueSemanticsTextDirection = TextDirection.ltr,
+    this.showIssueMatchesOnly = false,
   });
 
   final ProjectedFarmMap map;
@@ -49,6 +55,10 @@ class FarmMapPainter extends CustomPainter {
   final Set<String>? highlightZoneUuids;
   final Set<String>? highlightSubmains;
   final List<Offset>? highlightLine;
+  final Map<String, FarmMapIssueMarker>? issueMarkers;
+  final Map<String, String>? issueSemanticLabels;
+  final TextDirection issueSemanticsTextDirection;
+  final bool showIssueMatchesOnly;
 
   static const overviewTreeRadius = 2.7;
   static const sectionTreeRadius = 4.4;
@@ -390,6 +400,10 @@ class FarmMapPainter extends CustomPainter {
         continue;
       }
       final selected = projected.tree.id == selectedTreeId;
+      final issueMode = issueMarkers != null;
+      final marker = issueMarkers?[projected.tree.id];
+      final hasIssue = marker != null;
+      if (issueMode && showIssueMatchesOnly && !hasIssue && !selected) continue;
       final outsideZone = highlightZoneUuids != null &&
           !highlightZoneUuids!.contains(projected.tree.zoneId);
       final radius = selected
@@ -408,10 +422,21 @@ class FarmMapPainter extends CustomPainter {
         projected.point,
         radius,
         Paint()
-          ..color = outsideZone
+          ..color = outsideZone || (issueMode && !hasIssue)
               ? projected.tree.color.withOpacity(0.15)
               : projected.tree.color,
       );
+      if (hasIssue) {
+        canvas.drawCircle(
+          projected.point,
+          radius + 3.2,
+          Paint()
+            ..color = marker.color
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = selected ? 2.4 : 1.8,
+        );
+        _drawIssueBadge(canvas, projected.point, radius, marker);
+      }
       if (!selected) {
         canvas.drawCircle(
           projected.point,
@@ -423,6 +448,26 @@ class FarmMapPainter extends CustomPainter {
         );
       }
     }
+  }
+
+  void _drawIssueBadge(
+    Canvas canvas,
+    Offset treePoint,
+    double treeRadius,
+    FarmMapIssueMarker marker,
+  ) {
+    final badgeRadius = selectedSection == null ? 4.2 : 5.3;
+    final center = treePoint.translate(treeRadius + 2.8, -treeRadius - 2.8);
+    canvas.drawCircle(center, badgeRadius + 0.9, Paint()..color = Colors.white);
+    canvas.drawCircle(center, badgeRadius, Paint()..color = marker.color);
+    _text(
+      canvas,
+      marker.count > 99 ? '99+' : marker.count.toString(),
+      center,
+      marker.count > 9 ? 5.2 : 6.2,
+      FontWeight.w900,
+      Colors.white,
+    );
   }
 
   void _drawPlantingPits(Canvas canvas) {
@@ -505,6 +550,25 @@ class FarmMapPainter extends CustomPainter {
   }
 
   @override
+  SemanticsBuilderCallback get semanticsBuilder => (size) {
+        if (!showTrees || issueSemanticLabels == null) {
+          return const <CustomPainterSemantics>[];
+        }
+        return map.trees
+            .where((tree) => issueSemanticLabels!.containsKey(tree.tree.id))
+            .map(
+              (tree) => CustomPainterSemantics(
+                rect: Rect.fromCircle(center: tree.point, radius: 18),
+                properties: SemanticsProperties(
+                  label: issueSemanticLabels![tree.tree.id],
+                  textDirection: issueSemanticsTextDirection,
+                ),
+              ),
+            )
+            .toList(growable: false);
+      };
+
+  @override
   bool shouldRepaint(covariant FarmMapPainter oldDelegate) =>
       oldDelegate.map != map ||
       oldDelegate.selectedSection != selectedSection ||
@@ -521,5 +585,28 @@ class FarmMapPainter extends CustomPainter {
       oldDelegate.selectedValveId != selectedValveId ||
       oldDelegate.highlightZoneUuids != highlightZoneUuids ||
       oldDelegate.highlightSubmains != highlightSubmains ||
-      oldDelegate.highlightLine != highlightLine;
+      oldDelegate.highlightLine != highlightLine ||
+      oldDelegate.issueMarkers != issueMarkers ||
+      oldDelegate.showIssueMatchesOnly != showIssueMatchesOnly;
+
+  @override
+  bool shouldRebuildSemantics(covariant FarmMapPainter oldDelegate) =>
+      oldDelegate.map != map ||
+      oldDelegate.showTrees != showTrees ||
+      oldDelegate.issueSemanticsTextDirection != issueSemanticsTextDirection ||
+      oldDelegate.issueSemanticLabels != issueSemanticLabels;
+}
+
+class FarmMapIssueMarker {
+  const FarmMapIssueMarker({required this.count, required this.severity});
+
+  final int count;
+  final IssueSeverity severity;
+
+  Color get color => switch (severity) {
+        IssueSeverity.low => const Color(0xFFD19A2A),
+        IssueSeverity.medium => const Color(0xFFE06C2E),
+        IssueSeverity.high => const Color(0xFFC33E32),
+        IssueSeverity.urgent => const Color(0xFF7E2033),
+      };
 }

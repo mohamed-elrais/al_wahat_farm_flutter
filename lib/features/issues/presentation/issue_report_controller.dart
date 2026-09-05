@@ -130,7 +130,7 @@ class IssueReportController extends ChangeNotifier {
       _result = await _repository.report(draft);
       await _refreshSilently();
       if (_photo == null) {
-        _message = (l10n) => l10n.issueMsgReported;
+        _message = _successMessage(withPhoto: false);
         _setStage(IssueSubmissionStage.success);
         return true;
       }
@@ -172,7 +172,7 @@ class IssueReportController extends ChangeNotifier {
         storagePath: path,
       );
       await _refreshSilently();
-      _message = (l10n) => l10n.issueMsgReportedWithPhoto;
+      _message = _successMessage(withPhoto: true);
       _setStage(IssueSubmissionStage.success);
       return true;
     } catch (error) {
@@ -189,6 +189,19 @@ class IssueReportController extends ChangeNotifier {
   void _setStage(IssueSubmissionStage value) {
     _stage = value;
     notifyListeners();
+  }
+
+  String Function(AppLocalizations) _successMessage({
+    required bool withPhoto,
+  }) {
+    if (_result?.confirmedExisting == true) {
+      return withPhoto
+          ? (l10n) => l10n.issueMsgConfirmedExistingWithPhoto
+          : (l10n) => l10n.issueMsgConfirmedExisting;
+    }
+    return withPhoto
+        ? (l10n) => l10n.issueMsgReportedWithPhoto
+        : (l10n) => l10n.issueMsgReported;
   }
 
   Future<void> _refreshSilently() async {

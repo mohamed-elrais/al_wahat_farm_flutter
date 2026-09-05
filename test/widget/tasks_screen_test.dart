@@ -119,6 +119,55 @@ void main() {
     expect(openedCount, 0);
   });
 
+  testWidgets('a pending guided inspection opens its offline runner',
+      (tester) async {
+    final store = InMemoryTaskStore();
+    final createdAt = DateTime(2026, 7, 13);
+    const taskId = '${localTaskIdPrefix}inspection-op';
+    store.tasks[taskId] = FarmTask(
+      id: taskId,
+      farmId: 'farm-id',
+      sectionId: 'section-a',
+      type: TaskType.treeInspection,
+      title: 'Queued guided inspection',
+      priority: TaskPriority.medium,
+      status: TaskStatus.assigned,
+      instructions: const <String, Object?>{
+        'inspection_route_version': 1,
+      },
+      requiresEngineerReview: true,
+      createdByProfileId: 'manager-id',
+      createdAt: createdAt,
+      updatedAt: createdAt,
+      scheduledFor: createdAt,
+    );
+    final workspace = TaskWorkspaceController(
+      repository: _manager(store),
+      farmId: 'farm-id',
+    );
+    addTearDown(workspace.dispose);
+    await workspace.load();
+    String? openedInspection;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: TasksScreen(
+          controller: workspace,
+          role: FarmRole.owner,
+          hierarchy: _hierarchy,
+          now: () => createdAt,
+          onOpenInspection: (value) => openedInspection = value,
+        ),
+      ),
+    );
+
+    await tester.tap(find.byKey(const Key('task-$taskId')));
+    expect(openedInspection, taskId);
+    expect(
+        find.text('This task opens once it syncs to the farm.'), findsNothing);
+  });
+
   testWidgets('worker does not see manager create action', (tester) async {
     final store = InMemoryTaskStore();
     await _manager(store).create(

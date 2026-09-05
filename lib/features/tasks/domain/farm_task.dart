@@ -228,6 +228,13 @@ class FarmTask {
   /// read-only until the queued creation replays and returns the real id.
   bool get isPendingSync => id.startsWith(localTaskIdPrefix);
 
+  /// Only inspections created by the dedicated inspection workflow carry
+  /// immutable route metadata and have a matching inspection session.
+  bool get hasInspectionSetup =>
+      type == TaskType.treeInspection &&
+      sectionId != null &&
+      instructions['inspection_route_version'] is num;
+
   factory FarmTask.fromJson(Map<String, Object?> json) => FarmTask(
         id: json['id']! as String,
         farmId: json['farm_id']! as String,

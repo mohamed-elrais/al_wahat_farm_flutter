@@ -9,7 +9,11 @@ import 'package:al_wahat_farm_flutter/features/auth/presentation/auth_bootstrap_
 import 'package:al_wahat_farm_flutter/features/farm/presentation/farm_hierarchy_gate.dart';
 import 'package:al_wahat_farm_flutter/features/issues/data/issue_mutation_executor.dart';
 import 'package:al_wahat_farm_flutter/features/issues/data/issue_photo_service.dart';
+import 'package:al_wahat_farm_flutter/features/issues/data/issue_workspace_repository.dart';
 import 'package:al_wahat_farm_flutter/features/issues/data/tree_issue_repository.dart';
+import 'package:al_wahat_farm_flutter/features/issues/presentation/issue_workspace_controller.dart';
+import 'package:al_wahat_farm_flutter/features/inspections/data/inspection_repository.dart';
+import 'package:al_wahat_farm_flutter/features/inspections/presentation/inspection_repository_scope.dart';
 import 'package:al_wahat_farm_flutter/features/reviews/data/engineer_review_repository.dart';
 import 'package:al_wahat_farm_flutter/features/reviews/data/review_mutation_executor.dart';
 import 'package:al_wahat_farm_flutter/features/sync/domain/composite_mutation_executor.dart';
@@ -56,6 +60,8 @@ class AuthenticatedGate extends StatefulWidget {
 class _AuthenticatedGateState extends State<AuthenticatedGate> {
   AuthBootstrapController? _controller;
   TaskRepository? _taskRepository;
+  IssueWorkspaceRepository? _issueWorkspaceRepository;
+  InspectionRepository? _inspectionRepository;
   SyncEngine? _syncEngine;
 
   @override
@@ -67,6 +73,8 @@ class _AuthenticatedGateState extends State<AuthenticatedGate> {
     final store = services?.cacheStore;
 
     final base = SupabaseTaskRepository(client);
+    final issueWorkspaceBase = SupabaseIssueWorkspaceRepository(client);
+    final inspectionBase = SupabaseInspectionRepository(client);
     if (services != null && store != null) {
       final caching = CachingTaskRepository(inner: base, store: store);
       final taskExecutor = TaskMutationExecutor(
@@ -86,6 +94,20 @@ class _AuthenticatedGateState extends State<AuthenticatedGate> {
         pendingPhotos: services.pendingPhotos,
         taskRepository: caching,
       );
+      final resolutionPhotoStorage = SupabaseIssuePhotoStorage(client);
+      final issueWorkspaceExecutor = IssueWorkspaceMutationExecutor(
+        issueWorkspaceBase,
+        photoStorage: resolutionPhotoStorage,
+        pendingPhotos: services.pendingPhotos,
+      );
+      final inspectionEvidenceStorage = SupabaseTaskEvidenceStorage(client);
+      final inspectionExecutor = InspectionMutationExecutor(
+        inspectionBase,
+        evidenceStorage: inspectionEvidenceStorage,
+        pendingPhotos: services.pendingPhotos,
+        cache: store,
+        taskRepository: caching,
+      );
       final syncEngine = SyncEngine(
         outbox: services.outbox,
         executor:
@@ -97,6 +119,14 @@ class _AuthenticatedGateState extends State<AuthenticatedGate> {
           PendingMutationKind.createTask: taskExecutor,
           PendingMutationKind.reportIssue: issueExecutor,
           PendingMutationKind.reviewTask: reviewExecutor,
+          PendingMutationKind.changeIssueSeverity: issueWorkspaceExecutor,
+          PendingMutationKind.dismissIssue: issueWorkspaceExecutor,
+          PendingMutationKind.resolveIssue: issueWorkspaceExecutor,
+          PendingMutationKind.unableToFixIssue: issueWorkspaceExecutor,
+          PendingMutationKind.createInspection: inspectionExecutor,
+          PendingMutationKind.setInspectionStatus: inspectionExecutor,
+          PendingMutationKind.saveInspectionStation: inspectionExecutor,
+          PendingMutationKind.submitInspection: inspectionExecutor,
         }),
         connectivity: services.connectivity,
       )..start();
@@ -108,8 +138,30 @@ class _AuthenticatedGateState extends State<AuthenticatedGate> {
         cache: store,
         syncEngine: syncEngine,
       );
+      _issueWorkspaceRepository = OfflineIssueWorkspaceRepository(
+        inner: issueWorkspaceBase,
+        cache: store,
+        outbox: services.outbox,
+        connectivity: services.connectivity,
+        syncEngine: syncEngine,
+        photoStorage: resolutionPhotoStorage,
+        pendingPhotos: services.pendingPhotos,
+        userId: client.auth.currentUser!.id,
+      );
+      _inspectionRepository = OfflineInspectionRepository(
+        inner: inspectionBase,
+        cache: store,
+        outbox: services.outbox,
+        connectivity: services.connectivity,
+        syncEngine: syncEngine,
+        evidenceStorage: inspectionEvidenceStorage,
+        pendingPhotos: services.pendingPhotos,
+        userId: client.auth.currentUser!.id,
+      );
     } else {
       _taskRepository = base;
+      _issueWorkspaceRepository = issueWorkspaceBase;
+      _inspectionRepository = inspectionBase;
     }
 
     final OperationalContextRepository contextRepository =
@@ -152,13 +204,25 @@ class _AuthenticatedGateState extends State<AuthenticatedGate> {
             contextData: context,
             child: FarmHierarchyGate(
               farmId: context.selectedMembership.farm.id,
-              child: TaskWorkspaceProvider(
+              child: IssueWorkspaceProvider(
                 farmId: context.selectedMembership.farm.id,
-                repository: _taskRepository ??
-                    SupabaseTaskRepository(Supabase.instance.client),
-                child: _syncEngine == null
-                    ? widget.child
-                    : SyncScope(engine: _syncEngine!, child: widget.child),
+                isManager: context.selectedMembership.role.canManageTasks,
+                syncEngine: _syncEngine,
+                repository: _issueWorkspaceRepository ??
+                    SupabaseIssueWorkspaceRepository(Supabase.instance.client),
+                child: InspectionRepositoryScope(
+                  repository: _inspectionRepository ??
+                      SupabaseInspectionRepository(Supabase.instance.client),
+                  child: TaskWorkspaceProvider(
+                    farmId: context.selectedMembership.farm.id,
+                    syncEngine: _syncEngine,
+                    repository: _taskRepository ??
+                        SupabaseTaskRepository(Supabase.instance.client),
+                    child: _syncEngine == null
+                        ? widget.child
+                        : SyncScope(engine: _syncEngine!, child: widget.child),
+                  ),
+                ),
               ),
             ),
           ),

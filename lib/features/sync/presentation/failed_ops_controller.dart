@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:al_wahat_farm_flutter/core/cache/local_cache_store.dart';
+import 'package:al_wahat_farm_flutter/features/inspections/data/inspection_repository.dart';
 import 'package:al_wahat_farm_flutter/features/sync/data/pending_photo_store.dart';
 import 'package:al_wahat_farm_flutter/features/sync/domain/pending_mutation.dart';
 import 'package:al_wahat_farm_flutter/features/sync/domain/sync_engine.dart';
@@ -51,9 +52,11 @@ class FailedOpsController extends ChangeNotifier {
 
   Future<void> discard(PendingMutation op) => _guard(() async {
         // Remove the op's side effects before dropping it from the queue.
-        await _pendingPhotos.delete(op.opId);
+        await _pendingPhotos.deleteForOperation(op.opId);
         if (op.kind == PendingMutationKind.createTask) {
           await _dropProvisional(op);
+        } else if (op.kind == PendingMutationKind.createInspection) {
+          await _dropProvisionalInspection(op);
         }
         await _syncEngine.discard(op.opId);
       });
@@ -91,5 +94,19 @@ class FailedOpsController extends ChangeNotifier {
     } catch (_) {
       // Corrupt cache is dropped on the next successful list refresh.
     }
+  }
+
+  Future<void> _dropProvisionalInspection(PendingMutation op) async {
+    final cache = _cache;
+    if (cache == null) return;
+    final draft = op.payload['draft'];
+    if (draft is! Map) return;
+    final farmId = draft['farm_id'];
+    if (farmId is! String) return;
+    await OfflineInspectionRepository.discardProvisional(
+      cache,
+      farmId,
+      '${OfflineInspectionRepository.localPrefix}${op.opId}',
+    );
   }
 }

@@ -14,6 +14,9 @@
   "commonClose": "Close",
   "commonBack": "Back",
   "commonLoading": "Loading…",
+  "commonAll": "All",
+  "commonClear": "Clear",
+  "commonApply": "Apply",
   "routeUnavailable": "Route unavailable: {path}",
   "@routeUnavailable": {
     "placeholders": {
@@ -495,9 +498,11 @@
   "issueStageRegisteringPhoto": "Registering evidence…",
   "issueErrPhotoPrepare": "Unable to prepare that photo.",
   "issueMsgReported": "Issue reported and engineer review task created.",
+  "issueMsgConfirmedExisting": "The existing active issue was confirmed. Its severity was not changed.",
   "issueMsgReportedOffline": "Issue saved offline. It will be reported to the farm when you're back online.",
   "issueErrReport": "The issue could not be reported. Check your connection.",
   "issueMsgReportedWithPhoto": "Issue, review task, and photo evidence saved.",
+  "issueMsgConfirmedExistingWithPhoto": "The existing active issue was confirmed with photo evidence. Its severity was not changed.",
   "issueErrPartialPrefix": "The issue and review task were saved, but photo registration was not confirmed. ",
   "issueMsgRetryPhoto": "You can safely retry the photo.",
   "selectedTree": "Selected tree",
@@ -873,5 +878,277 @@
         "type": "String"
       }
     }
-  }
+  },
+  "issuesEyebrow": "FIELD HEALTH",
+  "issuesTitle": "Active tree issues",
+  "issuesUnavailable": "The issue workspace is unavailable.",
+  "issuesFilters": "Filter issues",
+  "issuesAllTypes": "All issue types",
+  "issuesAllSeverities": "All severities",
+  "issuesOnlyUnclaimed": "Only issues available to claim",
+  "issuesTreeLocation": "Section {section} · {tree}",
+  "@issuesTreeLocation": {
+    "placeholders": {
+      "section": {"type": "String"},
+      "tree": {"type": "String"}
+    }
+  },
+  "issuesOpenTree": "Open tree",
+  "issuesClaim": "Claim issue",
+  "issuesClaimOnlineOnly": "Connect to the internet to claim this issue",
+  "issuesClaimed": "Claimed",
+  "issuesClaimedByYou": "Assigned to you",
+  "issuesDetailsAvailable": "Full details available",
+  "issuesSummaryOnly": "Safe summary",
+  "issuesLoadFailed": "The active issues could not be loaded.",
+  "issuesEmpty": "No active issues match these filters.",
+  "issueDetailTitle": "Issue details",
+  "issueDetailHistory": "Issue history",
+  "issueDetailDescription": "Field observation",
+  "issueDetailNoDescription": "No observation notes were recorded.",
+  "issueDetailViewHistory": "View details and history",
+  "issueDetailChangeSeverity": "Change severity",
+  "issueDetailDismiss": "Dismiss issue",
+  "issueDetailDismissPrompt": "Why should this issue be dismissed?",
+  "issueDetailDismissRequired": "A dismissal reason is required.",
+  "issueDetailActionSaved": "The issue action was saved or queued for sync.",
+  "issueDetailOpenTask": "Open related task",
+  "issueDetailNoHistory": "No issue events are available.",
+  "issueDetailLoadFailed": "The authorized issue details could not be loaded.",
+  "issueDetailObservations": "Inspection observations",
+  "issueDetailNoObservations": "No inspection observations are linked to this issue.",
+  "issueDetailLinkedTasks": "Linked tasks",
+  "issueDetailNoLinkedTasks": "No tasks are linked to this issue.",
+  "issueDetailTaskRestricted": "Task details are restricted to its assignees and farm managers.",
+  "issueDetailEvidence": "Issue evidence ({count})",
+  "@issueDetailEvidence": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "issueObservationDetected": "Detected during inspection",
+  "issueObservationConfirmed": "Confirmed during inspection",
+  "issueObservationNotObserved": "Not observed during inspection",
+  "issueObservationSeverityChanged": "Severity explicitly changed",
+  "issueStatusOpen": "Open",
+  "issueStatusInReview": "In review",
+  "issueStatusResolved": "Resolved",
+  "issueStatusDismissed": "Dismissed",
+  "issueEventDetected": "Issue detected",
+  "issueEventConfirmed": "Issue confirmed",
+  "issueEventNotObserved": "Not observed during inspection",
+  "issueEventSeverityChanged": "Severity changed",
+  "issueEventResolutionSubmitted": "Resolution submitted for review",
+  "issueEventResolved": "Issue resolved",
+  "issueEventUnableToFix": "Unable to fix recorded",
+  "issueEventDismissed": "Issue dismissed",
+  "issueEventReviewReturned": "Review returned",
+  "homeActiveIssues": "Active issues ({count})",
+  "@homeActiveIssues": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "failedOpsKindIssueWorkflow": "Tree issue action",
+  "failedOpsKindInspection": "Tree inspection action",
+  "inspectionCreateUnavailable": "Only farm managers can create inspections.",
+  "inspectionCreateTitle": "Create tree inspection",
+  "inspectionCreateForSection": "Inspect section {section}",
+  "@inspectionCreateForSection": {"placeholders": {"section": {"type": "String"}}},
+  "inspectionStandardTaskHint": "This creates a standard task. For a guided tree-by-tree route, use guided inspection setup.",
+  "inspectionGuidedCreateAction": "Create guided inspection",
+  "inspectionGuidedSessionMissing": "This is a standard task and has no guided inspection route.",
+  "inspectionBackToTask": "Back to task",
+  "inspectionTitleLabel": "Inspection title",
+  "inspectionSectionLabel": "Section",
+  "inspectionInspectorLabel": "Assigned inspector",
+  "inspectionChooseSchedule": "Choose scheduled date",
+  "inspectionScheduleRequired": "A scheduled date is required.",
+  "inspectionDefaultTitle": "Tree inspection · {section}",
+  "@inspectionDefaultTitle": {"placeholders": {"section": {"type": "String"}}},
+  "inspectionRequiresReview": "Require engineer review",
+  "inspectionRequiresPhoto": "Require a photo for every selected issue",
+  "inspectionPhotoRequirementHint": "Photos stay optional when this is off.",
+  "inspectionBuildRoute": "Build and preview walking route",
+  "inspectionSectionHasNoTrees": "This section has no active trees to inspect.",
+  "inspectionCreateAction": "Create inspection",
+  "inspectionTitleRequired": "Enter an inspection title.",
+  "inspectionQueuedOffline": "Inspection saved offline and queued for sync.",
+  "inspectionRoutePreview": "Walking route preview",
+  "inspectionRouteCounts": "{trees} trees · {stations} stations",
+  "@inspectionRouteCounts": {
+    "placeholders": {
+      "trees": {"type": "int"},
+      "stations": {"type": "int"}
+    }
+  },
+  "inspectionStartsAt": "Starts at {tree}",
+  "@inspectionStartsAt": {
+    "placeholders": {"tree": {"type": "String"}}
+  },
+  "inspectionRoutePreviewSemantics": "Walking route starts at {tree} and covers {trees} trees across {stations} stations. Green lines are tree rows and orange arrows are walking corridors.",
+  "@inspectionRoutePreviewSemantics": {"placeholders": {"tree": {"type": "String"}, "trees": {"type": "int"}, "stations": {"type": "int"}}},
+  "inspectionRouteRowsLegend": "Tree rows",
+  "inspectionRoutePathLegend": "Walking direction",
+  "inspectionPhysicalSidesHint": "Left and right are physical sides while walking and do not change in Arabic.",
+  "inspectionOpenRunner": "Open inspection",
+  "inspectionRunnerEyebrow": "SECTION WALK",
+  "inspectionRunnerTitle": "Tree inspection",
+  "inspectionProgress": "{done} of {total} trees inspected",
+  "@inspectionProgress": {
+    "placeholders": {
+      "done": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "inspectionStart": "Start inspection",
+  "inspectionResume": "Resume inspection",
+  "inspectionPause": "Pause",
+  "inspectionAssignedToAnotherInspector": "Assigned to another inspector",
+  "inspectionTakeoverHint": "Taking over is online-only, replaces the assigned inspector, and is recorded in task history.",
+  "inspectionTakeover": "Take over inspection",
+  "inspectionPreviousStation": "Previous station",
+  "inspectionSubmit": "Submit inspection",
+  "inspectionSubmitted": "This inspection was submitted.",
+  "inspectionFinalReviewTitle": "Review before submission",
+  "inspectionFinalReviewMessage": "All {trees} trees across {stations} stations are saved. Review the previous station or submit the inspection.",
+  "@inspectionFinalReviewMessage": {
+    "placeholders": {
+      "trees": {"type": "int"},
+      "stations": {"type": "int"}
+    }
+  },
+  "inspectionStation": "Station {current} of {total}",
+  "@inspectionStation": {
+    "placeholders": {
+      "current": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "inspectionPhysicalLeft": "Physical left",
+  "inspectionPhysicalRight": "Physical right",
+  "inspectionSingleSide": "Single side",
+  "inspectionTreePosition": "Source row {row} · tree {tree}",
+  "@inspectionTreePosition": {"placeholders": {"row": {"type": "String"}, "tree": {"type": "String"}}},
+  "inspectionCoordinates": "{latitude}, {longitude}",
+  "@inspectionCoordinates": {"placeholders": {"latitude": {"type": "String"}, "longitude": {"type": "String"}}},
+  "inspectionExistingIssues": "{count, plural, =1{1 existing issue} other{{count} existing issues}}",
+  "@inspectionExistingIssues": {"placeholders": {"count": {"type": "int"}}},
+  "inspectionTreeCardSemantics": "Tree {tree}, {side}, {issues, plural, =0{no existing issues} =1{1 existing issue} other{{issues} existing issues}}",
+  "@inspectionTreeCardSemantics": {"placeholders": {"tree": {"type": "String"}, "side": {"type": "String"}, "issues": {"type": "int"}}},
+  "inspectionSelectSeverity": "Select severity",
+  "inspectionNoNewIssue": "No new issue found. Existing deselected issues remain active.",
+  "inspectionSaveNext": "Save station and continue",
+  "inspectionPhotoRequiredError": "This inspection requires a photo for every selected issue.",
+  "inspectionAddIssuePhoto": "Add issue photo (optional)",
+  "inspectionAddRequiredIssuePhoto": "Add required issue photo",
+  "inspectionIssuePhotoReady": "Issue photo prepared",
+  "inspectionLoadFailed": "The inspection could not be loaded.",
+  "issueWorkTitle": "Issues in this task",
+  "issueWorkIndividualHint": "Review and record an outcome for each issue separately.",
+  "issueWorkPhotoRequired": "A resolution photo is required before Resolve.",
+  "issueWorkAddPhoto": "Add outcome photo (optional)",
+  "issueWorkPhotoReady": "Outcome photo prepared",
+  "issueWorkResolve": "Resolve",
+  "issueWorkUnable": "Unable to fix",
+  "issueWorkUnableReason": "Why could this not be fixed?",
+  "issueWorkNotes": "Notes",
+  "issueWorkPending": "Pending",
+  "issueWorkSubmitted": "Submitted for review",
+  "issueWorkResolved": "Resolved",
+  "issueWorkUnableState": "Unable to fix",
+  "issueWorkReturned": "Returned",
+  "reviewIssueScopeHint": "Approval affects only the issues explicitly listed in this task. Other issues on the same trees remain unchanged.",
+  "unableReasonReplacementPart": "Replacement part required",
+  "unableReasonSpecialist": "Specialist required",
+  "unableReasonAdditionalWorker": "Additional worker required",
+  "unableReasonEquipment": "Equipment unavailable",
+  "unableReasonInaccessible": "Tree inaccessible",
+  "unableReasonIncorrectIssue": "Suspected incorrect issue",
+  "mapActiveIssueFilter": "Active issues ({count})",
+  "@mapActiveIssueFilter": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "mapShowIssueMatchesOnly": "Show matching trees only",
+  "mapIssueFilters": "Filters ({count})",
+  "mapIssueTreeSemantics": "Tree {tree}, {count, plural, =1{1 active issue} other{{count} active issues}}, highest severity {severity}",
+  "@mapIssueTreeSemantics": {"placeholders": {"tree": {"type": "String"}, "count": {"type": "int"}, "severity": {"type": "String"}}},
+  "@mapIssueFilters": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "mapIssueFiltersTitle": "Map issue filters",
+  "mapIssueStatusFilter": "Issue status",
+  "mapIssueLayerSemantics": "Issue layer: {trees} matching trees with {issues} active issues",
+  "@mapIssueLayerSemantics": {
+    "placeholders": {
+      "trees": {"type": "int"},
+      "issues": {"type": "int"}
+    }
+  },
+  "treeActiveIssues": "Active issues ({count})",
+  "@treeActiveIssues": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "treeActiveIssuesSemantics": "This tree has {count} active issues",
+  "@treeActiveIssuesSemantics": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "treeIssueHistory": "Past issue occurrences",
+  "treeIssueHistoryEmpty": "No past occurrences are available.",
+  "treeIssueHistoryLoadFailed": "Could not load history. Retry",
+  "treeIssueReportedDate": "Reported {date}",
+  "@treeIssueReportedDate": {
+    "placeholders": {"date": {"type": "String"}}
+  },
+  "treeIssueOccurrenceDates": "Reported {reported} · Closed {closed}",
+  "@treeIssueOccurrenceDates": {
+    "placeholders": {
+      "reported": {"type": "String"},
+      "closed": {"type": "String"}
+    }
+  },
+  "treeIssueHistorySemantics": "{count} past issue occurrences",
+  "@treeIssueHistorySemantics": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "treeIssueOccurrenceSemantics": "{type}, {severity}, {status}, {dates}",
+  "@treeIssueOccurrenceSemantics": {
+    "placeholders": {
+      "type": {"type": "String"},
+      "severity": {"type": "String"},
+      "status": {"type": "String"},
+      "dates": {"type": "String"}
+    }
+  },
+  "issuesActiveTab": "Active ({count})",
+  "@issuesActiveTab": {"placeholders": {"count": {"type": "int"}}},
+  "issuesHistoryTab": "History ({count})",
+  "@issuesHistoryTab": {"placeholders": {"count": {"type": "int"}}},
+  "issuesHistoryEmpty": "No historical issue occurrences match these filters.",
+  "issuesStatusFilter": "Status",
+  "issuesAllStatuses": "All statuses",
+  "issuesSectionFilter": "Section",
+  "issuesAllSections": "All sections",
+  "issuesAgeFilter": "Issue age",
+  "issuesAnyAge": "Any age",
+  "issuesAgeSevenDays": "7 days or older",
+  "issuesAgeThirtyDays": "30 days or older",
+  "issuesAgeNinetyDays": "90 days or older",
+  "issuesAssignmentFilter": "Assignment",
+  "issuesAllAssignments": "All assignments",
+  "issuesAssigned": "Assigned",
+  "issuesUnassigned": "Unassigned",
+  "issuesSourceFilter": "Source",
+  "issuesAllSources": "All sources",
+  "issueSourceInspection": "Inspection",
+  "issueSourceQuickReport": "Quick report",
+  "issuesResetFilters": "Reset filters",
+  "issuesAssign": "Assign",
+  "issuesAssignTitle": "Assign issue work",
+  "issuesAssignTo": "Assign to",
+  "issuesRequireEngineerReview": "Require engineer review before closing",
+  "issuesAssignmentOnlineOnly": "Connect to the internet to assign this issue",
+  "issuesNoAssignableMembers": "No active operational farm members are available.",
+  "issuesAssignedTo": "Assigned to {name}",
+  "@issuesAssignedTo": {"placeholders": {"name": {"type": "String"}}},
+  "issuesReportedOn": "Reported {date}",
+  "@issuesReportedOn": {"placeholders": {"date": {"type": "String"}}},
+  "issuesClosedOn": "Closed {date}",
+  "@issuesClosedOn": {"placeholders": {"date": {"type": "String"}}}
 }

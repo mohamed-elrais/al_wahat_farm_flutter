@@ -5,6 +5,7 @@ import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/section_refresh.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
 import 'package:al_wahat_farm_flutter/features/farm/presentation/farm_hierarchy_gate.dart';
+import 'package:al_wahat_farm_flutter/features/issues/presentation/issue_workspace_controller.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/farm_task.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_widgets.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_workspace_controller.dart';
@@ -214,6 +215,19 @@ class _FarmOverview extends StatelessWidget {
             onPressed: () => context.go('/map'),
             icon: const Icon(Icons.map_outlined),
             label: Text(context.l10n.homeOpenMap),
+          ),
+          const SizedBox(height: 10),
+          Builder(
+            builder: (context) {
+              final issues = IssueWorkspaceScope.maybeOf(context);
+              return OutlinedButton.icon(
+                onPressed: () => context.go('/issues'),
+                icon: const Icon(Icons.report_problem_outlined),
+                label: Text(
+                  context.l10n.homeActiveIssues(issues?.activeCount ?? 0),
+                ),
+              );
+            },
           ),
         ],
       ),
