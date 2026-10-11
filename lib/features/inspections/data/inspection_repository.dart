@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:al_wahat_farm_flutter/core/cache/local_cache_store.dart';
 import 'package:al_wahat_farm_flutter/core/connectivity/connectivity_service.dart';
 import 'package:al_wahat_farm_flutter/core/errors/operation_failure.dart';
+import 'package:al_wahat_farm_flutter/features/inspections/data/inspection_station_local_store.dart';
 import 'package:al_wahat_farm_flutter/features/inspections/domain/inspection_models.dart';
 import 'package:al_wahat_farm_flutter/features/sync/data/outbox_store.dart';
 import 'package:al_wahat_farm_flutter/features/sync/data/pending_photo_store.dart';
@@ -187,6 +188,7 @@ class OfflineInspectionRepository implements InspectionRepository {
     required TaskEvidenceStorage evidenceStorage,
     required PendingPhotoStore pendingPhotos,
     required String userId,
+    InspectionStationLocalStore? stationLocalStore,
     Uuid uuid = const Uuid(),
     int Function()? clock,
   })  : _inner = inner,
@@ -195,7 +197,12 @@ class OfflineInspectionRepository implements InspectionRepository {
         _connectivity = connectivity,
         _syncEngine = syncEngine,
         _evidenceStorage = evidenceStorage,
-        _pendingPhotos = pendingPhotos,
+        _stationLocalStore = stationLocalStore ??
+            CoordinatedInspectionStationLocalStore(
+              cache: cache,
+              outbox: outbox,
+              pendingPhotos: pendingPhotos,
+            ),
         _userId = userId,
         _uuid = uuid,
         _clock = clock ?? (() => DateTime.now().millisecondsSinceEpoch);
@@ -213,7 +220,7 @@ class OfflineInspectionRepository implements InspectionRepository {
   final ConnectivityController _connectivity;
   final SyncEngine _syncEngine;
   final TaskEvidenceStorage _evidenceStorage;
-  final PendingPhotoStore _pendingPhotos;
+  final InspectionStationLocalStore _stationLocalStore;
   final String _userId;
   final Uuid _uuid;
   final int Function() _clock;
@@ -283,13 +290,18 @@ class OfflineInspectionRepository implements InspectionRepository {
   }) async {
     final resolvedSessionId = await resolveSessionId(_cache, sessionId);
     await _queueOrRun(
+      opId: opId,
       forceQueue: _isUnresolvedLocal(sessionId, resolvedSessionId),
       kind: PendingMutationKind.setInspectionStatus,
       payload: <String, Object?>{
         'sessionId': sessionId,
         'status': status.wireValue,
       },
-      online: () => _inner.setStatus(resolvedSessionId, status),
+      online: () => _inner.setStatus(
+        resolvedSessionId,
+        status,
+        opId: opId,
+      ),
       optimistic: () => _patchSession(sessionId, status: status),
     );
   }
@@ -334,6 +346,7 @@ class OfflineInspectionRepository implements InspectionRepository {
         'Farm and task identity are required for inspection photos.',
       );
     }
+    final operationId = opId ?? _uuid.v4();
     final resolvedSessionId = await resolveSessionId(_cache, sessionId);
     final resolvedTaskId =
         taskId == null ? null : await resolveTaskId(_cache, taskId);
@@ -353,20 +366,21 @@ class OfflineInspectionRepository implements InspectionRepository {
         resolvedSessionId,
         stationIndex,
         _withInspectionPhotoPaths(results, paths),
+        opId: operationId,
       );
       await _refreshAndCache(resolvedTaskId!);
       return;
     }
-    final operationId = _uuid.v4();
     final refs = <Map<String, Object?>>[];
-    try {
-      for (final entry in photos.entries) {
-        final blobKey = '$operationId::${entry.key}';
-        refs.add(<String, Object?>{
-          'logical_key': entry.key,
-          'blob_key': blobKey,
-        });
-        await _pendingPhotos.put(PendingPhoto(
+    final pendingPhotoRecords = <PendingPhoto>[];
+    for (final entry in photos.entries) {
+      final blobKey = '$operationId::${entry.key}';
+      refs.add(<String, Object?>{
+        'logical_key': entry.key,
+        'blob_key': blobKey,
+      });
+      pendingPhotoRecords.add(
+        PendingPhoto(
           opId: blobKey,
           taskId: taskId!,
           userId: resolvedUserId,
@@ -376,25 +390,10 @@ class OfflineInspectionRepository implements InspectionRepository {
           contentType: entry.value.contentType,
           bytes: entry.value.bytes,
           createdAt: _clock(),
-        ));
-      }
-      await _outbox.enqueue(PendingMutation(
-        opId: operationId,
-        kind: PendingMutationKind.saveInspectionStation,
-        payload: <String, Object?>{
-          'sessionId': sessionId,
-          'stationIndex': stationIndex,
-          'results':
-              results.map((item) => item.toJson()).toList(growable: false),
-          'photoRefs': refs,
-        },
-        createdAt: _clock(),
-      ));
-    } catch (_) {
-      await _pendingPhotos.deleteForOperation(operationId);
-      rethrow;
+        ),
+      );
     }
-    await _patchStation(
+    final cacheEntry = await _patchedStationCacheEntry(
       sessionId,
       stationIndex,
       results,
@@ -403,6 +402,37 @@ class OfflineInspectionRepository implements InspectionRepository {
           ref['logical_key']! as String: ref['blob_key']! as String,
       },
     );
+    if (cacheEntry == null) {
+      throw const OperationFailure(
+        OperationFailureKind.unexpected,
+        'The inspection snapshot is unavailable on this device.',
+      );
+    }
+    final mutation = PendingMutation(
+      opId: operationId,
+      kind: PendingMutationKind.saveInspectionStation,
+      payload: <String, Object?>{
+        'sessionId': sessionId,
+        'stationIndex': stationIndex,
+        'results': results.map((item) => item.toJson()).toList(growable: false),
+        'photoRefs': refs,
+      },
+      createdAt: _clock(),
+    );
+    try {
+      await _stationLocalStore.commit(
+        mutation: mutation,
+        photos: pendingPhotoRecords,
+        cacheKey: cacheEntry.key,
+        cacheValue: cacheEntry.value,
+      );
+    } catch (error) {
+      throw OperationFailure(
+        OperationFailureKind.unexpected,
+        'The inspection station could not be saved on this device.',
+        cause: error,
+      );
+    }
     unawaited(_syncEngine.sync());
   }
 
@@ -410,10 +440,15 @@ class OfflineInspectionRepository implements InspectionRepository {
   Future<void> submit(String sessionId, {String? note, String? opId}) async {
     final resolvedSessionId = await resolveSessionId(_cache, sessionId);
     await _queueOrRun(
+      opId: opId,
       forceQueue: _isUnresolvedLocal(sessionId, resolvedSessionId),
       kind: PendingMutationKind.submitInspection,
       payload: <String, Object?>{'sessionId': sessionId, 'note': note},
-      online: () => _inner.submit(resolvedSessionId, note: note),
+      online: () => _inner.submit(
+        resolvedSessionId,
+        note: note,
+        opId: opId,
+      ),
       optimistic: () => _patchSession(
         sessionId,
         status: InspectionSessionStatus.submitted,
@@ -422,6 +457,7 @@ class OfflineInspectionRepository implements InspectionRepository {
   }
 
   Future<void> _queueOrRun({
+    String? opId,
     required PendingMutationKind kind,
     required Map<String, Object?> payload,
     required Future<void> Function() online,
@@ -437,7 +473,7 @@ class OfflineInspectionRepository implements InspectionRepository {
       }
     }
     await _outbox.enqueue(PendingMutation(
-      opId: _uuid.v4(),
+      opId: opId ?? _uuid.v4(),
       kind: kind,
       payload: payload,
       createdAt: _clock(),
@@ -459,14 +495,19 @@ class OfflineInspectionRepository implements InspectionRepository {
     await _writeCached(sessionId, json);
   }
 
-  Future<void> _patchStation(
+  Future<({String key, String value})?> _patchedStationCacheEntry(
     String sessionId,
     int stationIndex,
     List<InspectionTreeResult> results, {
     Map<String, String> pendingPhotoRefs = const <String, String>{},
   }) async {
-    final json = await _cachedJson(sessionId);
-    if (json == null) return;
+    final taskId = await _cache.read(sessionIndexKey(sessionId));
+    if (taskId == null) return null;
+    final key = cacheKey(taskId);
+    final raw = await _cache.read(key);
+    final json =
+        raw == null ? null : Map<String, Object?>.from(jsonDecode(raw) as Map);
+    if (json == null) return null;
     final byTree = <String, InspectionTreeResult>{
       for (final result in results) result.treeId: result,
     };
@@ -529,7 +570,7 @@ class OfflineInspectionRepository implements InspectionRepository {
         items.where((item) => item['status'] == 'inspected').length;
     session['revision'] = (session['revision']! as num).toInt() + 1;
     json['session'] = session;
-    await _writeCached(sessionId, json);
+    return (key: key, value: jsonEncode(json));
   }
 
   Future<Map<String, Object?>?> _cachedJson(String sessionId) async {

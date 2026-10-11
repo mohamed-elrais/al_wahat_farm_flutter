@@ -26,6 +26,14 @@ class _OfflineConnectivity implements ConnectivityService {
   Stream<NetworkStatus> get changes => const Stream<NetworkStatus>.empty();
 }
 
+class _OnlineConnectivity implements ConnectivityService {
+  @override
+  Future<NetworkStatus> current() async => NetworkStatus.online;
+
+  @override
+  Stream<NetworkStatus> get changes => const Stream<NetworkStatus>.empty();
+}
+
 class _NoopExecutor implements MutationExecutor {
   @override
   Future<void> execute(PendingMutation mutation) async {}
@@ -34,8 +42,11 @@ class _NoopExecutor implements MutationExecutor {
 class _FakeInspectionRepository implements InspectionRepository {
   List<InspectionTreeResult>? savedResults;
   String? savedSessionId;
+  String? savedOpId;
   String? submittedSessionId;
+  String? submittedOpId;
   String? statusSessionId;
+  String? statusOpId;
 
   @override
   Future<InspectionCreationResult> create(
@@ -65,6 +76,7 @@ class _FakeInspectionRepository implements InspectionRepository {
   }) async {
     savedResults = results;
     savedSessionId = sessionId;
+    savedOpId = opId;
   }
 
   @override
@@ -74,6 +86,7 @@ class _FakeInspectionRepository implements InspectionRepository {
     String? opId,
   }) async {
     statusSessionId = sessionId;
+    statusOpId = opId;
   }
 
   @override
@@ -83,6 +96,7 @@ class _FakeInspectionRepository implements InspectionRepository {
     String? opId,
   }) async {
     submittedSessionId = sessionId;
+    submittedOpId = opId;
   }
 }
 
@@ -128,10 +142,11 @@ void main() {
       pendingPhotos: pendingPhotos,
       userId: 'user-id',
     );
+    final created = await repository.create(_creationDraft());
     final observedAt = DateTime.utc(2026, 9, 2);
     final results = <InspectionTreeResult>[
       InspectionTreeResult(
-        treeId: 'tree-id',
+        treeId: 'tree-1',
         noNewIssueFound: false,
         clientObservedAt: observedAt,
         selectedIssues: const <InspectionSelectedIssue>[
@@ -147,12 +162,12 @@ void main() {
       ),
     ];
     final photos = <String, PreparedTaskEvidence>{
-      'tree-id|pest_or_disease': PreparedTaskEvidence(
+      'tree-1|pest_or_disease': PreparedTaskEvidence(
         bytes: Uint8List.fromList(<int>[1]),
         filename: 'pest.jpg',
         contentType: 'image/jpeg',
       ),
-      'tree-id|tree_damage': PreparedTaskEvidence(
+      'tree-1|tree_damage': PreparedTaskEvidence(
         bytes: Uint8List.fromList(<int>[2]),
         filename: 'fungus.jpg',
         contentType: 'image/jpeg',
@@ -160,24 +175,33 @@ void main() {
     };
 
     await repository.saveStation(
-      'session-id',
+      created.sessionId,
       1,
       results,
       photos: photos,
       farmId: 'farm-id',
-      taskId: 'task-id',
+      taskId: created.taskId,
+      opId: 'station-save-op',
     );
 
-    final mutation = (await outbox.pending()).single;
+    final pendingOperations = await outbox.pending();
+    final createMutation = pendingOperations.singleWhere(
+      (operation) => operation.kind == PendingMutationKind.createInspection,
+    );
+    final mutation = pendingOperations.singleWhere(
+      (operation) =>
+          operation.kind == PendingMutationKind.saveInspectionStation,
+    );
     final refs = mutation.payload['photoRefs']! as List<Object?>;
     expect(mutation.kind, PendingMutationKind.saveInspectionStation);
+    expect(mutation.opId, 'station-save-op');
     expect(refs, hasLength(2));
     for (final raw in refs) {
       final ref = Map<String, Object?>.from(raw! as Map);
       expect(await pendingPhotos.get(ref['blob_key']! as String), isNotNull);
     }
 
-    await InspectionMutationExecutor(
+    final executor = InspectionMutationExecutor(
       base,
       evidenceStorage: storage,
       pendingPhotos: pendingPhotos,
@@ -187,9 +211,12 @@ void main() {
         viewerProfileId: 'user-id',
         canManage: true,
       ),
-    ).execute(mutation);
+    );
+    await executor.execute(createMutation);
+    await executor.execute(mutation);
 
     expect(storage.uploads, 2);
+    expect(base.savedOpId, 'station-save-op');
     expect(
       base.savedResults!.single.selectedIssues
           .map((issue) => issue.photoStoragePath),
@@ -377,6 +404,43 @@ void main() {
         ),
       ),
     );
+    expect(await outbox.pending(), isEmpty);
+  });
+
+  test('online status and submit preserve caller operation ids', () async {
+    final connectivity = ConnectivityController(_OnlineConnectivity());
+    await connectivity.start();
+    addTearDown(connectivity.dispose);
+    final outbox = InMemoryOutboxStore();
+    final base = _FakeInspectionRepository();
+    final repository = OfflineInspectionRepository(
+      inner: base,
+      cache: InMemoryCacheStore(),
+      outbox: outbox,
+      connectivity: connectivity,
+      syncEngine: SyncEngine(
+        outbox: outbox,
+        executor: _NoopExecutor(),
+        connectivity: connectivity,
+      ),
+      evidenceStorage: _FakeEvidenceStorage(),
+      pendingPhotos: InMemoryPendingPhotoStore(),
+      userId: 'manager-id',
+    );
+
+    await repository.setStatus(
+      'session-id',
+      InspectionSessionStatus.inProgress,
+      opId: 'status-op',
+    );
+    await repository.submit(
+      'session-id',
+      note: 'Complete',
+      opId: 'submit-op',
+    );
+
+    expect(base.statusOpId, 'status-op');
+    expect(base.submittedOpId, 'submit-op');
     expect(await outbox.pending(), isEmpty);
   });
 }

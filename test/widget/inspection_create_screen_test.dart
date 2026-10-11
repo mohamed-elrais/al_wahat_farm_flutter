@@ -76,6 +76,7 @@ void main() {
   testWidgets(
       'preselected section previews route and submits schedule and priority',
       (tester) async {
+    final semantics = tester.ensureSemantics();
     final inspectionRepository = _InspectionRepository();
     final taskController = TaskWorkspaceController(
       repository: FakeTaskRepository(
@@ -131,6 +132,10 @@ void main() {
     expect(find.byType(InspectionRoutePreviewMap), findsOneWidget);
     expect(find.textContaining('TREE-A-001'), findsWidgets);
     expect(find.text('A scheduled date is required.'), findsOneWidget);
+    await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+    await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
+    await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
+    await expectLater(tester, meetsGuideline(textContrastGuideline));
 
     await tester.tap(find.byType(DropdownButtonFormField<String>).at(1));
     await tester.pumpAndSettle();
@@ -155,6 +160,7 @@ void main() {
     expect(inspectionRepository.createdDraft?.inspectorProfileId, 'worker-id');
     expect(inspectionRepository.createdDraft?.scheduledFor, isNotNull);
     expect(inspectionRepository.createdDraft?.priority, 'medium');
+    semantics.dispose();
   });
 }
 

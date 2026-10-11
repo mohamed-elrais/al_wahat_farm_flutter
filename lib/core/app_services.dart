@@ -1,6 +1,7 @@
 import 'package:al_wahat_farm_flutter/core/cache/local_cache_store.dart';
 import 'package:al_wahat_farm_flutter/core/connectivity/connectivity_service.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/locale_controller.dart';
+import 'package:al_wahat_farm_flutter/features/inspections/data/inspection_station_local_store.dart';
 import 'package:al_wahat_farm_flutter/features/sync/data/outbox_store.dart';
 import 'package:al_wahat_farm_flutter/features/sync/data/pending_photo_store.dart';
 import 'package:flutter/widgets.dart';
@@ -16,6 +17,7 @@ class AppServices {
     required this.pendingPhotos,
     required this.connectivity,
     required this.locale,
+    this.inspectionStationLocalStore,
   });
 
   final LocalCacheStore cacheStore;
@@ -23,6 +25,7 @@ class AppServices {
   final PendingPhotoStore pendingPhotos;
   final ConnectivityController connectivity;
   final LocaleController locale;
+  final InspectionStationLocalStore? inspectionStationLocalStore;
 
   /// Removes every private cached value derived from the authenticated session,
   /// including any queued offline mutations and their photo blobs. Bundled

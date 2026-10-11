@@ -38,8 +38,14 @@ class SqfliteOutboxStore implements OutboxStore {
   Database get _db => _database.db;
 
   @override
-  Future<void> enqueue(PendingMutation mutation) async {
-    await _db.insert(
+  Future<void> enqueue(PendingMutation mutation) =>
+      enqueueWithExecutor(_db, mutation);
+
+  static Future<void> enqueueWithExecutor(
+    DatabaseExecutor executor,
+    PendingMutation mutation,
+  ) async {
+    await executor.insert(
       AppDatabase.outboxTable,
       <String, Object?>{
         'op_id': mutation.opId,

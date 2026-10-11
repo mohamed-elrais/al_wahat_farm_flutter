@@ -20,8 +20,13 @@ class SqflitePendingPhotoStore implements PendingPhotoStore {
   final AppDatabase _database;
 
   @override
-  Future<void> put(PendingPhoto photo) async {
-    await _database.db.insert(
+  Future<void> put(PendingPhoto photo) => putWithExecutor(_database.db, photo);
+
+  static Future<void> putWithExecutor(
+    DatabaseExecutor executor,
+    PendingPhoto photo,
+  ) async {
+    await executor.insert(
       AppDatabase.pendingPhotosTable,
       <String, Object?>{
         'op_id': photo.opId,

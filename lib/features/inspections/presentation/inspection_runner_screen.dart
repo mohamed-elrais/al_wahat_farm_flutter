@@ -780,10 +780,16 @@ class _TreeObservationCard extends StatelessWidget {
                           : Icons.arrow_upward),
                   const SizedBox(width: 8),
                   Expanded(
+                    flex: 2,
                     child: Text(item.routeItem.treeCode,
                         style: Theme.of(context).textTheme.titleLarge),
                   ),
-                  Text(_sideLabel(context, item.routeItem.side)),
+                  Flexible(
+                    child: Text(
+                      _sideLabel(context, item.routeItem.side),
+                      textAlign: TextAlign.end,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 6),

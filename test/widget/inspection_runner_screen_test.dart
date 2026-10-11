@@ -67,6 +67,97 @@ class _InspectionRepository implements InspectionRepository {
 }
 
 void main() {
+  testWidgets('paired station meets mobile accessibility guidelines',
+      (tester) async {
+    tester.view.physicalSize = const Size(430, 932);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final semantics = tester.ensureSemantics();
+    final repository = _InspectionRepository(_activeStationDetails());
+
+    await tester.pumpWidget(
+      InspectionRepositoryScope(
+        repository: repository,
+        child: MaterialApp(
+          theme: AppTheme.light,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const InspectionRunnerScreen(taskId: 'task-id'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('TREE-A-001'), findsOneWidget);
+    expect(find.text('TREE-A-002'), findsOneWidget);
+    await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+    await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
+    await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
+    await expectLater(tester, meetsGuideline(textContrastGuideline));
+    semantics.dispose();
+  });
+
+  testWidgets('paired station survives Arabic 200% text and reduced motion',
+      (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    tester.platformDispatcher.textScaleFactorTestValue = 2;
+    tester.platformDispatcher.accessibilityFeaturesTestValue =
+        FakeAccessibilityFeatures.allOn;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(
+      tester.platformDispatcher.clearTextScaleFactorTestValue,
+    );
+    addTearDown(
+      tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+    );
+    final semantics = tester.ensureSemantics();
+    final repository = _InspectionRepository(_activeStationDetails());
+
+    await tester.pumpWidget(
+      InspectionRepositoryScope(
+        repository: repository,
+        child: MaterialApp(
+          theme: AppTheme.light,
+          locale: const Locale('ar'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const InspectionRunnerScreen(taskId: 'task-id'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    await tester.scrollUntilVisible(
+      find.text('TREE-A-001'),
+      400,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('TREE-A-001'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('TREE-A-002'),
+      400,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('TREE-A-002'), findsOneWidget);
+    expect(
+      find.bySemanticsLabel(
+        RegExp('TREE-A-001.*الجهة اليسرى فعليًا'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.bySemanticsLabel(
+        RegExp('TREE-A-002.*الجهة اليمنى فعليًا'),
+      ),
+      findsOneWidget,
+    );
+    semantics.dispose();
+  });
+
   testWidgets('final review navigates backward through saved stations',
       (tester) async {
     final repository = _InspectionRepository(_completedDetails());
@@ -174,6 +265,64 @@ void main() {
 
     expect(repository.takeoverCalls, 1);
   });
+}
+
+InspectionDetails _activeStationDetails() {
+  final now = DateTime.utc(2026, 9, 5, 8);
+  return InspectionDetails(
+    session: InspectionSession(
+      id: 'session-id',
+      farmId: 'farm-id',
+      sectionId: 'section-id',
+      taskId: 'task-id',
+      inspectorProfileId: 'worker-id',
+      createdByProfileId: 'manager-id',
+      startingTreeId: 'tree-1',
+      status: InspectionSessionStatus.inProgress,
+      routeVersion: 2,
+      totalStations: 1,
+      totalTrees: 2,
+      inspectedTrees: 0,
+      requiresIssuePhoto: false,
+      revision: 0,
+      createdAt: now,
+      updatedAt: now,
+    ),
+    items: const <InspectionSessionItem>[
+      InspectionSessionItem(
+        id: 'item-1',
+        sessionId: 'session-id',
+        routeItem: InspectionRouteItem(
+          treeId: 'tree-1',
+          treeCode: 'TREE-A-001',
+          sequenceIndex: 1,
+          corridorIndex: 1,
+          stationIndex: 1,
+          side: InspectionRouteSide.left,
+          rowNumber: 1,
+          treeNumber: 1,
+        ),
+        status: InspectionItemStatus.pending,
+        noNewIssueFound: false,
+      ),
+      InspectionSessionItem(
+        id: 'item-2',
+        sessionId: 'session-id',
+        routeItem: InspectionRouteItem(
+          treeId: 'tree-2',
+          treeCode: 'TREE-A-002',
+          sequenceIndex: 2,
+          corridorIndex: 1,
+          stationIndex: 1,
+          side: InspectionRouteSide.right,
+          rowNumber: 2,
+          treeNumber: 2,
+        ),
+        status: InspectionItemStatus.pending,
+        noNewIssueFound: false,
+      ),
+    ],
+  );
 }
 
 InspectionDetails _completedDetails() {

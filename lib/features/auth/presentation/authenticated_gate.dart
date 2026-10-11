@@ -156,6 +156,7 @@ class _AuthenticatedGateState extends State<AuthenticatedGate> {
         syncEngine: syncEngine,
         evidenceStorage: inspectionEvidenceStorage,
         pendingPhotos: services.pendingPhotos,
+        stationLocalStore: services.inspectionStationLocalStore,
         userId: client.auth.currentUser!.id,
       );
     } else {

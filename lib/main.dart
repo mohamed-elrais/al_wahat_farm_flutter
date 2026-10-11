@@ -6,6 +6,7 @@ import 'package:al_wahat_farm_flutter/core/connectivity/connectivity_service.dar
 import 'package:al_wahat_farm_flutter/core/config/app_config.dart';
 import 'package:al_wahat_farm_flutter/core/database/app_database.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/locale_controller.dart';
+import 'package:al_wahat_farm_flutter/features/inspections/data/inspection_station_local_store.dart';
 import 'package:al_wahat_farm_flutter/features/sync/data/outbox_store.dart';
 import 'package:al_wahat_farm_flutter/features/sync/data/pending_photo_store.dart';
 import 'package:flutter/material.dart';
@@ -25,16 +26,19 @@ Future<AppServices> _bootstrapServices() async {
   LocalCacheStore store;
   OutboxStore outbox;
   PendingPhotoStore pendingPhotos;
+  InspectionStationLocalStore? inspectionStationLocalStore;
   try {
     final database = await AppDatabase.open();
     store = SqfliteCacheStore(database);
     outbox = SqfliteOutboxStore(database);
     pendingPhotos = SqflitePendingPhotoStore(database);
+    inspectionStationLocalStore = SqfliteInspectionStationLocalStore(database);
   } catch (_) {
     // Fall back to memory so a storage failure never blocks app launch.
     store = InMemoryCacheStore();
     outbox = InMemoryOutboxStore();
     pendingPhotos = InMemoryPendingPhotoStore();
+    inspectionStationLocalStore = null;
   }
   final connectivity = ConnectivityController(PlatformConnectivityService());
   await connectivity.start();
@@ -46,5 +50,6 @@ Future<AppServices> _bootstrapServices() async {
     pendingPhotos: pendingPhotos,
     connectivity: connectivity,
     locale: locale,
+    inspectionStationLocalStore: inspectionStationLocalStore,
   );
 }

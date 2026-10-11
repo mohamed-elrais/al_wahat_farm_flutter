@@ -98,6 +98,7 @@ class _TaskIssueWorkCardState extends State<TaskIssueWorkCard> {
                       color: AppColors.issue),
                   const SizedBox(width: 8),
                   Expanded(
+                    flex: 2,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
@@ -111,7 +112,14 @@ class _TaskIssueWorkCardState extends State<TaskIssueWorkCard> {
                       ],
                     ),
                   ),
-                  Chip(label: Text(_stateLabel(context, item.workState))),
+                  Flexible(
+                    child: Chip(
+                      label: Text(
+                        _stateLabel(context, item.workState),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
                 ],
               ),
               if (item.resolutionPhotoRequired) ...<Widget>[

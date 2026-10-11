@@ -2,7 +2,7 @@
 
 Status: implementation in progress; the backend foundation and audited manager
 takeover are deployed to the linked Al Wahat Farm Supabase project and verified
-through 2026-09-04. Flutter source changes have not been pushed or released by
+through 2026-09-05. Flutter source changes have not been pushed or released by
 this work.
 
 Repositories:
@@ -10,7 +10,7 @@ Repositories:
 - Flutter: `al_wahat_farm_flutter`
 - Backend: `Al-Wahat-Farm-supabase`
 
-## Implementation checkpoint — 2026-09-04
+## Implementation checkpoint — 2026-09-05
 
 Completed locally in this checkpoint:
 
@@ -43,6 +43,18 @@ Completed locally in this checkpoint:
   and immutable route snapshot. Dependent start/save/photo/submit operations
   resolve the provisional IDs after creation replay, and unsaved station form
   values plus photo bytes survive process death and app restart.
+- Offline station completion now commits the paired-tree snapshot, replay
+  operation, and all pending photo blobs in one SQLite transaction. Any failed
+  write rolls back the complete station, and the same operation ID reaches the
+  idempotent Supabase RPC during replay. A file-backed close/reopen test also
+  proves the committed snapshot, operation, and photo survive reopening the
+  local database.
+- A native iOS simulator integration pilot now creates an inspection offline,
+  saves two paired stations and a prepared photo, closes and reopens the
+  production SQLite database, restores exact results, reconnects, and verifies
+  FIFO one-time replay, remote ID remapping, photo cleanup, and an empty Sync
+  Center queue. Explicit caller operation IDs are preserved by both queued and
+  direct-online status/submit paths.
 - English/Arabic localization output regenerated. Existing task list/calendar,
   QR reporting, map/tree/pit details, task lifecycle, and review behavior remain
   present.
@@ -53,10 +65,12 @@ Completed locally in this checkpoint:
 - Task member loading and shell-section refreshes are deferred until after the
   current frame, eliminating the build-phase listener exceptions found during
   the signed-in simulator smoke test.
-- Canonical route tests now cover every planted A-G section: A 298/185,
+- Canonical route tests now cover every planted A-G section: A 298/153,
   B 330/176, C 185/107, D 303/161, F 351/192, and G 72/36
-  trees/stations. Section E is correctly blocked as empty; G starts at its
-  lowest existing tree, `TREE-G-037`, because no G tree `001` exists.
+  trees/stations. Route algorithm version 2 separates repeated row numbers in
+  overlapping physical blocks, fixing Section A's 15 rows into eight walking
+  corridors. Section E is correctly blocked as empty; G starts at its lowest
+  existing tree, `TREE-G-037`, because no G tree `001` exists.
 - The runner now loads exact saved station observations, supports Previous
   navigation, preserves saved and queued photos when reviewing a station, and
   presents a final review step before submission.
@@ -74,9 +88,16 @@ Completed locally in this checkpoint:
   counts, and the map issue layer without requiring an app restart.
 - Issue-marked map trees and the route preview now expose localized semantics;
   physical route geometry remains fixed when the surrounding UI is RTL.
+- Automated accessibility coverage now exercises the Issues workspace, issue
+  history, individual Resolve/Unable controls, inspection creation, and paired
+  runner in English and Arabic. Android/iOS tap targets, labeled controls,
+  contrast, reduced motion, and Arabic 200% text are checked. The paired-tree
+  header and per-issue resolution card were made flexible to remove the large-
+  text overflows found by these tests.
 - Verification: clean local database reset, 295 pgTAP tests, Flutter static
-  analysis, 327 Flutter tests, and affected goldens pass. Six credential-gated
-  live Flutter tests remain skipped by design. Database lint has only two
+  analysis, 339 Flutter tests, one native iOS simulator restart/reconnect
+  integration test, and affected goldens pass. Six credential-gated live
+  Flutter tests remain skipped by design. Database lint has only two
   pre-existing warnings in `private.generate_plan_run_group`.
 - Remote migrations `20260902091954`, `20260904094333`, and the explicit ACL
   correction `20260904120301` are applied and remote migration history matches
@@ -546,7 +567,7 @@ the tested Flutter planner submits the reviewed immutable order.
 - [ ] Add equivalent dependency mapping if a future workflow creates
       provisional issue IDs; current report/confirm replay receives no local
       issue ID for dependent UI actions.
-- [ ] Save a paired inspection station locally in one transaction before moving
+- [x] Save a paired inspection station locally in one transaction before moving
       forward.
 - [x] Queue photos through the existing pending-photo store and upload them
       before replaying operations that require their registered evidence.
@@ -679,7 +700,7 @@ Automated route evidence from the canonical full-farm fixture:
 
 | Section | Trees | Walking stations | Automated result | Staff field walk |
 | --- | ---: | ---: | --- | --- |
-| A | 298 | 185 | Pass; starts at `TREE-A-001` | Pending |
+| A | 298 | 153 | Pass; starts at `TREE-A-001` (route v2) | Pending |
 | B | 330 | 176 | Pass; starts at `TREE-B-001` | Pending |
 | C | 185 | 107 | Pass; starts at `TREE-C-001` | Pending |
 | D | 303 | 161 | Pass; starts at `TREE-D-001` | Pending |
@@ -689,6 +710,11 @@ Automated route evidence from the canonical full-farm fixture:
 
 The checks below require real accounts, devices, or farm staff and therefore
 remain deliberately unchecked after automated implementation:
+
+The automated device pilot already covers SQLite close/reopen, exact cached
+station/photo restoration, operation ordering, remote ID remapping, and queue
+drain. The following rows stay unchecked because they require an actual process
+kill, physical phone, network transition, or authenticated remote mutation.
 
 - [x] Deploy `20260904094333_add_inspection_manager_takeover.sql` and
       `20260904120301_tighten_inspection_takeover_grants.sql`, refresh the

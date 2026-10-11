@@ -23,8 +23,15 @@ class SqfliteCacheStore implements LocalCacheStore {
   }
 
   @override
-  Future<void> write(String key, String value) async {
-    await _database.db.insert(
+  Future<void> write(String key, String value) =>
+      writeWithExecutor(_database.db, key, value);
+
+  static Future<void> writeWithExecutor(
+    DatabaseExecutor executor,
+    String key,
+    String value,
+  ) async {
+    await executor.insert(
       AppDatabase.cacheTable,
       <String, Object?>{'key': key, 'value': value},
       conflictAlgorithm: ConflictAlgorithm.replace,

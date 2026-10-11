@@ -13,7 +13,9 @@ import 'package:al_wahat_farm_flutter/features/issues/domain/tree_issue_draft.da
 import 'package:al_wahat_farm_flutter/features/issues/presentation/issue_detail_screen.dart';
 import 'package:al_wahat_farm_flutter/features/issues/presentation/issue_workspace_controller.dart';
 import 'package:al_wahat_farm_flutter/features/issues/presentation/issues_screen.dart';
+import 'package:al_wahat_farm_flutter/features/issues/presentation/task_issue_work_card.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/farm_task.dart';
+import 'package:al_wahat_farm_flutter/l10n/gen/app_localizations.dart';
 import 'package:al_wahat_farm_flutter/shared/models/farm_role.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -21,10 +23,15 @@ import 'package:flutter_test/flutter_test.dart';
 final _now = DateTime.utc(2026, 9, 2, 10, 30);
 
 class _Repository implements IssueWorkspaceRepository {
-  _Repository(this.details, {this.summaries = const <TreeIssueSummary>[]});
+  _Repository(
+    this.details, {
+    this.summaries = const <TreeIssueSummary>[],
+    this.work = const <TaskTreeIssueWork>[],
+  });
 
   final TreeIssueDetails details;
   final List<TreeIssueSummary> summaries;
+  final List<TaskTreeIssueWork> work;
 
   @override
   Future<TreeIssueDetails> loadDetails(String issueId) async => details;
@@ -45,8 +52,7 @@ class _Repository implements IssueWorkspaceRepository {
       summaries;
 
   @override
-  Future<List<TaskTreeIssueWork>> listTaskWork(String taskId) async =>
-      const <TaskTreeIssueWork>[];
+  Future<List<TaskTreeIssueWork>> listTaskWork(String taskId) async => work;
 
   @override
   Future<String> claim(String issueId) => throw UnimplementedError();
@@ -109,6 +115,50 @@ class _OfflineConnectivity implements ConnectivityService {
 }
 
 void main() {
+  testWidgets('issues workspace meets mobile accessibility guidelines',
+      (tester) async {
+    final semantics = tester.ensureSemantics();
+    await _pump(tester, FarmRole.owner, showIssues: true);
+
+    await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+    await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
+    await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
+    await expectLater(tester, meetsGuideline(textContrastGuideline));
+    semantics.dispose();
+  });
+
+  testWidgets('issues workspace survives Arabic 200% text and reduced motion',
+      (tester) async {
+    tester.platformDispatcher.textScaleFactorTestValue = 2;
+    tester.platformDispatcher.accessibilityFeaturesTestValue =
+        FakeAccessibilityFeatures.allOn;
+    addTearDown(
+      tester.platformDispatcher.clearTextScaleFactorTestValue,
+    );
+    addTearDown(
+      tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+    );
+
+    await _pump(
+      tester,
+      FarmRole.owner,
+      showIssues: true,
+      locale: const Locale('ar'),
+    );
+
+    expect(find.byKey(const Key('issues-list')), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('issue-assign-offline-issue-id')),
+      500,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(
+      find.byKey(const Key('issue-assign-offline-issue-id')),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('authorized manager sees history and lifecycle controls',
       (tester) async {
     await _pump(tester, FarmRole.owner);
@@ -128,6 +178,100 @@ void main() {
     expect(
         find.byKey(const Key('change-issue-severity-button')), findsOneWidget);
     expect(find.byKey(const Key('dismiss-issue-button')), findsOneWidget);
+  });
+
+  testWidgets('issue history survives Arabic 200% text', (tester) async {
+    tester.platformDispatcher.textScaleFactorTestValue = 2;
+    addTearDown(
+      tester.platformDispatcher.clearTextScaleFactorTestValue,
+    );
+    await _pump(
+      tester,
+      FarmRole.owner,
+      locale: const Locale('ar'),
+    );
+
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('dismiss-issue-button')),
+      500,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.byKey(const Key('dismiss-issue-button')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('individual issue work actions remain accessible at 200% text',
+      (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    tester.platformDispatcher.textScaleFactorTestValue = 2;
+    tester.platformDispatcher.accessibilityFeaturesTestValue =
+        FakeAccessibilityFeatures.allOn;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(
+      tester.platformDispatcher.clearTextScaleFactorTestValue,
+    );
+    addTearDown(
+      tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+    );
+    final semantics = tester.ensureSemantics();
+    final repository = _Repository(
+      _issueDetails(),
+      work: const <TaskTreeIssueWork>[
+        TaskTreeIssueWork(
+          taskId: 'task-id',
+          issueId: 'issue-id',
+          treeId: 'tree-id',
+          type: TreeIssueType.cloggedDripper,
+          severity: IssueSeverity.high,
+          issueStatus: TreeIssueStatus.open,
+          workState: TaskTreeIssueWorkState.pending,
+          resolutionPhotoRequired: false,
+        ),
+      ],
+    );
+    final controller = IssueWorkspaceController(
+      farmId: 'farm-id',
+      repository: repository,
+      isManager: false,
+    );
+    addTearDown(controller.dispose);
+
+    await tester.pumpWidget(
+      FarmHierarchyScope(
+        snapshot: FarmHierarchySnapshot(
+          hierarchy: _hierarchy(),
+          source: FarmHierarchySource.network,
+        ),
+        child: IssueWorkspaceScope(
+          controller: controller,
+          child: MaterialApp(
+            theme: AppTheme.light,
+            locale: const Locale('ar'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const Scaffold(
+              body: SingleChildScrollView(
+                padding: EdgeInsets.all(16),
+                child: TaskIssueWorkCard(taskId: 'task-id'),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('resolve-issue-issue-id')), findsOneWidget);
+    expect(find.byKey(const Key('unable-issue-issue-id')), findsOneWidget);
+    expect(find.textContaining('Resolve all'), findsNothing);
+    expect(tester.takeException(), isNull);
+    await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+    await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
+    await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
+    await expectLater(tester, meetsGuideline(textContrastGuideline));
+    semantics.dispose();
   });
 
   testWidgets('authorized worker history does not expose manager actions',
@@ -176,74 +320,13 @@ Future<void> _pump(
   WidgetTester tester,
   FarmRole role, {
   bool showIssues = false,
+  Locale locale = const Locale('en'),
 }) async {
   tester.view.physicalSize = const Size(430, 932);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
-  final details = TreeIssueDetails(
-    issue: TreeIssue(
-      id: 'issue-id',
-      farmId: 'farm-id',
-      treeId: 'tree-id',
-      type: TreeIssueType.cloggedDripper,
-      severity: IssueSeverity.high,
-      status: TreeIssueStatus.open,
-      reportedByProfileId: 'worker-id',
-      reportedAt: _now,
-      createdAt: _now,
-      updatedAt: _now,
-      description: 'Emitter blocked',
-    ),
-    events: <TreeIssueEvent>[
-      TreeIssueEvent(
-        id: 'event-id',
-        issueId: 'issue-id',
-        treeId: 'tree-id',
-        actorProfileId: 'worker-id',
-        type: TreeIssueEventType.detected,
-        observedSeverity: IssueSeverity.high,
-        notes: 'Emitter blocked',
-        createdAt: _now,
-      ),
-    ],
-    observations: <InspectionIssueObservation>[
-      InspectionIssueObservation(
-        id: 'observation-id',
-        sessionId: 'session-id',
-        itemId: 'item-id',
-        issueId: 'issue-id',
-        type: TreeIssueType.cloggedDripper,
-        outcome: InspectionObservationOutcome.confirmed,
-        observedSeverity: IssueSeverity.high,
-        severityChanged: false,
-        notes: 'Emitter remains blocked',
-        observedByProfileId: 'worker-id',
-        observedAt: _now,
-        createdAt: _now,
-      ),
-    ],
-    linkedTasks: const <IssueLinkedTask>[
-      IssueLinkedTask(
-        taskId: 'task-id',
-        title: 'Replace blocked emitter',
-        status: TaskStatus.assigned,
-        taskType: 'dripper_maintenance',
-        canOpen: true,
-      ),
-    ],
-    evidence: <TaskPhoto>[
-      TaskPhoto(
-        id: 'photo-id',
-        taskId: 'task-id',
-        storageBucketId: 'farm-evidence',
-        storagePath: 'user/farm/task/photo.jpg',
-        photoType: TaskPhotoType.issue,
-        uploadedByProfileId: 'worker-id',
-        createdAt: _now,
-      ),
-    ],
-  );
+  final details = _issueDetails();
   final repository = _Repository(
     details,
     summaries: showIssues
@@ -319,35 +402,7 @@ Future<void> _pump(
       ),
     ],
   );
-  final hierarchy = FarmHierarchy(
-    farmId: 'farm-id',
-    sections: <FarmSection>[
-      FarmSection(
-        id: 'section-id',
-        farmId: 'farm-id',
-        code: 'A',
-        name: 'Section A',
-        sortOrder: 1,
-        isActive: true,
-        createdAt: _now,
-        updatedAt: _now,
-      ),
-    ],
-    zones: const <IrrigationZone>[],
-    trees: <FarmTreeRecord>[
-      FarmTreeRecord(
-        id: 'tree-id',
-        farmId: 'farm-id',
-        sectionId: 'section-id',
-        treeCode: 'TREE-A-001',
-        healthStatus: TreeHealthStatus.needsMonitoring,
-        type: 'date_palm',
-        isActive: true,
-        createdAt: _now,
-        updatedAt: _now,
-      ),
-    ],
-  );
+  final hierarchy = _hierarchy();
 
   await tester.pumpWidget(
     OperationalContextScope(
@@ -361,6 +416,9 @@ Future<void> _pump(
           controller: controller,
           child: MaterialApp(
             theme: AppTheme.light,
+            locale: locale,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: showIssues
                 ? IssuesScreen(connectivity: connectivity)
                 : const IssueDetailScreen(issueId: 'issue-id'),
@@ -371,3 +429,97 @@ Future<void> _pump(
   );
   await tester.pumpAndSettle();
 }
+
+TreeIssueDetails _issueDetails() => TreeIssueDetails(
+      issue: TreeIssue(
+        id: 'issue-id',
+        farmId: 'farm-id',
+        treeId: 'tree-id',
+        type: TreeIssueType.cloggedDripper,
+        severity: IssueSeverity.high,
+        status: TreeIssueStatus.open,
+        reportedByProfileId: 'worker-id',
+        reportedAt: _now,
+        createdAt: _now,
+        updatedAt: _now,
+        description: 'Emitter blocked',
+      ),
+      events: <TreeIssueEvent>[
+        TreeIssueEvent(
+          id: 'event-id',
+          issueId: 'issue-id',
+          treeId: 'tree-id',
+          actorProfileId: 'worker-id',
+          type: TreeIssueEventType.detected,
+          observedSeverity: IssueSeverity.high,
+          notes: 'Emitter blocked',
+          createdAt: _now,
+        ),
+      ],
+      observations: <InspectionIssueObservation>[
+        InspectionIssueObservation(
+          id: 'observation-id',
+          sessionId: 'session-id',
+          itemId: 'item-id',
+          issueId: 'issue-id',
+          type: TreeIssueType.cloggedDripper,
+          outcome: InspectionObservationOutcome.confirmed,
+          observedSeverity: IssueSeverity.high,
+          severityChanged: false,
+          notes: 'Emitter remains blocked',
+          observedByProfileId: 'worker-id',
+          observedAt: _now,
+          createdAt: _now,
+        ),
+      ],
+      linkedTasks: const <IssueLinkedTask>[
+        IssueLinkedTask(
+          taskId: 'task-id',
+          title: 'Replace blocked emitter',
+          status: TaskStatus.assigned,
+          taskType: 'dripper_maintenance',
+          canOpen: true,
+        ),
+      ],
+      evidence: <TaskPhoto>[
+        TaskPhoto(
+          id: 'photo-id',
+          taskId: 'task-id',
+          storageBucketId: 'farm-evidence',
+          storagePath: 'user/farm/task/photo.jpg',
+          photoType: TaskPhotoType.issue,
+          uploadedByProfileId: 'worker-id',
+          createdAt: _now,
+        ),
+      ],
+    );
+
+FarmHierarchy _hierarchy() => FarmHierarchy(
+      farmId: 'farm-id',
+      sections: <FarmSection>[
+        FarmSection(
+          id: 'section-id',
+          farmId: 'farm-id',
+          code: 'A',
+          name: 'Section A',
+          sortOrder: 1,
+          isActive: true,
+          createdAt: _now,
+          updatedAt: _now,
+        ),
+      ],
+      zones: const <IrrigationZone>[],
+      trees: <FarmTreeRecord>[
+        FarmTreeRecord(
+          id: 'tree-id',
+          farmId: 'farm-id',
+          sectionId: 'section-id',
+          treeCode: 'TREE-A-001',
+          healthStatus: TreeHealthStatus.needsMonitoring,
+          type: 'date_palm',
+          isActive: true,
+          createdAt: _now,
+          updatedAt: _now,
+        ),
+      ],
+    );
