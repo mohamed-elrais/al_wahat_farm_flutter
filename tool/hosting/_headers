@@ -1,4 +1,12 @@
 # Copied into build/web by tool/build_web.sh after `flutter build web`, so it
-# never appears in the service worker's RESOURCES list.
+# never appears in the service worker's RESOURCES list. The build script
+# replaces __SUPABASE_ORIGIN__ / __SUPABASE_WS_ORIGIN__ from the defines file and
+# __INLINE_SCRIPT_HASHES__ with the sha256 of each inline <script> in index.html
+# (one holds the per-build serviceWorkerVersion, so the hashes change every build).
 /*
   X-Content-Type-Options: nosniff
+  Strict-Transport-Security: max-age=31536000
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(self), microphone=(), geolocation=(), payment=(), usb=()
+  X-Frame-Options: DENY
+  Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self' 'wasm-unsafe-eval' __INLINE_SCRIPT_HASHES__; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: __SUPABASE_ORIGIN__; font-src 'self' data:; connect-src 'self' __SUPABASE_ORIGIN__ __SUPABASE_WS_ORIGIN__; worker-src 'self' blob:; manifest-src 'self'; media-src 'self' blob: mediastream:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'

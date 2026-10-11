@@ -41,7 +41,31 @@ flutter build web --release \
   --base-href "${BASE_HREF:-/}" \
   --dart-define-from-file="$DEFINES"
 
-cp tool/hosting/_headers build/web/_headers
+# Fill the CSP: Supabase origin from the same defines the app uses, and
+# hashes of index.html's inline scripts.
+python3 - "$DEFINES" <<'EOF'
+import base64
+import hashlib
+import json
+import re
+import sys
+from urllib.parse import urlsplit
+
+url = urlsplit(json.load(open(sys.argv[1]))['SUPABASE_URL'])
+origin = f'{url.scheme}://{url.netloc}'
+headers = open('tool/hosting/_headers').read()
+headers = headers.replace('__SUPABASE_WS_ORIGIN__', f'wss://{url.netloc}')
+headers = headers.replace('__SUPABASE_ORIGIN__', origin)
+page = open('build/web/index.html', encoding='utf-8').read()
+inline = re.findall(r'<script>(.*?)</script>', page, re.S)
+hashes = ' '.join(
+    "'sha256-%s'" % base64.b64encode(hashlib.sha256(body.encode()).digest()).decode()
+    for body in inline)
+headers = headers.replace('__INLINE_SCRIPT_HASHES__', hashes)
+if '__SUPABASE' in headers or '__INLINE' in headers:
+    sys.exit('error: unfilled placeholder in _headers')
+open('build/web/_headers', 'w').write(headers)
+EOF
 if grep -q '"_headers"' build/web/flutter_service_worker.js; then
   echo "error: _headers is listed in the service worker RESOURCES" >&2
   exit 1

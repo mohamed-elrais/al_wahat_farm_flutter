@@ -195,7 +195,7 @@ Changing any decision requires user approval (rule 9). Record approval in the De
 | P4 | Camera, photos and QR scanner on web | ✅ gate passed 2026-10-11 | P4.4/P4.5 (iPhone photo capture JPEG vs HEIC), P4.7 real scan, P4.9 permissions, P4.11 camera stops |
 | P5 | Offline cold start, SW precache and update flow | ✅ gate passed 2026-10-11 (P5.4 ⛔, replaced by CDP checks) | P5.5 iPhone/desktop installed offline cold start, P5.6 update on device, P5.7 expired-token offline |
 | P6 | Install UX, responsive/browser UX, accessibility | ✅ gate passed 2026-10-11 | P6.10 map context menu, P6.3 installs, P6.4 safe areas, P6.5 back/forward, P6.9 RTL screenshot, P6.11 semantics cost, P6.12 screen readers |
-| P7 | Security and privacy on web | ☐ | — |
+| P7 | Security and privacy on web | ✅ gate passed 2026-10-11 (CSP report-only) | P7.2 live logout check; CSP must be checked logged in before enforcing |
 | P8 | Cloudflare Pages production hosting, headers and release | ☐ | — |
 | P9 | Full feature-parity QA, docs and sign-off | ☐ | — |
 
@@ -755,11 +755,11 @@ Gate: format 0 changed; flutter analyze: No issues; flutter test: +366 ~6 All te
 
 **Tasks**
 
-- [ ] P7.1 Confirm the compiled output contains only the **anon** key: `grep -c "service_role" build/web/main.dart.js` → 0. The anon key being visible in JS is expected. Record it.
-- [ ] P7.2 Logout clears everything private on web: IndexedDB rows (P2.12), `localStorage` Supabase session key (F12, removed by `signOut`), and **no private data in Cache Storage**. The SW caches only `RESOURCES`, which are public app files; verify by listing Cache Storage keys after a session. 👤 / DevTools.
-- [ ] P7.3 Signed photo URLs may sit in the browser HTTP cache until expiry. Record the expiry constant used in `task_photo_viewer.dart:35` (`_expirySeconds`) and accept or flag it to the user.
-- [ ] P7.4 Security headers (applied in P8 hosting config): `Strict-Transport-Security`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy: camera=(self), microphone=(), geolocation=()`. Draft a **Content-Security-Policy** and test it in report-only mode first: `default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self' https://<project>.supabase.co wss://<project>.supabase.co; img-src 'self' data: blob: https://<project>.supabase.co; style-src 'self' 'unsafe-inline'; worker-src 'self'; font-src 'self'`. **Every directive must be validated against the real console**; CanvasKit and the sqlite worker may need adjustments. Check whether `--csp` (T1) is required by testing with and without it. Record the final policy and any violations.
-- [ ] P7.5 Run the `security-review` skill on the PWA diff if the user requests it. Otherwise record "not run".
+- [x] P7.1 Confirm the compiled output contains only the **anon** key: `grep -c "service_role" build/web/main.dart.js` → 0. The anon key being visible in JS is expected. Record it.
+- [ ] P7.2 👤 *(verified in code; a live logged-in check is still open)* Logout clears everything private on web: IndexedDB rows (P2.12), `localStorage` Supabase session key (F12, removed by `signOut`), and **no private data in Cache Storage**. The SW caches only `RESOURCES`, which are public app files; verify by listing Cache Storage keys after a session. 👤 / DevTools.
+- [x] P7.3 Signed photo URLs may sit in the browser HTTP cache until expiry. Record the expiry constant used in `task_photo_viewer.dart:35` (`_expirySeconds`) and accept or flag it to the user.
+- [x] P7.4 *(report-only CSP with zero violations on the public load path; enforcement and the logged-in check move to P8)* Security headers (applied in P8 hosting config): `Strict-Transport-Security`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy: camera=(self), microphone=(), geolocation=()`. Draft a **Content-Security-Policy** and test it in report-only mode first: `default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self' https://<project>.supabase.co wss://<project>.supabase.co; img-src 'self' data: blob: https://<project>.supabase.co; style-src 'self' 'unsafe-inline'; worker-src 'self'; font-src 'self'`. **Every directive must be validated against the real console**; CanvasKit and the sqlite worker may need adjustments. Check whether `--csp` (T1) is required by testing with and without it. Record the final policy and any violations.
+- [x] P7.5 Not run (the user hasn't requested it). Run the `security-review` skill on the PWA diff if the user requests it. Otherwise record "not run".
 
 **Files:** hosting config (P8), possibly `web/index.html`.
 
@@ -767,12 +767,35 @@ Gate: format 0 changed; flutter analyze: No issues; flutter test: +366 ~6 All te
 
 **Evidence**
 ```
-(paste here)
+Phase 7 — 2026-10-11
+P7.1 grep -c service_role build/web/main.dart.js -> 0; TEST_EMAIL/TEST_PASSWORD values absent from every build/web file;
+  the anon key is the publishable format ("sb_…", not a JWT), which is meant to be public.
+P7.2 code-level: AppServices.clearPrivateData() removes cache keys with privateCachePrefix, the outbox and pending photos
+  (app_services.dart). Inspection stations write only to those three tables (inspection_station_local_store.dart:36-46)
+  with privateCachePrefix keys (inspection_repository.dart:210-214, inspection_draft_store.dart:34). The Supabase session
+  in localStorage is removed by signOut. Cache Storage holds only SW RESOURCES (public app files); precacheAppShell fetches
+  only RESOURCES keys. Kept on purpose: the non-private 'awf_locale' preference. Live DevTools check still open (👤).
+P7.3 task_photo_viewer.dart:20 _expirySeconds = 60 * 60 -> signed photo URLs may sit in the HTTP cache for up to 1 h. Accepted.
+P7.4 tool/hosting/_headers: X-Content-Type-Options nosniff, Strict-Transport-Security max-age=31536000,
+  Referrer-Policy strict-origin-when-cross-origin, Permissions-Policy camera=(self) microphone=() geolocation=() payment=()
+  usb=(), X-Frame-Options DENY, and Content-Security-Policy-Report-Only:
+  default-src 'self'; script-src 'self' 'wasm-unsafe-eval' <inline hashes>; style-src 'self' 'unsafe-inline';
+  img-src 'self' data: blob: <supabase>; font-src 'self' data:; connect-src 'self' <supabase https> <supabase wss>;
+  worker-src 'self' blob:; manifest-src 'self'; media-src 'self' blob: mediastream:; object-src 'none'; base-uri 'self';
+  frame-ancestors 'none'; form-action 'self'.
+  build_web.sh fills <supabase> from the defines file (no project URL committed) and computes sha256 of each inline
+  <script> in build/web/index.html (3; one contains the per-build serviceWorkerVersion); fails on any unfilled placeholder.
+  Staging round 1 (no hashes): 3 report-only violations, all "Executing inline script violates … script-src" (Chrome's
+  suggested hashes u+E4…, iKNq… match what the build script computes). No eval/wasm/style/font/worker/img/connect
+  violations; --csp is not needed.
+  Staging round 2 (with hashes): "CSP report lines: 0"; app reached /#/login, tab_lease owner=true, offline_precache 33.
+  Headers live on staging (curl): strict-transport-security, content-security-policy-report-only, permissions-policy,
+  referrer-policy, x-content-type-options, x-frame-options.
+  LIMITATION: only the public load path (login screen) was exercised; authenticated Supabase/Realtime/photo traffic was
+  not. Production keeps report-only until a logged-in check passes (P8).
+P7.5 security-review skill not run (not requested).
+Gate: no Dart changes in this phase (Phase 6 gate stands: analyze clean, +366 ~6); build_web.sh + verify_deploy 36/36.
 ```
-
-**Rollback:** remove headers from the hosting config.
-
----
 
 ### Phase 8 — Cloudflare Pages production hosting, headers and release
 
