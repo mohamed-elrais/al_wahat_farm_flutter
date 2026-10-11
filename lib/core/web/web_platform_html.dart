@@ -77,6 +77,46 @@ Future<int?> precacheAppShell() async {
   return fetched;
 }
 
+/// True when running as an installed app (home-screen / standalone window).
+bool isStandalone() =>
+    html.window.matchMedia('(display-mode: standalone)').matches ||
+    js_util.getProperty<Object?>(html.window.navigator, 'standalone') == true;
+
+/// iPhone, iPod, or iPad (iPadOS reports itself as a Mac with touch).
+bool isIos() {
+  final navigator = html.window.navigator;
+  final agent = navigator.userAgent;
+  if (RegExp('iPhone|iPad|iPod').hasMatch(agent)) return true;
+  return (navigator.platform ?? '') == 'MacIntel' &&
+      (navigator.maxTouchPoints ?? 0) > 1;
+}
+
+/// Whether Chromium offered to install the app (captured in index.html).
+bool canPromptInstall() =>
+    js_util.getProperty<Object?>(html.window, 'awfInstallPrompt') != null;
+
+/// Fires when the browser makes the install prompt available.
+Stream<void> installAvailableEvents() =>
+    html.window.on['awf-install-available'].map((_) {});
+
+/// Shows the browser's install dialog; true when the user accepted.
+Future<bool> promptInstall() async {
+  final prompt = js_util.getProperty<Object?>(html.window, 'awfInstallPrompt');
+  if (prompt == null) return false;
+  try {
+    js_util.callMethod<Object?>(prompt, 'prompt', <Object?>[]);
+    final choice = await js_util.promiseToFuture<Object?>(
+      js_util.getProperty<Object>(prompt, 'userChoice'),
+    );
+    // A prompt event can only be used once.
+    js_util.setProperty<Object?>(html.window, 'awfInstallPrompt', null);
+    return choice != null &&
+        js_util.getProperty<Object?>(choice, 'outcome') == 'accepted';
+  } catch (_) {
+    return false;
+  }
+}
+
 /// The build id `flutter build` wrote into this page's index.html.
 String? currentAppVersion() {
   final value = js_util.getProperty<Object?>(html.window, 'awfAppVersion');

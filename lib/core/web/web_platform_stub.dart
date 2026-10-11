@@ -18,6 +18,17 @@ Future<int?> precacheAppShell() async => null;
 
 String? currentAppVersion() => null;
 
+/// Native apps are already installed.
+bool isStandalone() => true;
+
+bool isIos() => false;
+
+bool canPromptInstall() => false;
+
+Stream<void> installAvailableEvents() => const Stream<void>.empty();
+
+Future<bool> promptInstall() async => false;
+
 /// Native updates arrive through the app stores.
 Future<bool> isNewerAppVersionAvailable() async => false;
 

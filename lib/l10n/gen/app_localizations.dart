@@ -4670,6 +4670,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Reload'**
   String get appUpdateReload;
+
+  /// No description provided for @installAppTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Install app'**
+  String get installAppTitle;
+
+  /// No description provided for @installAppSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens full screen and keeps your offline work safe.'**
+  String get installAppSubtitle;
+
+  /// No description provided for @installIosTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Install on iPhone or iPad'**
+  String get installIosTitle;
+
+  /// No description provided for @installIosStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'In Safari, tap the Share button.'**
+  String get installIosStep1;
+
+  /// No description provided for @installIosStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose “Add to Home Screen”.'**
+  String get installIosStep2;
+
+  /// No description provided for @installIosStep3.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap “Add”, then open Al Wahat from your home screen.'**
+  String get installIosStep3;
+
+  /// No description provided for @installIosDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it'**
+  String get installIosDone;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -5,6 +5,7 @@ import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/locale_controller.dart';
 import 'package:al_wahat_farm_flutter/core/supabase/auth_repository.dart';
+import 'package:al_wahat_farm_flutter/core/widgets/install_app_tile.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/storage_status.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
@@ -25,85 +26,100 @@ class ProfileScreen extends StatelessWidget {
     final name = operational?.profile.fullName ?? l10n.moreFarmMember;
     final services = AppServicesScope.maybeOf(context);
     return PaperBackground(
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 24, 16, 110),
-        children: <Widget>[
-          Eyebrow(l10n.moreEyebrow),
-          const SizedBox(height: 6),
-          Text(l10n.moreTitle,
-              style: Theme.of(context).textTheme.headlineLarge),
-          const SizedBox(height: 18),
-          const StorageWarningBanner(),
-          WahatCard(
-            child: Column(
-              children: <Widget>[
-                Semantics(
-                  label: l10n.moreSignedInAs(name),
-                  child: CircleAvatar(
-                    radius: 34,
-                    backgroundColor: AppColors.green,
-                    foregroundColor: Colors.white,
-                    child: Text(
-                      name.isEmpty ? '?' : name.characters.first.toUpperCase(),
-                      style: const TextStyle(fontSize: 24),
+      child: LayoutBuilder(
+        builder: (context, constraints) => ListView(
+          // Keeps the settings column readable on desktop browsers.
+          padding: EdgeInsets.fromLTRB(
+            _sideGutter(constraints.maxWidth),
+            24,
+            _sideGutter(constraints.maxWidth),
+            110,
+          ),
+          children: <Widget>[
+            Eyebrow(l10n.moreEyebrow),
+            const SizedBox(height: 6),
+            Text(l10n.moreTitle,
+                style: Theme.of(context).textTheme.headlineLarge),
+            const SizedBox(height: 18),
+            const StorageWarningBanner(),
+            WahatCard(
+              child: Column(
+                children: <Widget>[
+                  Semantics(
+                    label: l10n.moreSignedInAs(name),
+                    child: CircleAvatar(
+                      radius: 34,
+                      backgroundColor: AppColors.green,
+                      foregroundColor: Colors.white,
+                      child: Text(
+                        name.isEmpty
+                            ? '?'
+                            : name.characters.first.toUpperCase(),
+                        style: const TextStyle(fontSize: 24),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 12),
-                Text(name, style: Theme.of(context).textTheme.titleLarge),
-                Text(
-                  membership == null
-                      ? l10n.moreRoleResolves
-                      : '${membership.role.localizedLabel(l10n)} · ${membership.farm.name}',
-                ),
-                const Divider(height: 32),
-                if (services != null) ...<Widget>[
-                  _LanguageSelector(controller: services.locale),
+                  const SizedBox(height: 12),
+                  Text(name, style: Theme.of(context).textTheme.titleLarge),
+                  Text(
+                    membership == null
+                        ? l10n.moreRoleResolves
+                        : '${membership.role.localizedLabel(l10n)} · ${membership.farm.name}',
+                  ),
                   const Divider(height: 32),
-                ],
-                if (membership?.role.canManageSchedules ?? false) ...<Widget>[
-                  ListTile(
-                    key: const Key('schedules-entry-tile'),
-                    contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.event_repeat_outlined,
-                        color: AppColors.green),
-                    title: Text(l10n.schedulesTitle),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => context.go('/more/schedules'),
+                  if (services != null) ...<Widget>[
+                    _LanguageSelector(controller: services.locale),
+                    const Divider(height: 32),
+                  ],
+                  const InstallAppTile(),
+                  if (membership?.role.canManageSchedules ?? false) ...<Widget>[
+                    ListTile(
+                      key: const Key('schedules-entry-tile'),
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.event_repeat_outlined,
+                          color: AppColors.green),
+                      title: Text(l10n.schedulesTitle),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => context.go('/more/schedules'),
+                    ),
+                  ],
+                  if (membership?.role.isOperational ?? false) ...<Widget>[
+                    ListTile(
+                      key: const Key('inventory-entry-tile'),
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.inventory_2_outlined,
+                          color: AppColors.green),
+                      title: Text(l10n.inventoryTitle),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => context.go('/more/inventory'),
+                    ),
+                    const Divider(height: 24),
+                  ],
+                  _SyncStatusTile(connectivity: services?.connectivity),
+                  const _SyncCenter(),
+                  const StorageStatusTile(),
+                  const SizedBox(height: 8),
+                  OutlinedButton.icon(
+                    key: const Key('logout-button'),
+                    onPressed: () => AuthRepository(
+                      Supabase.instance.client,
+                      onSignOut: services?.clearPrivateData,
+                    ).signOut(),
+                    icon: const Icon(Icons.logout),
+                    label: Text(l10n.logout),
                   ),
                 ],
-                if (membership?.role.isOperational ?? false) ...<Widget>[
-                  ListTile(
-                    key: const Key('inventory-entry-tile'),
-                    contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.inventory_2_outlined,
-                        color: AppColors.green),
-                    title: Text(l10n.inventoryTitle),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => context.go('/more/inventory'),
-                  ),
-                  const Divider(height: 24),
-                ],
-                _SyncStatusTile(connectivity: services?.connectivity),
-                const _SyncCenter(),
-                const StorageStatusTile(),
-                const SizedBox(height: 8),
-                OutlinedButton.icon(
-                  key: const Key('logout-button'),
-                  onPressed: () => AuthRepository(
-                    Supabase.instance.client,
-                    onSignOut: services?.clearPrivateData,
-                  ).signOut(),
-                  icon: const Icon(Icons.logout),
-                  label: Text(l10n.logout),
-                ),
-              ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
+
+  /// 16 px on phones; wider screens centre a 720 px column.
+  static double _sideGutter(double width) =>
+      width > 752 ? (width - 720) / 2 : 16;
 }
 
 class _LanguageSelector extends StatelessWidget {

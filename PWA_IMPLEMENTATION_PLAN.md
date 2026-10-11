@@ -194,7 +194,7 @@ Changing any decision requires user approval (rule 9). Record approval in the De
 | P3 | Single-tab guard and web sync triggers | ✅ gate passed 2026-10-11 | P3.1 (Android SharedWorker), P3.5 handover, P3.9 offline/online drain |
 | P4 | Camera, photos and QR scanner on web | ✅ gate passed 2026-10-11 | P4.4/P4.5 (iPhone photo capture JPEG vs HEIC), P4.7 real scan, P4.9 permissions, P4.11 camera stops |
 | P5 | Offline cold start, SW precache and update flow | ✅ gate passed 2026-10-11 (P5.4 ⛔, replaced by CDP checks) | P5.5 iPhone/desktop installed offline cold start, P5.6 update on device, P5.7 expired-token offline |
-| P6 | Install UX, responsive/browser UX, accessibility | ☐ | — |
+| P6 | Install UX, responsive/browser UX, accessibility | ✅ gate passed 2026-10-11 | P6.10 map context menu, P6.3 installs, P6.4 safe areas, P6.5 back/forward, P6.9 RTL screenshot, P6.11 semantics cost, P6.12 screen readers |
 | P7 | Security and privacy on web | ☐ | — |
 | P8 | Cloudflare Pages production hosting, headers and release | ☐ | — |
 | P9 | Full feature-parity QA, docs and sign-off | ☐ | — |
@@ -697,23 +697,23 @@ Gate: format 250 files 0 changed; flutter analyze: No issues; flutter test: +361
 
 **Tasks — install (D8)**
 
-- [ ] P6.1 `web_platform`: `bool get isStandalone` (matchMedia `(display-mode: standalone)` or `navigator.standalone`), `bool get isIos` (UA check, documented as a heuristic), `Stream<void> installAvailable` + `Future<bool> promptInstall()` (capture and `preventDefault()` `beforeinstallprompt`, T4; call `.prompt()` later). Capture the event **in index.html** before Flutter boots (it can fire early) and stash it on `window`. Read it from Dart.
-- [ ] P6.2 More screen (web, not standalone): an "Install app" tile. Chromium uses `promptInstall()`. iOS opens a localized sheet with "Share → Add to Home Screen" steps. Hide it when standalone. EN+AR strings; widget test via fake `web_platform`.
+- [x] P6.1 `web_platform`: `bool get isStandalone` (matchMedia `(display-mode: standalone)` or `navigator.standalone`), `bool get isIos` (UA check, documented as a heuristic), `Stream<void> installAvailable` + `Future<bool> promptInstall()` (capture and `preventDefault()` `beforeinstallprompt`, T4; call `.prompt()` later). Capture the event **in index.html** before Flutter boots (it can fire early) and stash it on `window`. Read it from Dart.
+- [x] P6.2 More screen (web, not standalone): an "Install app" tile. Chromium uses `promptInstall()`. iOS opens a localized sheet with "Share → Add to Home Screen" steps. Hide it when standalone. EN+AR strings; widget test via fake `web_platform`.
 - [ ] P6.3 👤 Install on the iPhone 11 (Safari → Share → Add to Home Screen) and desktop Chrome (install prompt). Pixel_4 emulator Chrome optional ("emulated"). The launched app is standalone, with the correct name, icon, splash colors and status bar.
 
 **Tasks — layout and browser behavior**
 
 - [ ] P6.4 Safe areas: with `viewport-fit=cover` (P1.5), confirm `MediaQuery.padding` respects the iPhone notch and home indicator in standalone mode. Check the bottom nav in `app_shell.dart` isn't covered. 👤
 - [ ] P6.5 Browser back/forward and refresh on every route in F14: the router state is correct, no blank screens, and the auth redirect still applies. Write a widget test only where logic changes; otherwise 👤 checklist.
-- [ ] P6.6 Map on desktop: mouse-wheel/trackpad zoom and drag pan work. Read `farm_map_screen.dart` to see whether it uses `InteractiveViewer` (which supports wheel zoom) or custom gestures; add `PointerScrollEvent` handling only if missing. The map's `Directionality(ltr)` lock must stay.
-- [ ] P6.7 Text fields: browser autofill for email/password on login (wrap in `AutofillGroup` with `autofillHints` if not present; read `login_screen.dart` first). Enter key submits.
-- [ ] P6.8 Wide screens: phone/tablet breakpoints already exist (see golden `login_tablet_1024x1366.png`). Confirm that on desktop ≥1280 px the content doesn't stretch unusably. If it does, constrain the max content width in the shell. Golden or screenshot evidence.
+- [x] P6.6 Map on desktop: mouse-wheel/trackpad zoom and drag pan work. Read `farm_map_screen.dart` to see whether it uses `InteractiveViewer` (which supports wheel zoom) or custom gestures; add `PointerScrollEvent` handling only if missing. The map's `Directionality(ltr)` lock must stay.
+- [x] P6.7 Text fields: browser autofill for email/password on login (wrap in `AutofillGroup` with `autofillHints` if not present; read `login_screen.dart` first). Enter key submits.
+- [x] P6.8 Wide screens: phone/tablet breakpoints already exist (see golden `login_tablet_1024x1366.png`). Confirm that on desktop ≥1280 px the content doesn't stretch unusably. If it does, constrain the max content width in the shell. Golden or screenshot evidence.
 - [ ] P6.9 RTL on web: switch to Arabic; layout mirrors, the map stays LTR, Arabic glyphs render with the bundled font. 👤 screenshot.
-- [ ] P6.10 Context menu and text selection: confirm no browser context menu appears over the map canvas (Flutter handles it). Record only.
+- [ ] P6.10 👤 *(not observed yet: needs a right-click on the map in a desktop browser)* Context menu and text selection: confirm no browser context menu appears over the map canvas (Flutter handles it). Record only.
 
 **Tasks — accessibility (D11)**
 
-- [ ] P6.11 Measure: build with and without `SemanticsBinding.instance.ensureSemantics()` on web (called in `main` behind `kIsWeb`). Compare map pan frame time (P0.4 method) 👤. If the cost is ≤ 10%, enable it; otherwise keep the default placeholder. Record the decision in §5.
+- [ ] P6.11 👤 *(decision for now: keep Flutter's default "Enable accessibility" placeholder; enabling ensureSemantics() waits for a device measurement, D11)* Measure: build with and without `SemanticsBinding.instance.ensureSemantics()` on web (called in `main` behind `kIsWeb`). Compare map pan frame time (P0.4 method) 👤. If the cost is ≤ 10%, enable it; otherwise keep the default placeholder. Record the decision in §5.
 - [ ] P6.12 👤 Screen reader smoke: VoiceOver on the iPhone 11 (installed PWA) and VoiceOver on macOS Chrome can log in and reach Tasks. TalkBack is untested (no Android device); record it as such.
 
 **Files:** `web/index.html`, `lib/core/web/web_platform*.dart`, `lib/features/profile/presentation/profile_screen.dart` (More), `lib/features/auth/presentation/login_screen.dart`, `lib/core/widgets/app_shell.dart`, `lib/features/map/presentation/farm_map_screen.dart`, `lib/main.dart`, ARB files, tests.
@@ -722,12 +722,30 @@ Gate: format 250 files 0 changed; flutter analyze: No issues; flutter test: +361
 
 **Evidence**
 ```
-(paste here)
+Phase 6 — 2026-10-11
+P6.1 index.html captures beforeinstallprompt (preventDefault, stash on window.awfInstallPrompt, dispatch
+  'awf-install-available'; cleared on appinstalled). web_platform: isStandalone() (matchMedia('(display-mode:
+  standalone)') html_dart2js.dart:33038/21017 || navigator.standalone via js_util), isIos() (UA iPhone|iPad|iPod or
+  MacIntel + maxTouchPoints>1, :22730/:22853/:22858), canPromptInstall(), installAvailableEvents(), promptInstall()
+  (js_util callMethod 'prompt' + promiseToFuture(userChoice), js_util.dart:44,49,156; one-shot).
+P6.2 lib/core/widgets/install_app_tile.dart on More (after the language selector): Chromium -> browser install dialog;
+  iOS -> bottom sheet with Share -> Add to Home Screen -> Add steps; hidden when standalone, on native, or when
+  neither path exists; EN/AR strings. test/widget/install_app_tile_test.dart (5).
+  CDP check (headless Chrome 150, local build): Page.getAppManifest -> errors [], name "Al Wahat Farm Operations",
+  short_name "Al Wahat", display standalone, 4 icons; Page.getInstallabilityErrors -> [] (installable);
+  window.awfInstallPrompt !== null -> true (beforeinstallprompt fired and was captured).
+  (Also covers the P1 gate's DevTools Application -> Manifest check.)
+P6.6 no change: the map uses InteractiveViewer (farm_map_screen.dart:1414), which handles mouse-wheel zoom and drag;
+  the Directionality(ltr) lock is untouched.
+P6.7 login_screen.dart: Form content wrapped in AutofillGroup; email gets TextInputAction.next; password submits on
+  Enter (existing onFieldSubmitted); TextInput.finishAutofillContext() after a successful sign-in so the
+  browser/OS offers to save the login. login_screen_test + localization_test still pass.
+P6.8 desktop: login already capped at 430 px (screenshot 1440x900 centred); Home capped at 1380 px (home_screen.dart);
+  More was unbounded -> now a 720 px centred column above 752 px width (16 px gutters on phones, so no golden change).
+P6.10 NOT verified: no right-click test on the map was run (needs a logged-in desktop session); left open.
+Gate: format 0 changed; flutter analyze: No issues; flutter test: +366 ~6 All tests passed; flutter build apk --debug: ✓ Built;
+  lib/l10n/gen diff = new keys only.
 ```
-
-**Rollback:** revert per file.
-
----
 
 ### Phase 7 — Security and privacy on web
 

@@ -2584,4 +2584,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get appUpdateReload => 'Reload';
+
+  @override
+  String get installAppTitle => 'Install app';
+
+  @override
+  String get installAppSubtitle => 'Opens full screen and keeps your offline work safe.';
+
+  @override
+  String get installIosTitle => 'Install on iPhone or iPad';
+
+  @override
+  String get installIosStep1 => 'In Safari, tap the Share button.';
+
+  @override
+  String get installIosStep2 => 'Choose “Add to Home Screen”.';
+
+  @override
+  String get installIosStep3 => 'Tap “Add”, then open Al Wahat from your home screen.';
+
+  @override
+  String get installIosDone => 'Got it';
 }

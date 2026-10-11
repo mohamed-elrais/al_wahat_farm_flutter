@@ -2595,4 +2595,25 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get appUpdateReload => 'إعادة التحميل';
+
+  @override
+  String get installAppTitle => 'تثبيت التطبيق';
+
+  @override
+  String get installAppSubtitle => 'يفتح بملء الشاشة ويحافظ على عملك دون اتصال.';
+
+  @override
+  String get installIosTitle => 'التثبيت على iPhone أو iPad';
+
+  @override
+  String get installIosStep1 => 'في Safari، اضغط على زر المشاركة.';
+
+  @override
+  String get installIosStep2 => 'اختر «إضافة إلى الشاشة الرئيسية».';
+
+  @override
+  String get installIosStep3 => 'اضغط «إضافة»، ثم افتح الواحة من الشاشة الرئيسية.';
+
+  @override
+  String get installIosDone => 'حسنًا';
 }

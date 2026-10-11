@@ -1145,5 +1145,12 @@
   "secondTabUseHere": "استخدمه هنا",
   "scanCameraInsecure": "تحتاج الكاميرا إلى اتصال آمن (https). افتح التطبيق من عنوانه الآمن https.",
   "appUpdateAvailable": "يتوفر إصدار جديد من التطبيق.",
-  "appUpdateReload": "إعادة التحميل"
+  "appUpdateReload": "إعادة التحميل",
+  "installAppTitle": "تثبيت التطبيق",
+  "installAppSubtitle": "يفتح بملء الشاشة ويحافظ على عملك دون اتصال.",
+  "installIosTitle": "التثبيت على iPhone أو iPad",
+  "installIosStep1": "في Safari، اضغط على زر المشاركة.",
+  "installIosStep2": "اختر «إضافة إلى الشاشة الرئيسية».",
+  "installIosStep3": "اضغط «إضافة»، ثم افتح الواحة من الشاشة الرئيسية.",
+  "installIosDone": "حسنًا"
 }

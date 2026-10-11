@@ -1162,5 +1162,12 @@
   "secondTabUseHere": "Use here",
   "scanCameraInsecure": "The camera needs a secure (https) connection. Open the app from its https address.",
   "appUpdateAvailable": "A new version of the app is available.",
-  "appUpdateReload": "Reload"
+  "appUpdateReload": "Reload",
+  "installAppTitle": "Install app",
+  "installAppSubtitle": "Opens full screen and keeps your offline work safe.",
+  "installIosTitle": "Install on iPhone or iPad",
+  "installIosStep1": "In Safari, tap the Share button.",
+  "installIosStep2": "Choose “Add to Home Screen”.",
+  "installIosStep3": "Tap “Add”, then open Al Wahat from your home screen.",
+  "installIosDone": "Got it"
 }

@@ -60,6 +60,17 @@
   <script>
     // Exposed to Dart (web_platform.currentAppVersion) for the update check.
     window.awfAppVersion = serviceWorkerVersion;
+    // Chromium fires beforeinstallprompt early, possibly before Dart runs:
+    // keep it so the More screen can offer "Install app" (web_platform).
+    window.awfInstallPrompt = null;
+    window.addEventListener('beforeinstallprompt', function (event) {
+      event.preventDefault();
+      window.awfInstallPrompt = event;
+      window.dispatchEvent(new Event('awf-install-available'));
+    });
+    window.addEventListener('appinstalled', function () {
+      window.awfInstallPrompt = null;
+    });
   </script>
   <!-- This script adds the flutter initialization JS code -->
   <script src="flutter.js" defer></script>
