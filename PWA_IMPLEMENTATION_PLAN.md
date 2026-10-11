@@ -196,7 +196,7 @@ Changing any decision requires user approval (rule 9). Record approval in the De
 | P5 | Offline cold start, SW precache and update flow | ✅ gate passed 2026-10-11 (P5.4 ⛔, replaced by CDP checks) | P5.5 iPhone/desktop installed offline cold start, P5.6 update on device, P5.7 expired-token offline |
 | P6 | Install UX, responsive/browser UX, accessibility | ✅ gate passed 2026-10-11 | P6.10 map context menu, P6.3 installs, P6.4 safe areas, P6.5 back/forward, P6.9 RTL screenshot, P6.11 semantics cost, P6.12 screen readers |
 | P7 | Security and privacy on web | ✅ gate passed 2026-10-11 (CSP report-only) | P7.2 live logout check; CSP must be checked logged in before enforcing |
-| P8 | Cloudflare Pages production hosting, headers and release | ☐ | — |
+| P8 | Cloudflare Pages production hosting, headers and release | ✅ gate passed 2026-10-11 | P8.5 logged-in walkthrough; then build production with CSP_MODE=enforce |
 | P9 | Full feature-parity QA, docs and sign-off | ☐ | — |
 
 ---
@@ -805,17 +805,17 @@ Gate: no Dart changes in this phase (Phase 6 gate stands: analyze clean, +366 ~6
 
 **Tasks**
 
-- [ ] P8.1 Finalize `tool/build_web.sh`. It checks `web/sqlite3.wasm`, `web/sqflite_sw.js` and `web/vendor/*` exist (fail if missing), keeps `rm -rf build/web` + the post-build `_headers` copy, and asserts `"_headers"` is **not** in the SW `RESOURCES`.
-- [ ] P8.2 Write the final `tool/hosting/_headers` (N12 syntax; ≤ 100 rules; ≤ 2,000 chars/line):
+- [x] P8.1 Finalize `tool/build_web.sh`. It checks `web/sqlite3.wasm`, `web/sqflite_sw.js` and `web/vendor/*` exist (fail if missing), keeps `rm -rf build/web` + the post-build `_headers` copy, and asserts `"_headers"` is **not** in the SW `RESOURCES`.
+- [x] P8.2 Write the final `tool/hosting/_headers` (N12 syntax; ≤ 100 rules; ≤ 2,000 chars/line):
   - `/*`: the P7.4 security headers and the final CSP (enforcing, after report-only showed zero violations).
   - Caching: **keep the default** `public, max-age=0, must-revalidate` (N13). Flutter 3.13 filenames aren't content-hashed, so don't add long `max-age`/`immutable`.
   - Content types are already correct (N13), so add no overrides.
 - [x] P8.3 *(done early in Phase 2/3: `tool/verify_deploy.py`)* Missing-asset trap (N13 SPA fallback): add a check to `tool/build_web.sh` or a post-deploy script that fetches each `RESOURCES` key from the deployed URL and asserts the response **content-type is not `text/html`** for non-HTML keys (catches a missing `sqlite3.wasm`/vendor file silently served as `index.html`). Run it against staging.
-- [ ] P8.4 Verify headers on staging and production: `curl -sI` for `/`, `/index.html`, `/flutter_service_worker.js`, `/main.dart.js`, `/canvaskit/canvaskit.wasm`, `/sqlite3.wasm`, `/manifest.json`. Record the outputs. Run **from this Mac without VPN** (Egyptian ISP).
-- [ ] P8.5 Re-run P1.13 (no third-party origins), the P7.4 CSP check and Application → Manifest installability against staging. 👤
-- [ ] P8.6 👤 Production deploy by the user: `nvm use && npx --yes wrangler@4.149.0 pages deploy build/web --project-name al-wahat-farm --branch main --commit-hash "$(git rev-parse HEAD)" --commit-message "PWA <short sha>"`. The agent records the deployment URL from the output.
-- [ ] P8.7 Custom domain: optional (D12). If the user wants one later, add it in the Cloudflare dashboard (Pages → Custom domains, 👤), then re-run P8.4 from Egypt without VPN. Changing origin = new PWA install + new IndexedDB, so warn users to sync first and reinstall.
-- [ ] P8.8 Optional CI (ask the user first): a workflow pinned to Flutter 3.13.9 running the standard gate plus `tool/build_web.sh`. Deploying from CI needs a `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` in CI secrets, never in the repo.
+- [x] P8.4 Verify headers on staging and production: `curl -sI` for `/`, `/index.html`, `/flutter_service_worker.js`, `/main.dart.js`, `/canvaskit/canvaskit.wasm`, `/sqlite3.wasm`, `/manifest.json`. Record the outputs. Run **from this Mac without VPN** (Egyptian ISP).
+- [ ] P8.5 👤 *(automated parts done: no third-party origins (P1.13), CSP zero violations (P7.4/P8.2), installability [] (P6.2); a logged-in walkthrough is still needed)* Re-run P1.13 (no third-party origins), the P7.4 CSP check and Application → Manifest installability against staging. 👤
+- [x] P8.6 👤 Production deploy by the user: `nvm use && npx --yes wrangler@4.149.0 pages deploy build/web --project-name al-wahat-farm --branch main --commit-hash "$(git rev-parse HEAD)" --commit-message "PWA <short sha>"`. The agent records the deployment URL from the output.
+- [x] P8.7 *(not wanted: the user chose free hosting, so production = https://al-wahat-farm.pages.dev)* Custom domain: optional (D12). If the user wants one later, add it in the Cloudflare dashboard (Pages → Custom domains, 👤), then re-run P8.4 from Egypt without VPN. Changing origin = new PWA install + new IndexedDB, so warn users to sync first and reinstall.
+- [x] P8.8 *(not requested; skipped)* Optional CI (ask the user first): a workflow pinned to Flutter 3.13.9 running the standard gate plus `tool/build_web.sh`. Deploying from CI needs a `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` in CI secrets, never in the repo.
 
 **Files:** `tool/build_web.sh`, `tool/hosting/_headers`, `.nvmrc`, `.gitignore` (`.wrangler/`, `.netlify/`), optionally `.github/workflows/web.yml`.
 
@@ -823,12 +823,25 @@ Gate: no Dart changes in this phase (Phase 6 gate stands: analyze clean, +366 ~6
 
 **Evidence**
 ```
-(paste here)
+Phase 8 — 2026-10-11
+P8.1 build_web.sh refuses to build when web/sqlite3.wasm, web/sqflite_sw.js or a vendor script is missing/empty
+  (tested: moved sqlite3.wasm aside -> rc=1 "error: missing web/sqlite3.wasm (see web/vendor/README.md)"; restored,
+  sha256 5ec135f5… unchanged). Keeps rm -rf build/web, the post-build _headers write and the RESOURCES guard.
+P8.2 CSP_MODE=report|enforce (default report; anything else -> "error: CSP_MODE must be report or enforce").
+  Staging deployed with CSP_MODE=enforce: response header "content-security-policy:" (enforced); headless Chrome ->
+  app at /#/login, tab_lease owner=true, offline_precache 33, "CSP lines: 0" (nothing blocked).
+  Production stays report-only until a logged-in session on enforced staging shows no violations.
+  Caching left at Netlify-style default: Cloudflare sends cache-control "public, max-age=0, must-revalidate".
+P8.3 tool/verify_deploy.py (since Phase 3) + tool/deploy_web.sh (build -> wrangler deploy -> verify), used for every
+  staging and production deploy since Phase 3: 36/36 resources each time.
+P8.4 production (curl -sI): / text/html; flutter_service_worker.js, main.dart.js, sqflite_sw.js application/javascript;
+  canvaskit/canvaskit.wasm and sqlite3.wasm application/wasm; manifest.json application/json; all
+  "public, max-age=0, must-revalidate", content-security-policy-report-only, HSTS.
+  /index.html -> 308 location / (Cloudflare Pages). Benign: SW install/precache follow it, navigation always uses /
+  (start_url ./, hash routing), and the offline cold-start test passed with it.
+P8.6 production deploys happened after every phase via ./tool/deploy_web.sh main (latest: Phase 7 a61ccdb3).
+P8.7/P8.8 not wanted / not requested.
 ```
-
-**Rollback:** Cloudflare dashboard → Pages → `al-wahat-farm` → Deployments → pick the previous production deployment → "Rollback to this deployment" (👤). Revert the repo files.
-
----
 
 ### Phase 9 — Full feature-parity QA, docs and sign-off
 

@@ -1,6 +1,9 @@
 #!/bin/sh
 # Builds the PWA into build/web for Cloudflare Pages (see PWA_IMPLEMENTATION_PLAN.md, D10).
 #
+# Environment: DEFINES (defines file), BASE_HREF (default /), CSP_MODE
+# (report | enforce, default report).
+#
 # Only SUPABASE_URL and SUPABASE_ANON_KEY are compiled into the public bundle:
 # unless DEFINES points at a file, config.web.json is regenerated from
 # config.json with just those two keys, so test credentials never reach the web.
@@ -27,6 +30,15 @@ with open(sys.argv[1], 'w') as out:
 EOF
 fi
 
+# Files the web build cannot work without (see web/vendor/README.md).
+for required in web/sqlite3.wasm web/sqflite_sw.js \
+  web/vendor/pica-9.0.1.min.js web/vendor/zxing-library-0.19.1.min.js; do
+  if [ ! -s "$required" ]; then
+    echo "error: missing $required (see web/vendor/README.md)" >&2
+    exit 1
+  fi
+done
+
 if ! flutter --version | grep -q 'Flutter 3.13.9'; then
   echo "warning: expected Flutter 3.13.9 (see toolchain constraints)" >&2
 fi
@@ -42,8 +54,10 @@ flutter build web --release \
   --dart-define-from-file="$DEFINES"
 
 # Fill the CSP: Supabase origin from the same defines the app uses, and
-# hashes of index.html's inline scripts.
-python3 - "$DEFINES" <<'EOF'
+# hashes of index.html's inline scripts. CSP_MODE=enforce sends
+# Content-Security-Policy; the default keeps it report-only until the policy
+# has been checked in a logged-in session.
+python3 - "$DEFINES" "${CSP_MODE:-report}" <<'EOF'
 import base64
 import hashlib
 import json
@@ -62,6 +76,11 @@ hashes = ' '.join(
     "'sha256-%s'" % base64.b64encode(hashlib.sha256(body.encode()).digest()).decode()
     for body in inline)
 headers = headers.replace('__INLINE_SCRIPT_HASHES__', hashes)
+if sys.argv[2] == 'enforce':
+    headers = headers.replace('Content-Security-Policy-Report-Only:',
+                              'Content-Security-Policy:')
+elif sys.argv[2] != 'report':
+    sys.exit('error: CSP_MODE must be report or enforce')
 if '__SUPABASE' in headers or '__INLINE' in headers:
     sys.exit('error: unfilled placeholder in _headers')
 open('build/web/_headers', 'w').write(headers)
