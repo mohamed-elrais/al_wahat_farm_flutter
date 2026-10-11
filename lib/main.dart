@@ -5,7 +5,9 @@ import 'package:al_wahat_farm_flutter/core/cache/sqflite_cache_store.dart';
 import 'package:al_wahat_farm_flutter/core/connectivity/connectivity_service.dart';
 import 'package:al_wahat_farm_flutter/core/config/app_config.dart';
 import 'package:al_wahat_farm_flutter/core/database/app_database.dart';
+import 'package:al_wahat_farm_flutter/core/database/database_platform.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/locale_controller.dart';
+import 'package:al_wahat_farm_flutter/core/logging/safe_log.dart';
 import 'package:al_wahat_farm_flutter/features/inspections/data/inspection_station_local_store.dart';
 import 'package:al_wahat_farm_flutter/features/sync/data/outbox_store.dart';
 import 'package:al_wahat_farm_flutter/features/sync/data/pending_photo_store.dart';
@@ -27,14 +29,19 @@ Future<AppServices> _bootstrapServices() async {
   OutboxStore outbox;
   PendingPhotoStore pendingPhotos;
   InspectionStationLocalStore? inspectionStationLocalStore;
+  var persistentStorageAvailable = true;
   try {
+    await configureDatabaseFactory();
     final database = await AppDatabase.open();
     store = SqfliteCacheStore(database);
     outbox = SqfliteOutboxStore(database);
     pendingPhotos = SqflitePendingPhotoStore(database);
     inspectionStationLocalStore = SqfliteInspectionStationLocalStore(database);
-  } catch (_) {
-    // Fall back to memory so a storage failure never blocks app launch.
+  } catch (error) {
+    // Fall back to memory so a storage failure never blocks app launch; the
+    // flag lets the UI warn that offline work will not survive a restart.
+    SafeLog.event('storage_fallback', data: <String, Object?>{'error': error});
+    persistentStorageAvailable = false;
     store = InMemoryCacheStore();
     outbox = InMemoryOutboxStore();
     pendingPhotos = InMemoryPendingPhotoStore();
@@ -51,5 +58,6 @@ Future<AppServices> _bootstrapServices() async {
     connectivity: connectivity,
     locale: locale,
     inspectionStationLocalStore: inspectionStationLocalStore,
+    persistentStorageAvailable: persistentStorageAvailable,
   );
 }

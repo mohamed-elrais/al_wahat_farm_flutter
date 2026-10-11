@@ -1150,5 +1150,11 @@
   "issuesReportedOn": "Reported {date}",
   "@issuesReportedOn": {"placeholders": {"date": {"type": "String"}}},
   "issuesClosedOn": "Closed {date}",
-  "@issuesClosedOn": {"placeholders": {"date": {"type": "String"}}}
+  "@issuesClosedOn": {"placeholders": {"date": {"type": "String"}}},
+  "storageUnavailableWarning": "Offline storage is unavailable on this device. Work you queue offline will be lost if you close the app.",
+  "storageTitle": "Offline storage",
+  "storagePersistent": "Kept by the browser",
+  "storageBestEffort": "The browser may clear it when space is low. Install the app to keep it.",
+  "storageUsage": "{used} of {quota} used",
+  "@storageUsage": {"placeholders": {"used": {"type": "String"}, "quota": {"type": "String"}}}
 }

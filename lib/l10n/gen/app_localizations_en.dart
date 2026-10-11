@@ -2549,4 +2549,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String issuesClosedOn(String date) {
     return 'Closed $date';
   }
+
+  @override
+  String get storageUnavailableWarning => 'Offline storage is unavailable on this device. Work you queue offline will be lost if you close the app.';
+
+  @override
+  String get storageTitle => 'Offline storage';
+
+  @override
+  String get storagePersistent => 'Kept by the browser';
+
+  @override
+  String get storageBestEffort => 'The browser may clear it when space is low. Install the app to keep it.';
+
+  @override
+  String storageUsage(String used, String quota) {
+    return '$used of $quota used';
+  }
 }

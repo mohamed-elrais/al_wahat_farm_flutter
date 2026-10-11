@@ -1134,5 +1134,10 @@
   "issuesReportedOn": "أُبلغ عنها في {date}",
   "@issuesReportedOn": {"placeholders": {"date": {"type": "String"}}},
   "issuesClosedOn": "أُغلقت في {date}",
-  "@issuesClosedOn": {"placeholders": {"date": {"type": "String"}}}
+  "@issuesClosedOn": {"placeholders": {"date": {"type": "String"}}},
+  "storageUnavailableWarning": "التخزين دون اتصال غير متاح على هذا الجهاز. سيُفقد العمل الذي تضيفه دون اتصال إذا أغلقت التطبيق.",
+  "storageTitle": "التخزين دون اتصال",
+  "storagePersistent": "يحتفظ بها المتصفح",
+  "storageBestEffort": "قد يحذفها المتصفح عند امتلاء المساحة. ثبّت التطبيق للاحتفاظ بها.",
+  "storageUsage": "مستخدم {used} من {quota}"
 }

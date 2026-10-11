@@ -190,7 +190,7 @@ Changing any decision requires user approval (rule 9). Record approval in the De
 |---|---|---|---|
 | P0 | Baseline, decisions, measurements, hosting (Cloudflare Pages) | ✅ gate passed 2026-10-11 | P0.8-6 (explicit iPhone cellular + Wi-Fi without VPN on production), U11 (iOS version) |
 | P1 | Branded, CDN-free web shell (manifest, icons, index.html, fonts, vendored JS) | ✅ gate passed 2026-10-11 (except 👤 DevTools Manifest check) | Chrome DevTools → Application → Manifest shows no errors; iPhone visual check of staging |
-| P2 | Persistent web storage (sqflite on IndexedDB) | ☐ | — |
+| P2 | Persistent web storage (sqflite on IndexedDB) | ✅ gate passed 2026-10-11 | P2.10–P2.13 (logged-in offline/reload/logout/iPhone checks) |
 | P3 | Single-tab guard and web sync triggers | ☐ | — |
 | P4 | Camera, photos and QR scanner on web | ☐ | — |
 | P5 | Offline cold start, SW precache and update flow | ☐ | — |
@@ -447,20 +447,20 @@ Staging deploy: wrangler --branch staging -> https://ffa6d264.al-wahat-farm.page
 
 **Tasks**
 
-- [ ] P2.1 `flutter pub add sqflite_common_ffi_web` (dependency, not dev). Confirm the resolved version in `pubspec.lock` is the T2 version or record the difference. Run `flutter pub get`.
-- [ ] P2.2 Read `~/.pub-cache/hosted/pub.dev/sqflite_common_ffi_web-<ver>/lib/sqflite_ffi_web.dart` and `bin/setup.dart`. Cite the exported symbols used (`databaseFactoryFfiWeb`, any options class) with `file:line`. Check whether the library itself is safe to import on VM/native. If it imports `dart:html` / `dart:js*` unconditionally, it **must** be imported only from the web side of a conditional import.
-- [ ] P2.3 Run `dart run sqflite_common_ffi_web:setup`. Verify `web/sqlite3.wasm` and `web/sqflite_sw.js` exist. Check the sqlite3.wasm version matches the `sqlite3` package version in `pubspec.lock` (T3 warns the URL is hardcoded): read `bin/setup.dart` for the URL it used and record it. **Commit both files** (reproducible builds, and they must sit in `RESOURCES` for the SW). Add a line to `web/vendor/README.md` describing how to regenerate them.
-- [ ] P2.4 Create a conditional database-factory seam:
+- [x] P2.1 `flutter pub add sqflite_common_ffi_web` (dependency, not dev). Confirm the resolved version in `pubspec.lock` is the T2 version or record the difference. Run `flutter pub get`.
+- [x] P2.2 Read `~/.pub-cache/hosted/pub.dev/sqflite_common_ffi_web-<ver>/lib/sqflite_ffi_web.dart` and `bin/setup.dart`. Cite the exported symbols used (`databaseFactoryFfiWeb`, any options class) with `file:line`. Check whether the library itself is safe to import on VM/native. If it imports `dart:html` / `dart:js*` unconditionally, it **must** be imported only from the web side of a conditional import.
+- [x] P2.3 Run `dart run sqflite_common_ffi_web:setup`. Verify `web/sqlite3.wasm` and `web/sqflite_sw.js` exist. Check the sqlite3.wasm version matches the `sqlite3` package version in `pubspec.lock` (T3 warns the URL is hardcoded): read `bin/setup.dart` for the URL it used and record it. **Commit both files** (reproducible builds, and they must sit in `RESOURCES` for the SW). Add a line to `web/vendor/README.md` describing how to regenerate them.
+- [x] P2.4 Create a conditional database-factory seam:
   - `lib/core/database/database_platform.dart`: `export 'database_platform_io.dart' if (dart.library.html) 'database_platform_web.dart';`
   - Both implementations expose: `Future<void> configureDatabaseFactory()` and `Future<String> defaultDatabasePath(String fileName)`.
   - io: no-op configure; path = `p.join(await getDatabasesPath(), fileName)` (exactly today's behavior).
   - web: `databaseFactory = databaseFactoryFfiWeb;` path = `fileName` (README recipe, T3).
-- [ ] P2.5 Change `AppDatabase.open()` to use `defaultDatabasePath(fileName)` when `filePath` is null. Call `configureDatabaseFactory()` at the top of `_bootstrapServices()` in `lib/main.dart`. **No other change to `AppDatabase` or the stores.**
-- [ ] P2.6 Make storage failure visible instead of silent. When `_bootstrapServices` falls back to memory, set a flag on `AppServices` (e.g. `bool persistentStorageAvailable`). Show a localized persistent warning banner ("Offline storage unavailable — work will be lost if you close the app") on Home/More. Add EN+AR strings. Native behavior is unchanged except the banner appears in the same fallback case.
-- [ ] P2.7 Durable-storage request (web only, U8). Add `lib/core/web/web_platform.dart` (conditional export of `web_platform_stub.dart` / `web_platform_html.dart`). Start with `Future<bool?> requestPersistentStorage()` (calls `window.navigator.storage?.persist()`, T4; stub returns `null`) and `Future<({int? usage, int? quota})> storageEstimate()`. Call `requestPersistentStorage()` once after a successful login. Log the result with `SafeLog.event`.
-- [ ] P2.8 Show storage status in the Failed-ops / sync screen or More (web only): "Storage: persistent / best-effort", plus usage. EN+AR strings.
-- [ ] P2.9 Tests (VM): unit-test the io `defaultDatabasePath` and that `AppDatabase.open(filePath: inMemoryDatabasePath)` behavior is unchanged (existing tests must pass untouched). Widget-test the P2.6 banner with an `AppServices` whose flag is false.
-- [ ] P2.10 Web persistence check. Build, serve and log in. Queue a task status change and an issue photo **offline** (DevTools → Network → Offline), then hard-reload while still offline. The outbox count and failed-ops entries are still present. Go online and the op drains. Close the browser fully, reopen, and the cached hierarchy loads offline. 👤 (or automated in P5.4 if feasible)
+- [x] P2.5 Change `AppDatabase.open()` to use `defaultDatabasePath(fileName)` when `filePath` is null. Call `configureDatabaseFactory()` at the top of `_bootstrapServices()` in `lib/main.dart`. **No other change to `AppDatabase` or the stores.**
+- [x] P2.6 Make storage failure visible instead of silent. When `_bootstrapServices` falls back to memory, set a flag on `AppServices` (e.g. `bool persistentStorageAvailable`). Show a localized persistent warning banner ("Offline storage unavailable — work will be lost if you close the app") on Home/More. Add EN+AR strings. Native behavior is unchanged except the banner appears in the same fallback case.
+- [x] P2.7 Durable-storage request (web only, U8). Add `lib/core/web/web_platform.dart` (conditional export of `web_platform_stub.dart` / `web_platform_html.dart`). Start with `Future<bool?> requestPersistentStorage()` (calls `window.navigator.storage?.persist()`, T4; stub returns `null`) and `Future<({int? usage, int? quota})> storageEstimate()`. Call `requestPersistentStorage()` once after a successful login. Log the result with `SafeLog.event`.
+- [x] P2.8 Show storage status in the Failed-ops / sync screen or More (web only): "Storage: persistent / best-effort", plus usage. EN+AR strings.
+- [x] P2.9 Tests (VM): unit-test the io `defaultDatabasePath` and that `AppDatabase.open(filePath: inMemoryDatabasePath)` behavior is unchanged (existing tests must pass untouched). Widget-test the P2.6 banner with an `AppServices` whose flag is false.
+- [ ] P2.10 👤 *(automated part done: DB opens in Chrome and creates `al_wahat_farm.db` in IndexedDB; the offline-queue + reload check needs a logged-in user)* Web persistence check. Build, serve and log in. Queue a task status change and an issue photo **offline** (DevTools → Network → Offline), then hard-reload while still offline. The outbox count and failed-ops entries are still present. Go online and the op drains. Close the browser fully, reopen, and the cached hierarchy loads offline. 👤 (or automated in P5.4 if feasible)
 - [ ] P2.11 Inspection station transaction (F4) on web: run an inspection route offline, reload mid-route, and the station progress is restored (the web analog of `integration_test/offline_inspection_restart_test.dart`). 👤
 - [ ] P2.12 Logout on web: after sign-out, DevTools → Application → IndexedDB shows **no private rows** (`awf_private:` cache keys, outbox, pending_photos empty). `clearPrivateData()` already does this through the stores, so this verifies it holds on IndexedDB. 👤
 - [ ] P2.13 👤 iPhone 11 (U8): repeat P2.10 on staging in Safari **and** in the installed home-screen app. Record the `persist()` result for each.
@@ -471,7 +471,36 @@ Staging deploy: wrangler --branch staging -> https://ffa6d264.al-wahat-farm.page
 
 **Evidence**
 ```
-(paste here)
+Phase 2 — 2026-10-11
+P2.1 flutter pub add sqflite_common_ffi_web -> lock 0.4.2+1 (sqlite3 2.1.0), "Changed 6 dependencies!" (= T2).
+P2.2 lib/sqflite_ffi_web.dart exports createDatabaseFactoryFfiWeb, databaseFactoryFfiWeb(NoWebWorker), SqfliteFfiWeb*;
+  internals use conditional exports (src/database_factory.dart, src/sqflite_ffi.dart, src/web/load_sqlite.dart:
+  `export '..._io.dart' if (dart.library.html) '..._web.dart'`); on io databaseFactoryFfiWeb is a getter that throws
+  (src/sqflite_ffi_io.dart). sqflite_common-2.5.3 sqflite_database_factory.dart:41 `set databaseFactory` (prints a warning
+  only if already set) is re-exported by package:sqflite/sqflite.dart.
+P2.3 DEVIATION: setup.dart hardcodes `sqlite3-2.2.0/sqlite3.wasm` (lib/src/setup/sqlite3_wasm_version.dart), but Dart sqlite3
+  2.2.0 needs SDK >=3.2.0 (pub.dev API; 2.1.0 needs >=3.0.0), so the lock stays at 2.1.0. Ran
+  `dart run sqflite_common_ffi_web:setup --no-sqlite3-wasm` -> "created: web/sqflite_sw.js (330196 bytes)"; the worker build
+  dir .dart_tool/sqflite_common_ffi_web/setup/1.0.1+4/pubspec.lock has sqlite3 2.1.0. Downloaded release sqlite3-2.1.0
+  sqlite3.wasm (686680 B, "WebAssembly (wasm) binary module version 0x1"). Checksums + regeneration rules in web/vendor/README.md.
+P2.4/P2.5 lib/core/database/database_platform{,_io,_web}.dart; AppDatabase.open uses defaultDatabasePath(fileName);
+  main.dart calls configureDatabaseFactory() first inside the storage try-block.
+P2.6 AppServices.persistentStorageAvailable (default true; false on in-memory fallback, which now logs
+  SafeLog 'storage_fallback' with the error); StorageWarningBanner on Home + More; EN/AR strings.
+P2.7 lib/core/web/web_platform{,_stub,_html,_types}.dart: requestPersistentStorage() (navigator.storage persisted()/persist(),
+  html_dart2js.dart:22751,29237-29240), storageStatus() (estimate()). Called once per session in
+  AuthenticatedGate.didChangeDependencies; result logged as 'storage_persist'.
+P2.8 StorageStatusTile on More (persistent vs best-effort + "X MB of Y MB used"); hidden when load() returns null (native).
+P2.9 tests: test/unit/database/database_platform_test.dart (3) + test/widget/storage_status_test.dart (5) -> +8 passed.
+Gate: format 239 files 0 changed (excl. gen); flutter analyze: No issues; flutter test: +347 ~6 All tests passed;
+  ./tool/build_web.sh 24M; flutter build apk --debug -> "✓ Built build/app/outputs/flutter-apk/app-debug.apk" (64.4s);
+  lib/l10n/gen diff = only the new storage* keys (from the ARB edits).
+Web check (headless Chrome 150, local server):
+  with --virtual-time-budget: sqflite_sw.js fetched but NOT sqlite3.wasm, IndexedDB metadata only -> virtual time stalls the
+    worker (test artifact).
+  real time 45 s (--enable-logging=stderr): server served /sqflite_sw.js and /sqlite3.wasm; no '[awf] storage_fallback' in the
+    console; app reached /#/login; IndexedDB http_localhost_8765 has a 13.6 KB log containing "al_wahat_farm.db" (7 hits).
+    Table names aren't greppable (stored pages are compressed), so schema creation is inferred from no-fallback + DB file.
 ```
 
 **Rollback:** revert the files; `flutter pub remove sqflite_common_ffi_web`; delete `web/sqlite3.wasm` and `web/sqflite_sw.js`.

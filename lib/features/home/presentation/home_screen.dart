@@ -3,6 +3,7 @@ import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/section_refresh.dart';
+import 'package:al_wahat_farm_flutter/core/widgets/storage_status.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
 import 'package:al_wahat_farm_flutter/features/farm/presentation/farm_hierarchy_gate.dart';
 import 'package:al_wahat_farm_flutter/features/issues/presentation/issue_workspace_controller.dart';
@@ -88,7 +89,13 @@ class _HomeScreenState extends State<HomeScreen> with SectionReturnAware {
               child: Center(
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 1380),
-                  child: content,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      const StorageWarningBanner(),
+                      content,
+                    ],
+                  ),
                 ),
               ),
             );

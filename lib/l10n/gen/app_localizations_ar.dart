@@ -2560,4 +2560,21 @@ class AppLocalizationsAr extends AppLocalizations {
   String issuesClosedOn(String date) {
     return 'أُغلقت في $date';
   }
+
+  @override
+  String get storageUnavailableWarning => 'التخزين دون اتصال غير متاح على هذا الجهاز. سيُفقد العمل الذي تضيفه دون اتصال إذا أغلقت التطبيق.';
+
+  @override
+  String get storageTitle => 'التخزين دون اتصال';
+
+  @override
+  String get storagePersistent => 'يحتفظ بها المتصفح';
+
+  @override
+  String get storageBestEffort => 'قد يحذفها المتصفح عند امتلاء المساحة. ثبّت التطبيق للاحتفاظ بها.';
+
+  @override
+  String storageUsage(String used, String quota) {
+    return 'مستخدم $used من $quota';
+  }
 }

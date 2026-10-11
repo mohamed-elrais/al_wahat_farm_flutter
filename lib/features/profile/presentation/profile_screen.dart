@@ -6,6 +6,7 @@ import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/locale_controller.dart';
 import 'package:al_wahat_farm_flutter/core/supabase/auth_repository.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
+import 'package:al_wahat_farm_flutter/core/widgets/storage_status.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
 import 'package:al_wahat_farm_flutter/features/auth/presentation/authenticated_gate.dart';
 import 'package:al_wahat_farm_flutter/features/sync/presentation/sync_scope.dart';
@@ -32,6 +33,7 @@ class ProfileScreen extends StatelessWidget {
           Text(l10n.moreTitle,
               style: Theme.of(context).textTheme.headlineLarge),
           const SizedBox(height: 18),
+          const StorageWarningBanner(),
           WahatCard(
             child: Column(
               children: <Widget>[
@@ -84,6 +86,7 @@ class ProfileScreen extends StatelessWidget {
                 ],
                 _SyncStatusTile(connectivity: services?.connectivity),
                 const _SyncCenter(),
+                const StorageStatusTile(),
                 const SizedBox(height: 8),
                 OutlinedButton.icon(
                   key: const Key('logout-button'),

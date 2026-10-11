@@ -1,4 +1,4 @@
-import 'package:path/path.dart' as p;
+import 'package:al_wahat_farm_flutter/core/database/database_platform.dart';
 import 'package:sqflite/sqflite.dart';
 
 /// The on-device SQLite database backing offline caches and (from O1) the
@@ -27,7 +27,7 @@ class AppDatabase {
   final Database db;
 
   static Future<AppDatabase> open({String? filePath}) async {
-    final path = filePath ?? p.join(await getDatabasesPath(), fileName);
+    final path = filePath ?? await defaultDatabasePath(fileName);
     final db = await openDatabase(
       path,
       version: schemaVersion,

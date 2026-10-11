@@ -18,7 +18,12 @@ class AppServices {
     required this.connectivity,
     required this.locale,
     this.inspectionStationLocalStore,
+    this.persistentStorageAvailable = true,
   });
+
+  /// False when the on-device database could not be opened and the stores fell
+  /// back to memory: queued offline work would then be lost when the app closes.
+  final bool persistentStorageAvailable;
 
   final LocalCacheStore cacheStore;
   final OutboxStore outbox;

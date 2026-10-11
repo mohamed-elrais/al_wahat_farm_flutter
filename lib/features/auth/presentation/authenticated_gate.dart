@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:al_wahat_farm_flutter/core/app_services.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
+import 'package:al_wahat_farm_flutter/core/logging/safe_log.dart';
 import 'package:al_wahat_farm_flutter/core/supabase/auth_repository.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
+import 'package:al_wahat_farm_flutter/core/web/web_platform.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
 import 'package:al_wahat_farm_flutter/features/auth/data/operational_context_repository.dart';
 import 'package:al_wahat_farm_flutter/features/auth/domain/operational_context.dart';
@@ -68,6 +72,7 @@ class _AuthenticatedGateState extends State<AuthenticatedGate> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (_controller != null) return;
+    unawaited(_requestDurableStorage());
     final client = Supabase.instance.client;
     final services = AppServicesScope.maybeOf(context);
     final store = services?.cacheStore;
@@ -179,6 +184,16 @@ class _AuthenticatedGateState extends State<AuthenticatedGate> {
     );
     final userId = client.auth.currentUser?.id;
     if (userId != null) _controller!.load(userId);
+  }
+
+  /// On the web, asks the browser not to evict the offline database once a
+  /// session exists. A no-op on native platforms.
+  Future<void> _requestDurableStorage() async {
+    final granted = await requestPersistentStorage();
+    if (granted == null) return;
+    SafeLog.event('storage_persist', data: <String, Object?>{
+      'granted': granted,
+    });
   }
 
   @override

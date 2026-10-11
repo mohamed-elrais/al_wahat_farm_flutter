@@ -4604,6 +4604,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Closed {date}'**
   String issuesClosedOn(String date);
+
+  /// No description provided for @storageUnavailableWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline storage is unavailable on this device. Work you queue offline will be lost if you close the app.'**
+  String get storageUnavailableWarning;
+
+  /// No description provided for @storageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline storage'**
+  String get storageTitle;
+
+  /// No description provided for @storagePersistent.
+  ///
+  /// In en, this message translates to:
+  /// **'Kept by the browser'**
+  String get storagePersistent;
+
+  /// No description provided for @storageBestEffort.
+  ///
+  /// In en, this message translates to:
+  /// **'The browser may clear it when space is low. Install the app to keep it.'**
+  String get storageBestEffort;
+
+  /// No description provided for @storageUsage.
+  ///
+  /// In en, this message translates to:
+  /// **'{used} of {quota} used'**
+  String storageUsage(String used, String quota);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
