@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:al_wahat_farm_flutter/core/app_services.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/core/logging/safe_log.dart';
+import 'package:al_wahat_farm_flutter/core/platform/app_foreground.dart';
 import 'package:al_wahat_farm_flutter/core/supabase/auth_repository.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/web/web_platform.dart';
@@ -24,6 +25,7 @@ import 'package:al_wahat_farm_flutter/features/sync/domain/composite_mutation_ex
 import 'package:al_wahat_farm_flutter/features/sync/domain/mutation_executor.dart';
 import 'package:al_wahat_farm_flutter/features/sync/domain/pending_mutation.dart';
 import 'package:al_wahat_farm_flutter/features/sync/domain/sync_engine.dart';
+import 'package:al_wahat_farm_flutter/features/sync/presentation/sync_foreground_trigger.dart';
 import 'package:al_wahat_farm_flutter/features/sync/presentation/sync_scope.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/data/caching_task_repository.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/data/offline_task_repository.dart';
@@ -67,6 +69,7 @@ class _AuthenticatedGateState extends State<AuthenticatedGate> {
   IssueWorkspaceRepository? _issueWorkspaceRepository;
   InspectionRepository? _inspectionRepository;
   SyncEngine? _syncEngine;
+  SyncForegroundTrigger? _foregroundTrigger;
 
   @override
   void didChangeDependencies() {
@@ -136,6 +139,10 @@ class _AuthenticatedGateState extends State<AuthenticatedGate> {
         connectivity: services.connectivity,
       )..start();
       _syncEngine = syncEngine;
+      _foregroundTrigger = SyncForegroundTrigger(
+        foreground: appForegroundEvents(),
+        sync: syncEngine.sync,
+      );
       _taskRepository = OfflineTaskRepository(
         inner: caching,
         outbox: services.outbox,
@@ -199,6 +206,7 @@ class _AuthenticatedGateState extends State<AuthenticatedGate> {
   @override
   void dispose() {
     _controller?.dispose();
+    unawaited(_foregroundTrigger?.dispose());
     _syncEngine?.dispose();
     super.dispose();
   }

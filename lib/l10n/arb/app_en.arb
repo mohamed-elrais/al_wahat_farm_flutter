@@ -1156,5 +1156,8 @@
   "storagePersistent": "Kept by the browser",
   "storageBestEffort": "The browser may clear it when space is low. Install the app to keep it.",
   "storageUsage": "{used} of {quota} used",
-  "@storageUsage": {"placeholders": {"used": {"type": "String"}, "quota": {"type": "String"}}}
+  "@storageUsage": {"placeholders": {"used": {"type": "String"}, "quota": {"type": "String"}}},
+  "secondTabTitle": "Al Wahat is open in another tab",
+  "secondTabBody": "To keep offline work safe, the app runs in one tab or window at a time.",
+  "secondTabUseHere": "Use here"
 }

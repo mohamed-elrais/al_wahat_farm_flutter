@@ -2566,4 +2566,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String storageUsage(String used, String quota) {
     return '$used of $quota used';
   }
+
+  @override
+  String get secondTabTitle => 'Al Wahat is open in another tab';
+
+  @override
+  String get secondTabBody => 'To keep offline work safe, the app runs in one tab or window at a time.';
+
+  @override
+  String get secondTabUseHere => 'Use here';
 }

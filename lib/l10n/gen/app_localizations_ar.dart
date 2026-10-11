@@ -2577,4 +2577,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String storageUsage(String used, String quota) {
     return 'مستخدم $used من $quota';
   }
+
+  @override
+  String get secondTabTitle => 'تطبيق الواحة مفتوح في علامة تبويب أخرى';
+
+  @override
+  String get secondTabBody => 'للحفاظ على العمل دون اتصال، يعمل التطبيق في علامة تبويب أو نافذة واحدة فقط في كل مرة.';
+
+  @override
+  String get secondTabUseHere => 'استخدمه هنا';
 }

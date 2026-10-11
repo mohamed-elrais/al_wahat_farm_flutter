@@ -191,7 +191,7 @@ Changing any decision requires user approval (rule 9). Record approval in the De
 | P0 | Baseline, decisions, measurements, hosting (Cloudflare Pages) | ✅ gate passed 2026-10-11 | P0.8-6 (explicit iPhone cellular + Wi-Fi without VPN on production), U11 (iOS version) |
 | P1 | Branded, CDN-free web shell (manifest, icons, index.html, fonts, vendored JS) | ✅ gate passed 2026-10-11 (except 👤 DevTools Manifest check) | Chrome DevTools → Application → Manifest shows no errors; iPhone visual check of staging |
 | P2 | Persistent web storage (sqflite on IndexedDB) | ✅ gate passed 2026-10-11 | P2.10–P2.13 (logged-in offline/reload/logout/iPhone checks) |
-| P3 | Single-tab guard and web sync triggers | ☐ | — |
+| P3 | Single-tab guard and web sync triggers | ✅ gate passed 2026-10-11 | P3.1 (Android SharedWorker), P3.5 handover, P3.9 offline/online drain |
 | P4 | Camera, photos and QR scanner on web | ☐ | — |
 | P5 | Offline cold start, SW precache and update flow | ☐ | — |
 | P6 | Install UX, responsive/browser UX, accessibility | ☐ | — |
@@ -515,20 +515,20 @@ Web check (headless Chrome 150, local server):
 
 **Tasks — single tab (D2)**
 
-- [ ] P3.1 Record U1: in DevTools → Application → Shared workers (desktop) and `chrome://inspect/#workers` on Android 👤, note whether `sqflite_sw.js` runs as a SharedWorker. **Implement the guard regardless.**
-- [ ] P3.2 Add to `web_platform`: `TabLease` with `Future<bool> tryAcquire()`, `Stream<void> lostOwnership`, `void takeOver()`, built on `BroadcastChannel('awf-tab')` (T4). Protocol: on start, post `{type:'claim', id, ts}` and wait 300 ms. If an owner answers `{type:'owned', id}`, the claim fails. `takeOver()` posts `{type:'takeover', id}`, and the current owner releases and emits `lostOwnership`. Stub (VM/native): always owns.
-- [ ] P3.3 In `main.dart`, acquire the lease **before** opening the database. If the lease isn't owned, run a minimal `SecondTabApp` (localized, branded) with a "Use here" button that calls `takeOver()` then `window.location.reload()`. On `lostOwnership`, the owning tab must stop the SyncEngine, close the DB (`AppDatabase.close()`) and show the same screen.
-- [ ] P3.4 Unit-test the lease protocol with a fake channel (pure Dart logic separated from `dart:html`, so it runs on VM).
-- [ ] P3.5 👤 Open the app in two tabs. The second shows the guard screen; "Use here" moves ownership; the first tab shows the guard screen; no console errors.
+- [ ] P3.1 👤 *(guard implemented regardless; SharedWorker presence on Android still to observe)* Record U1: in DevTools → Application → Shared workers (desktop) and `chrome://inspect/#workers` on Android 👤, note whether `sqflite_sw.js` runs as a SharedWorker. **Implement the guard regardless.**
+- [x] P3.2 Add to `web_platform`: `TabLease` with `Future<bool> tryAcquire()`, `Stream<void> lostOwnership`, `void takeOver()`, built on `BroadcastChannel('awf-tab')` (T4). Protocol: on start, post `{type:'claim', id, ts}` and wait 300 ms. If an owner answers `{type:'owned', id}`, the claim fails. `takeOver()` posts `{type:'takeover', id}`, and the current owner releases and emits `lostOwnership`. Stub (VM/native): always owns.
+- [x] P3.3 In `main.dart`, acquire the lease **before** opening the database. If the lease isn't owned, run a minimal `SecondTabApp` (localized, branded) with a "Use here" button that calls `takeOver()` then `window.location.reload()`. On `lostOwnership`, the owning tab must stop the SyncEngine, close the DB (`AppDatabase.close()`) and show the same screen.
+- [x] P3.4 Unit-test the lease protocol with a fake channel (pure Dart logic separated from `dart:html`, so it runs on VM).
+- [ ] P3.5 👤 *(automated: headless Chrome, two tabs → `tab_lease {owner=true}` then `{owner=false}`; the "Use here" handover still needs a human)* Open the app in two tabs. The second shows the guard screen; "Use here" moves ownership; the first tab shows the guard screen; no console errors.
 
 **Tasks — foreground sync trigger (D7)**
 
-- [ ] P3.6 Add a platform-neutral foreground signal. Native: `AppLifecycleListener(onResume: …)` (T5). Web: `document.onVisibilityChange` where `visibilityState == 'visible'` (T4), via `web_platform`. Wire it so `SyncEngine.sync()` is called on foreground. Put the wiring in the sync scope, **not** inside `SyncEngine`, to keep it testable. Read `lib/features/sync/presentation/sync_scope.dart` first and follow its pattern.
-- [ ] P3.7 Unit test: a fake foreground stream triggers `sync()` once per event, and `alreadyRunning` is respected.
+- [x] P3.6 Add a platform-neutral foreground signal. Native: `AppLifecycleListener(onResume: …)` (T5). Web: `document.onVisibilityChange` where `visibilityState == 'visible'` (T4), via `web_platform`. Wire it so `SyncEngine.sync()` is called on foreground. Put the wiring in the sync scope, **not** inside `SyncEngine`, to keep it testable. Read `lib/features/sync/presentation/sync_scope.dart` first and follow its pattern.
+- [x] P3.7 Unit test: a fake foreground stream triggers `sync()` once per event, and `alreadyRunning` is respected.
 
 **Tasks — honest connectivity (F5)**
 
-- [ ] P3.8 On web only, treat a SyncEngine transient failure (`OperationFailureKind.offline`) while `navigator.onLine` is true as **degraded**. Do not flip the global offline state (that would block online-only screens incorrectly). The existing retry-on-trigger already covers recovery; just make sure the sync status UI shows "Waiting for connection" instead of a spinner. First read how `ConnectivityController` and the sync UI render today. If the existing UI already handles it, record "no change needed" with evidence.
+- [x] P3.8 On web only, treat a SyncEngine transient failure (`OperationFailureKind.offline`) while `navigator.onLine` is true as **degraded**. Do not flip the global offline state (that would block online-only screens incorrectly). The existing retry-on-trigger already covers recovery; just make sure the sync status UI shows "Waiting for connection" instead of a spinner. First read how `ConnectivityController` and the sync UI render today. If the existing UI already handles it, record "no change needed" with evidence.
 - [ ] P3.9 👤 Chrome DevTools "Offline", then "Online": the app reflects both and drains the outbox on "Online".
 
 **Files:** `lib/core/web/web_platform*.dart`, `lib/main.dart`, a new `lib/core/web/second_tab_app.dart` (or similar), `lib/features/sync/presentation/sync_scope.dart`, ARB files, tests.
@@ -537,7 +537,35 @@ Web check (headless Chrome 150, local server):
 
 **Evidence**
 ```
-(paste here)
+Phase 3 — 2026-10-11
+P3.2 lib/core/web/tab_lease.dart: pure-Dart TabLease over TabChannel (JSON strings). Claim + 300 ms window; owner answers
+  'owned'; simultaneous claims settle on the lower tab id; 'takeover' demotes the owner (lostOwnership).
+  web: openTabChannel() = dart:html BroadcastChannel (html_dart2js.dart BroadcastChannel(name)/postMessage/onMessage/close;
+  MessageEvent.data dynamic :21572); stub returns null (native always owns).
+P3.3 main.dart acquires the lease before opening the DB; a non-owner runs SecondTabApp (EN/AR strings) and never opens the
+  DB. DESIGN CHANGE vs plan text: on lostOwnership the old owner does runApp(SecondTabApp) in place (disposes the app and
+  its SyncEngine) instead of reloading. A reload would race the new tab's claim (lower random id wins) and could win
+  back. Only the tab that asked reloads (500 ms after 'takeover'), so its claim goes unanswered. The lease result is
+  logged as '[awf] tab_lease {owner=…}'.
+P3.4 test/unit/web/tab_lease_test.dart (5): lone owner, second refused, simultaneous -> [false,true] (lower id wins),
+  takeOver demotes + restarted tab wins, malformed/own-echo ignored.
+P3.6 lib/core/platform/app_foreground.dart: native AppLifecycleListener(onResume) (app_lifecycle_listener.dart, 3.13),
+  web document.onVisibilityChange where visibilityState == 'visible'. SyncForegroundTrigger
+  (features/sync/presentation/sync_foreground_trigger.dart) started next to syncEngine.start() in AuthenticatedGate and
+  disposed with it; SyncEngine unchanged.
+P3.7 test/unit/sync/sync_foreground_trigger_test.dart: 2 events -> 2 syncs; after dispose -> no more.
+P3.8 no change needed: _SyncCenter (profile_screen.dart:189-207) shows the spinner only while engine.isSyncing;
+  SyncEngine.sync() resets _running in `finally` (sync_engine.dart:117-122) and a transient failure records an attempt +
+  'deferred', so the UI shows "N pending" + "Sync now", never an endless spinner.
+Widget: test/widget/second_tab_app_test.dart (title/body shown, "Use here" calls back).
+Browser check (headless Chrome 150, one profile, second tab opened via DevTools /json/new):
+  console: "[awf] tab_lease {owner=true}" (first tab), "[awf] tab_lease {owner=false}" (second tab); no storage_fallback.
+Gate: format 246 files 0 changed (excl. gen; gen re-generated after an accidental `dart format lib`, diff = new keys only);
+  flutter analyze: No issues; flutter test: +354 ~6 All tests passed; build_web.sh 24M;
+  flutter build apk --debug: ✓ Built.
+Also added tool/verify_deploy.py (P8.3 early): fetches every SW RESOURCES key from a deployed URL and fails on non-200 or
+  text/html for non-HTML keys (sends a non-default User-Agent: Cloudflare returns 403 to Python's default).
+  Phase 2 staging + production: "checked 36 resources … all resources served with the expected content type".
 ```
 
 **Rollback:** revert; the guard is additive.
@@ -695,7 +723,7 @@ Web check (headless Chrome 150, local server):
   - `/*`: the P7.4 security headers and the final CSP (enforcing, after report-only showed zero violations).
   - Caching: **keep the default** `public, max-age=0, must-revalidate` (N13). Flutter 3.13 filenames aren't content-hashed, so don't add long `max-age`/`immutable`.
   - Content types are already correct (N13), so add no overrides.
-- [ ] P8.3 Missing-asset trap (N13 SPA fallback): add a check to `tool/build_web.sh` or a post-deploy script that fetches each `RESOURCES` key from the deployed URL and asserts the response **content-type is not `text/html`** for non-HTML keys (catches a missing `sqlite3.wasm`/vendor file silently served as `index.html`). Run it against staging.
+- [x] P8.3 *(done early in Phase 2/3: `tool/verify_deploy.py`)* Missing-asset trap (N13 SPA fallback): add a check to `tool/build_web.sh` or a post-deploy script that fetches each `RESOURCES` key from the deployed URL and asserts the response **content-type is not `text/html`** for non-HTML keys (catches a missing `sqlite3.wasm`/vendor file silently served as `index.html`). Run it against staging.
 - [ ] P8.4 Verify headers on staging and production: `curl -sI` for `/`, `/index.html`, `/flutter_service_worker.js`, `/main.dart.js`, `/canvaskit/canvaskit.wasm`, `/sqlite3.wasm`, `/manifest.json`. Record the outputs. Run **from this Mac without VPN** (Egyptian ISP).
 - [ ] P8.5 Re-run P1.13 (no third-party origins), the P7.4 CSP check and Application → Manifest installability against staging. 👤
 - [ ] P8.6 👤 Production deploy by the user: `nvm use && npx --yes wrangler@4.149.0 pages deploy build/web --project-name al-wahat-farm --branch main --commit-hash "$(git rev-parse HEAD)" --commit-message "PWA <short sha>"`. The agent records the deployment URL from the output.

@@ -4634,6 +4634,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{used} of {quota} used'**
   String storageUsage(String used, String quota);
+
+  /// No description provided for @secondTabTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Al Wahat is open in another tab'**
+  String get secondTabTitle;
+
+  /// No description provided for @secondTabBody.
+  ///
+  /// In en, this message translates to:
+  /// **'To keep offline work safe, the app runs in one tab or window at a time.'**
+  String get secondTabBody;
+
+  /// No description provided for @secondTabUseHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Use here'**
+  String get secondTabUseHere;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -1139,5 +1139,8 @@
   "storageTitle": "التخزين دون اتصال",
   "storagePersistent": "يحتفظ بها المتصفح",
   "storageBestEffort": "قد يحذفها المتصفح عند امتلاء المساحة. ثبّت التطبيق للاحتفاظ بها.",
-  "storageUsage": "مستخدم {used} من {quota}"
+  "storageUsage": "مستخدم {used} من {quota}",
+  "secondTabTitle": "تطبيق الواحة مفتوح في علامة تبويب أخرى",
+  "secondTabBody": "للحفاظ على العمل دون اتصال، يعمل التطبيق في علامة تبويب أو نافذة واحدة فقط في كل مرة.",
+  "secondTabUseHere": "استخدمه هنا"
 }
