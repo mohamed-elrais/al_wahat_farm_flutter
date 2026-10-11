@@ -197,7 +197,7 @@ Changing any decision requires user approval (rule 9). Record approval in the De
 | P6 | Install UX, responsive/browser UX, accessibility | ✅ gate passed 2026-10-11 | P6.10 map context menu, P6.3 installs, P6.4 safe areas, P6.5 back/forward, P6.9 RTL screenshot, P6.11 semantics cost, P6.12 screen readers |
 | P7 | Security and privacy on web | ✅ gate passed 2026-10-11 (CSP report-only) | P7.2 live logout check; CSP must be checked logged in before enforcing |
 | P8 | Cloudflare Pages production hosting, headers and release | ✅ gate passed 2026-10-11 | P8.5 logged-in walkthrough; then build production with CSP_MODE=enforce |
-| P9 | Full feature-parity QA, docs and sign-off | ☐ | — |
+| P9 | Full feature-parity QA, docs and sign-off | ◐ automated parts done 2026-10-11; waiting on device checks + user acceptance | P9.1 matrix 👤 cells, P9.2 native device runs, P9.6 sign-off |
 
 ---
 
@@ -853,44 +853,56 @@ P8.7/P8.8 not wanted / not requested.
 
 | Feature (route) | Web concern | Desktop Chrome | Android emulator Chrome (functional only) | iPhone 11 Safari (installed) | Offline |
 |---|---|---|---|---|---|
-| Login (`/login`) | F11/F12, autofill | | | | n/a (online first time) |
-| Offline app-open / session restore | P2, P5.7 | | | | |
-| Home dashboard (`/home`) | — | | | | |
-| Farm map + layers + section filter (`/map`) | D4 perf, wheel zoom, LTR lock | | | | |
-| Tree detail + planting pits (`/map/tree/:id`) | — | | | | |
-| Report issue + photo (`…/report-issue`) | F8, P4 | | | | |
-| QR scan (`/scan`) | F9, HTTPS, U2 | | | | offline msg |
-| Issues list/detail (`/issues…`) | — | | | | |
-| Tasks list + month calendar (`/tasks`) | — | | | | |
-| Task create (`/tasks/create`) | outbox | | | | |
-| Task detail, status changes, evidence photos, photo viewer (`/tasks/:id`) | F15 CORS | | | | |
-| Inspection create + runner, restart persistence (`/tasks/create-inspection`, `…/inspection`) | F4 | | | | |
-| Engineer reviews queue/detail (`/tasks/reviews…`) | offline review queue | | | | |
-| Schedules list/form/detail (`/more/schedules…`) | — | | | | |
-| Inventory list/item/form (`/more/inventory…`) | — | | | | |
-| Failed ops: retry/discard (`/more/failed-ops`) | — | | | | |
-| Sync badges + drain on reconnect/foreground | P3 | | | | |
-| Language switch EN↔AR + RTL | P1.10 font | | | | |
-| Profile + logout clears private data | P2.12/P7.2 | | | | |
-| Install prompt / iOS instructions | D8 | | | | n/a |
-| Update banner | D6 | | | | n/a |
-| Second-tab guard | D2 | | n/a | n/a | |
+| Login screen renders (`/login`) | F11/F12, fonts | ✅ headless (EN + AR, external hosts blocked) | 👤 | 👤 (staging loads, user report) | ✅ headless cold start |
+| Sign in with a real account | autofill (P6.7) | 👤 | 👤 | 👤 | n/a |
+| Offline app-open / session restore | P2, P5.7 | 👤 | 👤 | 👤 | 👤 |
+| Home dashboard (`/home`) | — | 👤 | 👤 | 👤 | 👤 |
+| Farm map + layers + section filter (`/map`) | D4 perf, wheel zoom, LTR lock | 👤 | 👤 | ✅ user: CanvasKit 1–3 s, smooth (P0.4) | 👤 |
+| Tree detail + planting pits (`/map/tree/:id`) | — | 👤 | 👤 | 👤 | 👤 |
+| Report issue + photo (`…/report-issue`) | F8, P4 | 👤 (pica global ✅) | 👤 | 👤 | 👤 |
+| QR scan (`/scan`) | F9, HTTPS, U2 | 👤 (ZXing global ✅) | 👤 | 👤 | 👤 |
+| Issues list/detail (`/issues…`) | — | 👤 | 👤 | 👤 | 👤 |
+| Tasks list + month calendar (`/tasks`) | — | 👤 | 👤 | 👤 | 👤 |
+| Task create (`/tasks/create`) | outbox | 👤 | 👤 | 👤 | 👤 |
+| Task detail, status changes, evidence photos, photo viewer (`/tasks/:id`) | F15 CORS (✅ ACAO *) | 👤 | 👤 | 👤 | 👤 |
+| Inspection create + runner, restart persistence | F4 | 👤 | 👤 | 👤 | 👤 |
+| Engineer reviews queue/detail (`/tasks/reviews…`) | offline review queue | 👤 | 👤 | 👤 | 👤 |
+| Schedules list/form/detail (`/more/schedules…`) | — | 👤 | 👤 | 👤 | 👤 |
+| Inventory list/item/form (`/more/inventory…`) | — | 👤 | 👤 | 👤 | 👤 |
+| Failed ops: retry/discard (`/more/failed-ops`) | — | 👤 | 👤 | 👤 | 👤 |
+| Sync badges + drain on reconnect/foreground | P3 | 👤 | 👤 | 👤 | 👤 |
+| Language switch EN↔AR + RTL | P1.10 font | ✅ headless (AR via browser locale) | 👤 | 👤 | ✅ headless (AR, external hosts blocked) |
+| Profile + logout clears private data | P2.12/P7.2 | 👤 (code-verified) | 👤 | 👤 | n/a |
+| Install prompt / iOS instructions | D8 | ✅ headless (installable, prompt captured) | 👤 | 👤 | n/a |
+| Update banner | D6 | ✅ headless (build A → B) | 👤 | 👤 | n/a |
+| Second-tab guard | D2 | ✅ headless (owner=true / owner=false) | n/a | n/a | n/a |
+| Web database opens (IndexedDB) | D1 | ✅ headless (sqlite3.wasm loaded, no fallback) | 👤 | 👤 | n/a |
 
 **Tasks**
 
-- [ ] P9.1 Fill the matrix 👤. Every ❌ becomes a ⛔ item in the owning phase, which is reopened.
-- [ ] P9.2 Native regression: `flutter test` (all), `flutter build apk --debug`, and 👤 `flutter run` on the iPhone 11 (native build) or an iOS simulator (Xcode 14.2), plus the Pixel_4 emulator, with a smoke test of login, map, scan and offline queue.
-- [ ] P9.3 Update `README.md` with a **Web / PWA** section: build command (`tool/build_web.sh`), local serve, required secure context, regenerating `sqlite3.wasm`/vendor files, Cloudflare Pages deploy steps (`nvm use`, `npx --yes wrangler@4.149.0 pages deploy build/web --project-name al-wahat-farm --branch staging|main`, `tool/hosting/_headers`, dashboard rollback), the Egypt note (never `*.netlify.app`), known limitations (D7 no background sync, D9 no push, iOS needs install for durable storage, Android single tab).
-- [ ] P9.4 Update the memory directory: add a `pwa-architecture` memory summarizing D1–D11 and the key files (`web_platform`, `database_platform`, vendored JS, build script), and link it from `MEMORY.md`.
-- [ ] P9.5 Final standard gate plus apk build; record the final web bundle size against the P0 baseline.
-- [ ] P9.6 Set every phase in §3 to ✅ only if its gate evidence exists. List any remaining 👤 items explicitly. **The plan is complete only when no ⛔ items remain and the user accepts any open 👤 items.**
+- [ ] P9.1 👤 *(matrix filled with what was verified in headless Chrome and the user's P0.4 report; every cell needing a login or a real device is still 👤)* Fill the matrix 👤. Every ❌ becomes a ⛔ item in the owning phase, which is reopened.
+- [ ] P9.2 👤 *(automated part done: flutter test +366 ~6 and `flutter build apk --debug` ✓; running on the iPhone/simulator and the Pixel_4 emulator is still open)* Native regression: `flutter test` (all), `flutter build apk --debug`, and 👤 `flutter run` on the iPhone 11 (native build) or an iOS simulator (Xcode 14.2), plus the Pixel_4 emulator, with a smoke test of login, map, scan and offline queue.
+- [x] P9.3 Update `README.md` with a **Web / PWA** section: build command (`tool/build_web.sh`), local serve, required secure context, regenerating `sqlite3.wasm`/vendor files, Cloudflare Pages deploy steps (`nvm use`, `npx --yes wrangler@4.149.0 pages deploy build/web --project-name al-wahat-farm --branch staging|main`, `tool/hosting/_headers`, dashboard rollback), the Egypt note (never `*.netlify.app`), known limitations (D7 no background sync, D9 no push, iOS needs install for durable storage, Android single tab).
+- [x] P9.4 Update the memory directory: add a `pwa-architecture` memory summarizing D1–D11 and the key files (`web_platform`, `database_platform`, vendored JS, build script), and link it from `MEMORY.md`.
+- [x] P9.5 Final standard gate plus apk build; record the final web bundle size against the P0 baseline.
+- [ ] P9.6 *(phases 0–8 have verified gates; the plan is NOT complete: open 👤 items listed in §3 and ⛔ P5.4, which was replaced by DevTools-protocol checks and needs the user's acceptance)* Set every phase in §3 to ✅ only if its gate evidence exists. List any remaining 👤 items explicitly. **The plan is complete only when no ⛔ items remain and the user accepts any open 👤 items.**
 
 **Evidence**
 ```
-(paste here)
+Phase 9 — 2026-10-11
+P9.1 matrix filled: ✅ only where verified (headless Chrome: login render EN/AR, offline cold start, install prompt,
+  update banner, second-tab guard, web DB; user: iPhone map performance). All logged-in and device-only cells stay 👤.
+P9.2 flutter test +366 ~6 All tests passed (final run); flutter build apk --debug ✓ (Phase 6, no Dart changes since).
+  iOS simulator / iPhone native run and Pixel_4 native run not performed (👤).
+P9.3 README.md: new "Web / PWA" section (URLs, Egypt note, build/deploy/verify/rollback, CSP_MODE, local serving,
+  differences from native, known limitations); fixed the Verification format command (the old
+  `dart format --set-exit-if-changed .` fails on raw gen-l10n output, P0.2).
+P9.4 memory: pwa-architecture.md added and linked from MEMORY.md; pwa-hosting-cloudflare.md points at tool/deploy_web.sh.
+P9.5 final gate: format 252 files 0 changed (excl. gen); flutter analyze: No issues; flutter test: +366 ~6 All tests passed.
+  Bundle: baseline (P0) build/web 22M, main.dart.js 3.9M -> now 24M, main.dart.js 4.0M (4207174 B). The ~2 MB comes from
+  bundled fonts (~1.3 MB), sqlite3.wasm + sqflite_sw.js (~1 MB) and vendor scripts (~0.3 MB).
+P9.6 NOT complete: open 👤 items (see §3) and ⛔ P5.4 await the user.
 ```
-
----
 
 ## 5. Decision log and user answers
 
