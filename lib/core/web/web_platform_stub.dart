@@ -13,5 +13,13 @@ void reloadPage() {}
 
 bool isSecureContext() => true;
 
+/// Native builds ship every asset inside the app package.
+Future<int?> precacheAppShell() async => null;
+
+String? currentAppVersion() => null;
+
+/// Native updates arrive through the app stores.
+Future<bool> isNewerAppVersionAvailable() async => false;
+
 /// Native foreground changes come from the app lifecycle instead.
 Stream<void> pageVisibleEvents() => const Stream<void>.empty();

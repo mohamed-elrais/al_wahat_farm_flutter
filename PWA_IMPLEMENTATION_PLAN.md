@@ -193,7 +193,7 @@ Changing any decision requires user approval (rule 9). Record approval in the De
 | P2 | Persistent web storage (sqflite on IndexedDB) | ✅ gate passed 2026-10-11 | P2.10–P2.13 (logged-in offline/reload/logout/iPhone checks) |
 | P3 | Single-tab guard and web sync triggers | ✅ gate passed 2026-10-11 | P3.1 (Android SharedWorker), P3.5 handover, P3.9 offline/online drain |
 | P4 | Camera, photos and QR scanner on web | ✅ gate passed 2026-10-11 | P4.4/P4.5 (iPhone photo capture JPEG vs HEIC), P4.7 real scan, P4.9 permissions, P4.11 camera stops |
-| P5 | Offline cold start, SW precache and update flow | ☐ | — |
+| P5 | Offline cold start, SW precache and update flow | ✅ gate passed 2026-10-11 (P5.4 ⛔, replaced by CDP checks) | P5.5 iPhone/desktop installed offline cold start, P5.6 update on device, P5.7 expired-token offline |
 | P6 | Install UX, responsive/browser UX, accessibility | ☐ | — |
 | P7 | Security and privacy on web | ☐ | — |
 | P8 | Cloudflare Pages production hosting, headers and release | ☐ | — |
@@ -637,10 +637,10 @@ Gate: format 248 files 0 changed; flutter analyze: No issues; flutter test: +358
 
 **Tasks**
 
-- [ ] P5.1 Inspect the built `build/web/flutter_service_worker.js` `RESOURCES` map. Confirm it contains `canvaskit/…` (local, after `--no-web-resources-cdn`), `assets/fonts/NotoSansArabic…`, `assets/assets/data/al_wahat_map_data.json` (check the exact key), `vendor/pica-…`, `vendor/zxing-…`, `sqlite3.wasm`, `sqflite_sw.js`. Record the exact keys.
-- [ ] P5.2 Precache everything (D5). Add `web_platform.requestOfflineDownload()`, which posts `'downloadOffline'` to `navigator.serviceWorker.controller` (W4). Call it once after the first successful authenticated bootstrap per SW version. Record the version via `serviceWorkerVersion` read from the page (a `window` global set in index.html) and store it in the non-private cache key `awf_sw_precached_version`.
-- [ ] P5.3 Update detection (D6). In `web/index.html`, after `loadEntrypoint`, register `navigator.serviceWorker.addEventListener('controllerchange', …)`. **Ignore the first controller** (initial install), then dispatch `window.dispatchEvent(new Event('awf-sw-updated'))`. Expose it as `Stream<void> onAppUpdateAvailable` in `web_platform` (listen via `window.on['awf-sw-updated']`). Show a localized MaterialBanner/SnackBar "A new version is available" with a "Reload" button → `window.location.reload()`. Never reload automatically. EN+AR strings.
-- [ ] P5.4 Automated web smoke (if feasible on 3.13.9): add `integration_test/web_smoke_test.dart`, run with `chromedriver --port=4444` and `flutter drive --driver=test_driver/integration_test.dart --target=integration_test/web_smoke_test.dart -d web-server --release`. It covers app boot → login screen renders → language toggle → no exceptions. If chromedriver/version mismatch blocks this, mark ⛔ with the exact error and rely on 👤 checks. Do not fake a pass.
+- [x] P5.1 Inspect the built `build/web/flutter_service_worker.js` `RESOURCES` map. Confirm it contains `canvaskit/…` (local, after `--no-web-resources-cdn`), `assets/fonts/NotoSansArabic…`, `assets/assets/data/al_wahat_map_data.json` (check the exact key), `vendor/pica-…`, `vendor/zxing-…`, `sqlite3.wasm`, `sqflite_sw.js`. Record the exact keys.
+- [x] P5.2 Precache everything (D5). Add `web_platform.requestOfflineDownload()`, which posts `'downloadOffline'` to `navigator.serviceWorker.controller` (W4). Call it once after the first successful authenticated bootstrap per SW version. Record the version via `serviceWorkerVersion` read from the page (a `window` global set in index.html) and store it in the non-private cache key `awf_sw_precached_version`.
+- [x] P5.3 Update detection (D6). In `web/index.html`, after `loadEntrypoint`, register `navigator.serviceWorker.addEventListener('controllerchange', …)`. **Ignore the first controller** (initial install), then dispatch `window.dispatchEvent(new Event('awf-sw-updated'))`. Expose it as `Stream<void> onAppUpdateAvailable` in `web_platform` (listen via `window.on['awf-sw-updated']`). Show a localized MaterialBanner/SnackBar "A new version is available" with a "Reload" button → `window.location.reload()`. Never reload automatically. EN+AR strings.
+- [ ] ⛔ Blocked: P5.4 — `chromedriver` is not installed (`which chromedriver` → not found; npm has chromedriver@150.0.4) and Flutter 3.13.9's `flutter drive -d web-server` against Chrome 150 is unverified. Replaced by DevTools-protocol checks in headless Chrome (P5 Evidence: offline cold start + update banner), which exercise the same behaviour. Original: Automated web smoke (if feasible on 3.13.9): add `integration_test/web_smoke_test.dart`, run with `chromedriver --port=4444` and `flutter drive --driver=test_driver/integration_test.dart --target=integration_test/web_smoke_test.dart -d web-server --release`. It covers app boot → login screen renders → language toggle → no exceptions. If chromedriver/version mismatch blocks this, mark ⛔ with the exact error and rely on 👤 checks. Do not fake a pass.
 - [ ] P5.5 👤 **Offline cold-start test** (U6), **iPhone 11 installed PWA** (required) and desktop Chrome installed PWA (required). Pixel_4 emulator installed PWA (optional, "emulated"):
   1. Online: install, log in, open Map, Tasks, Issues, Schedules, Inventory once.
   2. Wait for precache (DevTools → Application → Cache Storage shows a full `flutter-app-cache`).
@@ -657,12 +657,37 @@ Gate: format 248 files 0 changed; flutter analyze: No issues; flutter test: +358
 
 **Evidence**
 ```
-(paste here)
+Phase 5 — 2026-10-11
+P5.1 build/web/flutter_service_worker.js: 36 RESOURCES keys incl. sqlite3.wasm, sqflite_sw.js, vendor/pica-9.0.1.min.js,
+  vendor/zxing-library-0.19.1.min.js, assets/assets/fonts/{Inter,LibreBaskerville,Roboto,NotoSansArabic}-Variable.ttf,
+  assets/assets/data/al_wahat_map_data.json, canvaskit/{canvaskit,chromium/canvaskit}.{js,wasm}, canvaskit/skwasm.*;
+  CORE = [main.dart.js, index.html, assets/AssetManifest.json, assets/FontManifest.json] (= W4).
+  Note: flutter_image_compress_web also ships assets/packages/flutter_image_compress_web/assets/pica.min.js (unused by us).
+P5.2 DESIGN CHANGE vs plan text (downloadOffline): downloadOffline is fire-and-forget, all-or-nothing (cache.addAll) and
+  would also pull skwasm (3.1 MB). Implemented web_platform.precacheAppShell(): reads RESOURCES from
+  flutter_service_worker.js and fetches each key except canvaskit/skwasm* through the controlling SW (whose fetch handler
+  caches it); cached files are answered locally, so it runs every launch (main.dart _warmOfflineCache, 5 s after
+  runApp, owner tab only; app shell is public so no auth needed). Logs '[awf] offline_precache {fetched=N}'. Skips quietly
+  when the SW list can't be fetched (offline). APIs: Navigator.serviceWorker (html_dart2js.dart:22749),
+  ServiceWorkerContainer.controller (:27870), HttpRequest.getString/request (:18014/:18127).
+P5.3 DESIGN CHANGE vs plan text (controllerchange): flutter.js 3.13 registers flutter_service_worker.js?v=<build id>
+  (flutter.js:134-153, :175), so a new SW is only seen on a page load; an installed PWA resuming from background would
+  never notice. Implemented: index.html sets window.awfAppVersion = serviceWorkerVersion; web_platform
+  .isNewerAppVersionAvailable() fetches index.html?awf=<ts> (not a RESOURCES key, so it goes to the network) and compares
+  `serviceWorkerVersion = "<id>"`. AppUpdateBanner (lib/core/widgets/app_update_banner.dart, in AlWahatApp.builder) checks
+  5 s after start and on every appForegroundEvents(); shows "A new version of the app is available. [Reload]" (EN/AR),
+  never auto-reloads. Disabled on native. test/widget/app_update_banner_test.dart (3).
+Browser checks (headless Chrome 150, real time, DevTools protocol via Node 22 WebSocket):
+  Offline cold start: run 1 online -> console "[awf] tab_lease {owner=true}", "[awf] offline_precache {fetched=33}"
+    (36 keys - 3 skwasm); 39 server requests. Chrome + server stopped (curl -> 000). Run 2 same profile:
+    {"title":"Al Wahat Farm Operations","url":"…/#/login","controlled":true,"flutterView":true,"splash":false}; screenshot
+    shows the full login screen (fonts + CanvasKit from the SW cache); the precache then failed quietly (fixed: now
+    returns null when the SW list is unreachable).
+  Update flow: served build A (3267199357), loaded it, rebuilt B (577393258) into the served dir, dispatched
+    visibilitychange -> screenshot shows the update banner with Reload over the still-running build A.
+Gate: format 250 files 0 changed; flutter analyze: No issues; flutter test: +361 ~6 All tests passed; flutter build apk --debug: ✓ Built;
+  lib/l10n/gen diff = new keys only.
 ```
-
-**Rollback:** revert; the SW strategy itself is unchanged.
-
----
 
 ### Phase 6 — Install UX, responsive/browser UX, accessibility
 

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:al_wahat_farm_flutter/app/app.dart';
 import 'package:al_wahat_farm_flutter/core/app_services.dart';
 import 'package:al_wahat_farm_flutter/core/cache/local_cache_store.dart';
@@ -37,6 +39,25 @@ Future<void> main() async {
   );
   final services = await _bootstrapServices();
   runApp(AlWahatApp(config: config, services: services));
+  unawaited(_warmOfflineCache());
+}
+
+/// Web only: after the first screen has had time to load, fetch the rest of
+/// the app shell so the next launch works offline. A no-op on native.
+Future<void> _warmOfflineCache() async {
+  await Future<void>.delayed(const Duration(seconds: 5));
+  try {
+    final fetched = await precacheAppShell();
+    if (fetched != null) {
+      SafeLog.event('offline_precache', data: <String, Object?>{
+        'fetched': fetched,
+      });
+    }
+  } catch (error) {
+    SafeLog.event('offline_precache_failed', data: <String, Object?>{
+      'error': error,
+    });
+  }
 }
 
 Future<TabLease?> _acquireTabLease() async {

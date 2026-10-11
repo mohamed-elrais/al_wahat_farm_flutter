@@ -2578,4 +2578,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get scanCameraInsecure => 'The camera needs a secure (https) connection. Open the app from its https address.';
+
+  @override
+  String get appUpdateAvailable => 'A new version of the app is available.';
+
+  @override
+  String get appUpdateReload => 'Reload';
 }

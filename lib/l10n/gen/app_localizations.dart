@@ -4658,6 +4658,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The camera needs a secure (https) connection. Open the app from its https address.'**
   String get scanCameraInsecure;
+
+  /// No description provided for @appUpdateAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'A new version of the app is available.'**
+  String get appUpdateAvailable;
+
+  /// No description provided for @appUpdateReload.
+  ///
+  /// In en, this message translates to:
+  /// **'Reload'**
+  String get appUpdateReload;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

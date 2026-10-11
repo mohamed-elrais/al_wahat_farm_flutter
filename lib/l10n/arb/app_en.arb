@@ -1160,5 +1160,7 @@
   "secondTabTitle": "Al Wahat is open in another tab",
   "secondTabBody": "To keep offline work safe, the app runs in one tab or window at a time.",
   "secondTabUseHere": "Use here",
-  "scanCameraInsecure": "The camera needs a secure (https) connection. Open the app from its https address."
+  "scanCameraInsecure": "The camera needs a secure (https) connection. Open the app from its https address.",
+  "appUpdateAvailable": "A new version of the app is available.",
+  "appUpdateReload": "Reload"
 }
