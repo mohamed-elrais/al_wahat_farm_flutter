@@ -132,7 +132,7 @@ Each fact below was checked on 2026-10-11. If code changes invalidate one, updat
 | U1 | Whether Android Chrome now supports SharedWorker (the README's note is from 2022). The design must work **without** it. | P3 |
 | U2 | Camera (`getUserMedia`) for the QR scanner inside an **installed iOS PWA** (standalone mode). | P4 👤 |
 | U3 | Whether iOS Safari's `<input capture>` returns JPEG or HEIC to `image_picker_for_web`. | P4 👤 |
-| U4 | Supabase Storage CORS headers on signed URLs for CanvasKit `Image.network`. | P4 |
+| ~~U4~~ | **Resolved P4.6:** Supabase Storage answers `Access-Control-Allow-Origin: *` (preflight 200 and GET, even on errors). | — |
 | U5 | Map rendering performance (CustomPainter, ~1.5k trees) under CanvasKit vs HTML. No low-end Android phone is available, so measure on the **iPhone 11**. Low-end Android performance stays an **accepted, recorded risk** (§5). | P0 👤 |
 | U6 | Whether `sqlite3.wasm`/`sqflite_sw.js` fetched by the worker are served from the SW cache when offline. | P5 |
 | ~~U7~~ | **Resolved 2026-10-11:** Netlify, domain root. The production domain is not chosen yet; use `<site>.netlify.app` until the user names a custom domain. | §5 |
@@ -192,7 +192,7 @@ Changing any decision requires user approval (rule 9). Record approval in the De
 | P1 | Branded, CDN-free web shell (manifest, icons, index.html, fonts, vendored JS) | ✅ gate passed 2026-10-11 (except 👤 DevTools Manifest check) | Chrome DevTools → Application → Manifest shows no errors; iPhone visual check of staging |
 | P2 | Persistent web storage (sqflite on IndexedDB) | ✅ gate passed 2026-10-11 | P2.10–P2.13 (logged-in offline/reload/logout/iPhone checks) |
 | P3 | Single-tab guard and web sync triggers | ✅ gate passed 2026-10-11 | P3.1 (Android SharedWorker), P3.5 handover, P3.9 offline/online drain |
-| P4 | Camera, photos and QR scanner on web | ☐ | — |
+| P4 | Camera, photos and QR scanner on web | ✅ gate passed 2026-10-11 | P4.4/P4.5 (iPhone photo capture JPEG vs HEIC), P4.7 real scan, P4.9 permissions, P4.11 camera stops |
 | P5 | Offline cold start, SW precache and update flow | ☐ | — |
 | P6 | Install UX, responsive/browser UX, accessibility | ☐ | — |
 | P7 | Security and privacy on web | ☐ | — |
@@ -580,17 +580,17 @@ Also added tool/verify_deploy.py (P8.3 early): fetches every SW RESOURCES key fr
 
 **Tasks — photos (F7, F8)**
 
-- [ ] P4.1 Read `image_picker_for_web-3.0.2/lib/image_picker_for_web.dart` and cite how `ImageSource.camera` is handled (expected: `<input type=file capture>`; verify, don't assume). Record whether `XFile.name` is populated on web, since `_safeFilename` relies on it.
-- [ ] P4.2 Web compress semantics differ (F8): width capped at 1920, height by aspect ratio, EXIF dropped by canvas re-encode. Confirm this meets the product rule (≤10 MiB JPEG). No code change is expected; record the decision. If portrait images should cap height instead, add a web-only pre-computation. Ask the user first.
-- [ ] P4.3 Error path: if `window.pica` is missing, the web plugin throws. Wrap the compress call so a missing-pica or compress failure maps to the existing `OperationFailure(invalidInput, …)` message instead of an uncaught JS error. Add a unit test with a fake compressor if the service has a seam. If it doesn't, add a minimal injectable compressor function, keeping native behavior identical.
+- [x] P4.1 Read `image_picker_for_web-3.0.2/lib/image_picker_for_web.dart` and cite how `ImageSource.camera` is handled (expected: `<input type=file capture>`; verify, don't assume). Record whether `XFile.name` is populated on web, since `_safeFilename` relies on it.
+- [x] P4.2 Web compress semantics differ (F8): width capped at 1920, height by aspect ratio, EXIF dropped by canvas re-encode. Confirm this meets the product rule (≤10 MiB JPEG). No code change is expected; record the decision. If portrait images should cap height instead, add a web-only pre-computation. Ask the user first.
+- [x] P4.3 Error path: if `window.pica` is missing, the web plugin throws. Wrap the compress call so a missing-pica or compress failure maps to the existing `OperationFailure(invalidInput, …)` message instead of an uncaught JS error. Add a unit test with a fake compressor if the service has a seam. If it doesn't, add a minimal injectable compressor function, keeping native behavior identical.
 - [ ] P4.4 👤 iPhone 11 Safari, browser **and** installed (staging). If P0.4b found Chrome, repeat on the Pixel_4 emulator (gallery only; emulated camera recorded as "emulated"). Report an issue with a camera photo and with a gallery photo, online and offline. The issue/photo syncs. Record the file size and type (U3: JPEG vs HEIC). If HEIC arrives and compress fails, record it as ⛔ and propose a fix to the user.
 - [ ] P4.5 Task evidence: same as P4.4 via task detail. 👤
-- [ ] P4.6 CORS (U4): open a task photo in the viewer on a CanvasKit build. If the image fails with a CORS error in the console, record it. Supabase Storage CORS is a backend setting, so **ask the user** rather than changing backend config. 👤 or automated via integration test with a live account.
+- [x] P4.6 CORS (U4): open a task photo in the viewer on a CanvasKit build. If the image fails with a CORS error in the console, record it. Supabase Storage CORS is a backend setting, so **ask the user** rather than changing backend config. 👤 or automated via integration test with a live account.
 
 **Tasks — QR scanner (F9, F10)**
 
-- [ ] P4.7 Verify `window.ZXing` loads from `vendor/` (P1.9) and the scanner starts on desktop Chrome with a webcam. Scan a real tree QR (or a test QR rendered on screen with a known token) and confirm navigation to `/map/tree/:id`. 👤
-- [ ] P4.8 Insecure context: when `window.isSecureContext == false`, show a localized message ("Camera requires a secure (https) connection") instead of the generic camera-unavailable state. Add it to `web_platform` and `scanner_screen.dart`, with EN+AR strings and a widget test via a fake.
+- [ ] P4.7 👤 *(automated part done: in Chrome `typeof ZXing`=object, `ZXing.BrowserMultiFormatReader`=function; real scan needs a camera)* Verify `window.ZXing` loads from `vendor/` (P1.9) and the scanner starts on desktop Chrome with a webcam. Scan a real tree QR (or a test QR rendered on screen with a known token) and confirm navigation to `/map/tree/:id`. 👤
+- [x] P4.8 Insecure context: when `window.isSecureContext == false`, show a localized message ("Camera requires a secure (https) connection") instead of the generic camera-unavailable state. Add it to `web_platform` and `scanner_screen.dart`, with EN+AR strings and a widget test via a fake.
 - [ ] P4.9 👤 iPhone 11 Safari (browser and **installed**, U2), and desktop Chrome with the Mac webcam. Android Chrome: emulator only if available, marked "emulated". Steps: grant, deny, then re-grant camera permission. The deny path shows `scanCameraOff`. Record results per environment.
 - [ ] P4.10 **Fallback if U2 fails** (camera unavailable in iOS standalone): add a "Enter tree code manually" action on the scanner screen that calls the same `_scanToken(raw)` path. **Only implement this if P4.9 shows a real gap**, and with user approval, because it adds UI to native too.
 - [ ] P4.11 Scanner lifecycle: leaving `/scan` stops the camera (the browser camera indicator turns off). 👤
@@ -601,7 +601,28 @@ Also added tool/verify_deploy.py (P8.3 early): fetches every SW RESOURCES key fr
 
 **Evidence**
 ```
-(paste here)
+Phase 4 — 2026-10-11
+P4.1 image_picker_for_web-3.0.2/lib/image_picker_for_web.dart: camera -> <input type=file accept=image/* capture=…>
+  (:51-55, capture computed :218-223); XFile(name: file.name) (:252-254) so _safeFilename gets the real name on web.
+  (On the VM, cross_file's io XFile.name comes from `path`; the `name` argument is web-only, cross_file-0.3.5+4 io.dart:21-22,103.)
+P4.2 decision: no change. Web compression (pica.dart:42-59) caps width at 1920, keeps aspect ratio, re-encodes JPEG q84
+  (EXIF dropped); the 10 MiB cap still applies. Portrait photos keep full height (e.g. 1920x2560); acceptable.
+P4.3 lib/core/media/photo_compression.dart (PhotoCompressor + compressPhotoForUpload, same parameters as before);
+  DeviceIssuePhotoPicker / DeviceTaskEvidencePicker take an optional compressor; any compressor exception (missing
+  pica, decode error) -> OperationFailure(invalidInput, "<existing message>", cause: error).
+  test/unit/media/photo_picker_compression_test.dart (3): both services map StateError('pica is not defined');
+  success path -> JPEG bytes, 'IMG 01.heic' -> 'IMG-01.jpg', image/jpeg.
+P4.6 CORS (Supabase storage sign endpoint, Origin https://al-wahat-farm.pages.dev): OPTIONS 200 ACAO '*',
+  GET 400 ACAO '*'. No backend change needed.
+P4.7 (partial) probe page in headless Chrome with the vendored scripts: "pica=function pica().resize=function
+  ZXing=object BrowserMultiFormatReader=function" (= the members mobile_scanner zxing.dart:12 and
+  flutter_image_compress_web pica.dart use).
+P4.8 web_platform.isSecureContext() (Window.isSecureContext, html_dart2js.dart:32577; stub true). ScannerScreen
+  (injectable isSecureContext) shows scanCameraInsecure (EN/AR) instead of building MobileScanner; shared _CameraMessage
+  widget. test/widget/scanner_screen_test.dart: insecure context shows the message.
+P4.10 not implemented (only if P4.9 shows iOS standalone camera fails).
+Gate: format 248 files 0 changed; flutter analyze: No issues; flutter test: +358 ~6 All tests passed;
+  flutter build apk --debug: ✓ Built; lib/l10n/gen diff = new key only.
 ```
 
 **Rollback:** revert; the changes are additive.

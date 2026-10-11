@@ -4652,6 +4652,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Use here'**
   String get secondTabUseHere;
+
+  /// No description provided for @scanCameraInsecure.
+  ///
+  /// In en, this message translates to:
+  /// **'The camera needs a secure (https) connection. Open the app from its https address.'**
+  String get scanCameraInsecure;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -1,6 +1,7 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
 import 'package:al_wahat_farm_flutter/core/errors/operation_failure.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
+import 'package:al_wahat_farm_flutter/core/web/web_platform.dart' as web;
 import 'package:al_wahat_farm_flutter/features/trees/data/tree_qr_repository.dart';
 import 'package:al_wahat_farm_flutter/features/trees/domain/scanned_tree.dart';
 import 'package:flutter/material.dart';
@@ -18,12 +19,17 @@ class ScannerScreen extends StatefulWidget {
     this.repository,
     this.scannerBuilder,
     this.onTreeFound,
+    this.isSecureContext = web.isSecureContext,
     super.key,
   });
 
   final TreeQrRepository? repository;
   final ScannerViewBuilder? scannerBuilder;
   final ValueChanged<ScannedTree>? onTreeFound;
+
+  /// False on a web page served over plain http, where browsers refuse camera
+  /// access; the screen then says so instead of a generic camera error.
+  final bool Function() isSecureContext;
 
   @override
   State<ScannerScreen> createState() => _ScannerScreenState();
@@ -92,6 +98,11 @@ class _ScannerScreenState extends State<ScannerScreen> {
         children: <Widget>[
           if (scannerBuilder != null)
             scannerBuilder(context, _scanToken)
+          else if (!widget.isSecureContext())
+            _CameraMessage(
+              key: const Key('scanner-insecure-context'),
+              text: context.l10n.scanCameraInsecure,
+            )
           else
             MobileScanner(
               onDetect: _scan,
@@ -148,16 +159,27 @@ class _CameraFailure extends StatelessWidget {
   final MobileScannerException error;
 
   @override
+  Widget build(BuildContext context) => _CameraMessage(
+        key: const Key('scanner-camera-error'),
+        text: error.errorCode == MobileScannerErrorCode.permissionDenied
+            ? context.l10n.scanCameraOff
+            : context.l10n.scanCameraUnavailable,
+      );
+}
+
+class _CameraMessage extends StatelessWidget {
+  const _CameraMessage({required this.text, super.key});
+
+  final String text;
+
+  @override
   Widget build(BuildContext context) => ColoredBox(
         color: AppColors.ink,
         child: Center(
           child: Padding(
             padding: const EdgeInsets.all(32),
             child: Text(
-              error.errorCode == MobileScannerErrorCode.permissionDenied
-                  ? context.l10n.scanCameraOff
-                  : context.l10n.scanCameraUnavailable,
-              key: const Key('scanner-camera-error'),
+              text,
               textAlign: TextAlign.center,
               style: const TextStyle(color: Colors.white),
             ),

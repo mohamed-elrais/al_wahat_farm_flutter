@@ -2586,4 +2586,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get secondTabUseHere => 'استخدمه هنا';
+
+  @override
+  String get scanCameraInsecure => 'تحتاج الكاميرا إلى اتصال آمن (https). افتح التطبيق من عنوانه الآمن https.';
 }

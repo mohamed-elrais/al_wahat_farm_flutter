@@ -1,16 +1,20 @@
+import 'dart:typed_data';
+
 import 'package:al_wahat_farm_flutter/core/errors/operation_failure.dart';
+import 'package:al_wahat_farm_flutter/core/media/photo_compression.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/task_evidence.dart';
-import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class DeviceTaskEvidencePicker implements TaskEvidencePicker {
-  DeviceTaskEvidencePicker({ImagePicker? picker})
-      : _picker = picker ?? ImagePicker();
+  DeviceTaskEvidencePicker({ImagePicker? picker, PhotoCompressor? compressor})
+      : _picker = picker ?? ImagePicker(),
+        _compress = compressor ?? compressPhotoForUpload;
 
   static const maxBytes = 10 * 1024 * 1024;
 
   final ImagePicker _picker;
+  final PhotoCompressor _compress;
 
   @override
   Future<PreparedTaskEvidence?> pick(TaskEvidenceSource source) async {
@@ -21,14 +25,17 @@ class DeviceTaskEvidencePicker implements TaskEvidencePicker {
     );
     if (picked == null) return null;
 
-    final compressed = await FlutterImageCompress.compressWithList(
-      await picked.readAsBytes(),
-      minWidth: 1920,
-      minHeight: 1080,
-      quality: 84,
-      format: CompressFormat.jpeg,
-      keepExif: false,
-    );
+    final Uint8List compressed;
+    try {
+      compressed = await _compress(await picked.readAsBytes());
+    } catch (error) {
+      // e.g. a decode failure, or a missing `pica` script on the web.
+      throw OperationFailure(
+        OperationFailureKind.invalidInput,
+        'The selected evidence image could not be prepared.',
+        cause: error,
+      );
+    }
     if (compressed.isEmpty) {
       throw const OperationFailure(
         OperationFailureKind.invalidInput,

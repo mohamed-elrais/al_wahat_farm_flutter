@@ -35,6 +35,10 @@ class _BroadcastTabChannel implements TabChannel {
 
 void reloadPage() => html.window.location.reload();
 
+/// Browsers only grant camera access (and service workers) on HTTPS or
+/// localhost; elsewhere the scanner would fail with a generic error.
+bool isSecureContext() => html.window.isSecureContext ?? true;
+
 /// Fires when the tab or installed app comes back to the foreground.
 Stream<void> pageVisibleEvents() => html.document.onVisibilityChange
     .where((_) => html.document.visibilityState == 'visible')

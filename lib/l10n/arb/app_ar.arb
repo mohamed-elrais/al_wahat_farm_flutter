@@ -1142,5 +1142,6 @@
   "storageUsage": "مستخدم {used} من {quota}",
   "secondTabTitle": "تطبيق الواحة مفتوح في علامة تبويب أخرى",
   "secondTabBody": "للحفاظ على العمل دون اتصال، يعمل التطبيق في علامة تبويب أو نافذة واحدة فقط في كل مرة.",
-  "secondTabUseHere": "استخدمه هنا"
+  "secondTabUseHere": "استخدمه هنا",
+  "scanCameraInsecure": "تحتاج الكاميرا إلى اتصال آمن (https). افتح التطبيق من عنوانه الآمن https."
 }

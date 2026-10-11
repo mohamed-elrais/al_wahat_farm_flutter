@@ -11,5 +11,7 @@ TabChannel? openTabChannel(String name) => null;
 
 void reloadPage() {}
 
+bool isSecureContext() => true;
+
 /// Native foreground changes come from the app lifecycle instead.
 Stream<void> pageVisibleEvents() => const Stream<void>.empty();

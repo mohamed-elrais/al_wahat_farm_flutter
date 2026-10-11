@@ -2,6 +2,7 @@ import 'package:al_wahat_farm_flutter/app/theme/app_theme.dart';
 import 'package:al_wahat_farm_flutter/core/errors/operation_failure.dart';
 import 'package:al_wahat_farm_flutter/features/map/presentation/scanner_screen.dart';
 import 'package:al_wahat_farm_flutter/features/trees/domain/scanned_tree.dart';
+import 'package:al_wahat_farm_flutter/l10n/gen/app_localizations_en.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -21,6 +22,22 @@ void main() {
     healthStatus: 'healthy',
     type: 'date_palm',
   );
+
+  testWidgets('an insecure web page explains why the camera is unavailable',
+      (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: ScannerScreen(
+          repository: FakeTreeQrRepository(result: scanned),
+          isSecureContext: () => false,
+        ),
+      ),
+    );
+
+    expect(find.byKey(const Key('scanner-insecure-context')), findsOneWidget);
+    expect(find.text(AppLocalizationsEn().scanCameraInsecure), findsOneWidget);
+  });
 
   testWidgets('valid QR opens the exact typed tree', (tester) async {
     final repository = FakeTreeQrRepository(result: scanned);
