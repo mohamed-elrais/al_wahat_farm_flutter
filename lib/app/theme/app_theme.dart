@@ -1,11 +1,13 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 
-/// Platform Arabic-capable fonts to fall back to for glyphs the bundled Latin
-/// fonts (Inter / Libre Baskerville) do not cover. Flutter resolves these
-/// against the device's installed fonts, so Arabic renders natively on iOS and
-/// Android without bundling or downloading a font.
+/// Arabic-capable fonts to fall back to for glyphs the bundled Latin fonts
+/// (Inter / Libre Baskerville) do not cover. The bundled `NotoSansArabic` comes
+/// first: the web CanvasKit renderer ignores system fonts and would otherwise
+/// download fallback fonts at runtime, which breaks offline use. The platform
+/// names after it remain as a native safety net.
 const List<String> _arabicFallback = <String>[
+  'NotoSansArabic',
   'Geeza Pro',
   'Noto Sans Arabic',
   'Noto Kufi Arabic',
@@ -29,6 +31,7 @@ abstract final class AppTheme {
       colorScheme: colorScheme,
       scaffoldBackgroundColor: AppColors.paper,
       fontFamily: 'Inter',
+      fontFamilyFallback: _arabicFallback,
     );
     return base.copyWith(
       textTheme: base.textTheme.copyWith(
@@ -75,7 +78,11 @@ abstract final class AppTheme {
       ),
       snackBarTheme: const SnackBarThemeData(
         backgroundColor: AppColors.ink,
-        contentTextStyle: TextStyle(color: Colors.white, fontFamily: 'Inter'),
+        contentTextStyle: TextStyle(
+          color: Colors.white,
+          fontFamily: 'Inter',
+          fontFamilyFallback: _arabicFallback,
+        ),
         behavior: SnackBarBehavior.floating,
       ),
       chipTheme: ChipThemeData(
@@ -88,11 +95,13 @@ abstract final class AppTheme {
         ),
         labelStyle: const TextStyle(
           fontFamily: 'Inter',
+          fontFamilyFallback: _arabicFallback,
           fontWeight: FontWeight.w700,
           color: AppColors.ink,
         ),
         secondaryLabelStyle: const TextStyle(
           fontFamily: 'Inter',
+          fontFamilyFallback: _arabicFallback,
           fontWeight: FontWeight.w700,
           color: Colors.white,
         ),

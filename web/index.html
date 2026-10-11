@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <!--
     If you are serving your web app in a path other than the root, change the
@@ -18,19 +18,40 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Field operations for Al Wahat Farm: tasks, tree issues, inspections, and the farm map.">
+  <meta name="theme-color" content="#173D28">
 
   <!-- iOS meta tags & icons -->
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="al_wahat_farm_flutter">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Al Wahat">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
-  <title>al_wahat_farm_flutter</title>
+  <title>Al Wahat Farm Operations</title>
   <link rel="manifest" href="manifest.json">
+
+  <style>
+    html, body { margin: 0; height: 100%; background: #F8F4E9; }
+    #awf-splash {
+      position: fixed; inset: 0; z-index: 9999;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 16px; background: #F8F4E9; color: #173D28;
+      font: 600 15px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans Arabic", "Geeza Pro", sans-serif;
+      transition: opacity 200ms ease-out;
+    }
+    #awf-splash img { width: 96px; height: 96px; border-radius: 22px; }
+    #awf-splash.awf-hidden { opacity: 0; }
+    @media (prefers-reduced-motion: reduce) { #awf-splash { transition: none; } }
+  </style>
+
+  <!-- Same-origin copies of scripts the web plugins expect as globals
+       (see web/vendor/README.md). They must load before flutter.js. -->
+  <script src="vendor/pica-9.0.1.min.js"></script>
+  <script src="vendor/zxing-library-0.19.1.min.js"></script>
 
   <script>
     // The value below is injected by flutter build, do not touch.
@@ -40,7 +61,23 @@
   <script src="flutter.js" defer></script>
 </head>
 <body>
+  <div id="awf-splash" role="status" aria-live="polite">
+    <img src="icons/Icon-192.png" alt="">
+    <div>Loading… · جارٍ التحميل…</div>
+  </div>
+  <noscript>
+    <p style="padding:24px;font-family:sans-serif;color:#173D28">
+      Al Wahat Farm Operations needs JavaScript enabled.<br>
+      <span dir="rtl" lang="ar">يحتاج تطبيق عمليات مزرعة الواحة إلى تفعيل JavaScript.</span>
+    </p>
+  </noscript>
   <script>
+    function awfHideSplash() {
+      var splash = document.getElementById('awf-splash');
+      if (!splash) return;
+      splash.classList.add('awf-hidden');
+      setTimeout(function() { splash.remove(); }, 250);
+    }
     window.addEventListener('load', function(ev) {
       // Download main.dart.js
       _flutter.loader.loadEntrypoint({
@@ -49,8 +86,8 @@
         },
         onEntrypointLoaded: function(engineInitializer) {
           engineInitializer.initializeEngine().then(function(appRunner) {
-            appRunner.runApp();
-          });
+            return appRunner.runApp();
+          }).then(awfHideSplash);
         }
       });
     });

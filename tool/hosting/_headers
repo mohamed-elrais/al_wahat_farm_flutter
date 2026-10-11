@@ -1,0 +1,4 @@
+# Copied into build/web by tool/build_web.sh after `flutter build web`, so it
+# never appears in the service worker's RESOURCES list.
+/*
+  X-Content-Type-Options: nosniff

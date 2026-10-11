@@ -50,3 +50,9 @@ app.*.map.json
 config.json
 config.*.json
 !config.example.json
+
+# Netlify CLI link state
+.netlify/
+
+# Wrangler (Cloudflare Pages CLI) local cache
+.wrangler/

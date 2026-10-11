@@ -57,6 +57,20 @@ flutter:
           weight: 400
         - asset: assets/fonts/LibreBaskerville-Variable.ttf
           weight: 700
+    # The web CanvasKit renderer downloads Roboto from fonts.gstatic.com unless a
+    # "Roboto" family is bundled (OFL; see assets/fonts/NOTICE-Roboto.txt).
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/Roboto-Variable.ttf
+    # Arabic glyphs (OFL; see assets/fonts/NOTICE-NotoSansArabic.txt).
+    - family: NotoSansArabic
+      fonts:
+        - asset: assets/fonts/NotoSansArabic-Variable.ttf
+          weight: 400
+        - asset: assets/fonts/NotoSansArabic-Variable.ttf
+          weight: 600
+        - asset: assets/fonts/NotoSansArabic-Variable.ttf
+          weight: 700
 
 # Launcher icons are generated from the painter in
 # test/golden/app_icon_test.dart (see that file for the regen steps).
