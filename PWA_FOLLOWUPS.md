@@ -24,10 +24,14 @@ user's iPhone 11 (installed PWA). "Seen" means observed; "not verified" means re
      been uploaded").
 3. **Home date header is fixed text.** `homeDateEyebrow` in `lib/l10n/arb/app_en.arb` (and the
    Arabic file) is the literal "Sunday · 12 July". Replace it with a formatted current date.
-4. **Production security policy (CSP) is still report-only.**
-   - Staging enforces it, and the emulator showed no violations after the font fix.
-   - Before switching: log in on staging, upload a photo and scan a tag. Then run
-     `CSP_MODE=enforce ./tool/deploy_web.sh main`.
+4. **Small screen issues seen on the emulator (2026-10-12).**
+   - An unknown address (for example `#/no-such-page`) shows only "Route unavailable: …" with no
+     button back to Home. Native shows the same router error page.
+   - On a phone-width screen the Schedules page title wraps as "Schedule s" next to the
+     "New schedule" button.
+   - The production security policy is enforced since 2026-10-12. If a new feature fails only
+     on the web, deploy staging with `CSP_MODE=report` and look for `securitypolicyviolation`
+     reports.
 
 ## Speed
 
@@ -82,7 +86,6 @@ workaround.
 - P5.7: an expired session token while offline.
 - P6.3–P6.5 (install on desktop Chrome, iPhone safe areas, browser back/forward/refresh),
   P6.10 (desktop right-click on the map).
-- P8.5: logged-in walkthrough with the CSP checked, then enforce in production (item 4).
 - P9.2: run the native app on the iPhone or simulator and on the Pixel_4 to check for regressions.
 
 ## Testing notes

@@ -2,7 +2,7 @@
 # Builds the PWA into build/web for Cloudflare Pages (see PWA_IMPLEMENTATION_PLAN.md, D10).
 #
 # Environment: DEFINES (defines file), BASE_HREF (default /), CSP_MODE
-# (report | enforce, default report).
+# (enforce | report, default enforce; report only to debug a policy change).
 #
 # Only SUPABASE_URL and SUPABASE_ANON_KEY are compiled into the public bundle:
 # unless DEFINES points at a file, config.web.json is regenerated from
@@ -55,10 +55,10 @@ flutter build web --release \
   --dart-define-from-file="$DEFINES"
 
 # Fill the CSP: Supabase origin from the same defines the app uses, and
-# hashes of index.html's inline scripts. CSP_MODE=enforce sends
-# Content-Security-Policy; the default keeps it report-only until the policy
-# has been checked in a logged-in session.
-python3 - "$DEFINES" "${CSP_MODE:-report}" <<'EOF'
+# hashes of index.html's inline scripts. The default (enforce) sends
+# Content-Security-Policy; CSP_MODE=report sends it report-only, which logs
+# violations without blocking anything.
+python3 - "$DEFINES" "${CSP_MODE:-enforce}" <<'EOF'
 import base64
 import hashlib
 import json

@@ -9,4 +9,4 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(self), microphone=(), geolocation=(), payment=(), usb=()
   X-Frame-Options: DENY
-  Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self' 'wasm-unsafe-eval' __INLINE_SCRIPT_HASHES__; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: __SUPABASE_ORIGIN__; font-src 'self' data:; connect-src 'self' __SUPABASE_ORIGIN__ __SUPABASE_WS_ORIGIN__; worker-src 'self' blob:; manifest-src 'self'; media-src 'self' blob: mediastream:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'
+  Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self' 'wasm-unsafe-eval' __INLINE_SCRIPT_HASHES__; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: __SUPABASE_ORIGIN__; font-src 'self' data:; connect-src 'self' blob: __SUPABASE_ORIGIN__ __SUPABASE_WS_ORIGIN__; worker-src 'self' blob:; manifest-src 'self'; media-src 'self' blob: mediastream:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'

@@ -70,8 +70,13 @@ Build and deploy (Node from `.nvmrc` is used only for the Cloudflare CLI):
 ./tool/build_web.sh                # build/web; compiles in only SUPABASE_URL + anon key
 ./tool/deploy_web.sh staging       # build, deploy, then verify every cached file
 ./tool/deploy_web.sh main          # production
-CSP_MODE=enforce ./tool/deploy_web.sh staging   # enforce the Content-Security-Policy
+CSP_MODE=report ./tool/deploy_web.sh staging    # Content-Security-Policy report-only (debugging)
 ```
+
+The Content-Security-Policy (`tool/hosting/_headers`) is enforced by default. When a
+feature needs a new origin or scheme, deploy staging with `CSP_MODE=report`, use the
+feature, and look for `securitypolicyviolation` reports in the console before changing
+the policy.
 
 `tool/verify_deploy.py <url>` checks a deployment on its own. Cloudflare answers a
 missing file with `index.html`, so it checks content types, not only status codes.

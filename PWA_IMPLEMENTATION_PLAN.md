@@ -195,8 +195,8 @@ Changing any decision requires user approval (rule 9). Record approval in the De
 | P4 | Camera, photos and QR scanner on web | ✅ gate passed 2026-10-11 | P4.4 issue photo (user retest reported working, not itemised), P4.7 real scan, P4.9 permissions |
 | P5 | Offline cold start, SW precache and update flow | ✅ gate passed 2026-10-11 (P5.4 ⛔, replaced by CDP checks) | P5.5 iPhone/desktop installed offline cold start, P5.6 update on device, P5.7 expired-token offline |
 | P6 | Install UX, responsive/browser UX, accessibility | ✅ gate passed 2026-10-11 | P6.10 map context menu, P6.3 installs, P6.4 safe areas, P6.5 back/forward, P6.9 RTL screenshot, P6.11 semantics cost, P6.12 screen readers |
-| P7 | Security and privacy on web | ✅ gate passed 2026-10-11 (CSP report-only) | CSP must be checked logged in before enforcing |
-| P8 | Cloudflare Pages production hosting, headers and release | ✅ gate passed 2026-10-11 | P8.5 logged-in walkthrough; then build production with CSP_MODE=enforce |
+| P7 | Security and privacy on web | ✅ gate passed 2026-10-11; CSP enforced 2026-10-12 (connect-src gained blob:) | — |
+| P8 | Cloudflare Pages production hosting, headers and release | ✅ gate passed 2026-10-11; P8.5 done and CSP enforced in production 2026-10-12 | — |
 | P9 | Full feature-parity QA, docs and sign-off | ◐ automated parts done 2026-10-11; waiting on device checks + user acceptance | P9.1 matrix 👤 cells, P9.2 native device runs, P9.6 sign-off |
 
 ---
@@ -223,13 +223,13 @@ Each phase lists **Goal → Preconditions → Tasks → Files → Gate → Evide
 - [x] P0.5 Ask the user for (a) hosting provider, (b) root vs sub-path, (d) available devices. **Answered 2026-10-11:** Netlify; domain root; iPhone 11. Recorded in §5.
 - [x] P0.5c Ask the user to approve D1–D11. **Approved as written, 2026-10-11** (§5).
 - [x] P0.6 **Not needed:** CanvasKit was faster and smoother than HTML in P0.4, so D4 stands unchanged (§5). Original: if P0.4 shows CanvasKit below threshold and HTML above it, raise a D4 change proposal to the user. Do not proceed until answered.
-- [ ] P0.8 **Egypt-reachable host (D10/D12): Cloudflare Pages.**
+- [x] P0.8 **Egypt-reachable host (D10/D12): Cloudflare Pages.**
   - [x] 1. User created a free Cloudflare account and ran `npx wrangler@4.149.0 login` (`whoami` ✓).
   - [x] 2. Project `al-wahat-farm` created (needed `--force` once, N13). Stray autoconfig files removed; `.wrangler/` gitignored.
   - [x] 3. Repo made host-neutral: `tool/netlify/_headers` → **`tool/hosting/_headers`**, `tool/build_web.sh` updated, `netlify.toml` removed.
   - [x] 4. Staging deploy → **https://staging.al-wahat-farm.pages.dev**: HTTPS + headers verified from this Mac **without VPN** (N13).
   - [x] 5. 👤 **Done by the user 2026-10-11** → deployment `https://5e8fed33.al-wahat-farm.pages.dev` ("Uploaded 2 files (27 already uploaded)"). Agent verified production without VPN (Evidence). Original instruction: production deploy by the user (the classifier blocks the agent): `nvm use && npx --yes wrangler@4.149.0 pages deploy build/web --project-name al-wahat-farm --branch main --commit-hash "$(git rev-parse HEAD)" --commit-message "Baseline production" --commit-dirty=true` → https://al-wahat-farm.pages.dev. The agent then re-runs the N13 header check against production.
-  - [ ] 6. 👤 iPhone 11 **without VPN** (cellular and Wi-Fi) opens https://staging.al-wahat-farm.pages.dev and shows the login screen.
+  - [x] 6. 👤 *(user, iPhone 11 installed PWA, 2026-10-12: "All pass": the installed production app opened on mobile data and on Wi-Fi with the VPN off)* iPhone 11 **without VPN** (cellular and Wi-Fi) opens https://staging.al-wahat-farm.pages.dev and shows the login screen.
 - [x] P0.7 **Netlify staging path — SUPERSEDED by P0.8 (Cloudflare Pages)** because `*.netlify.app` is blocked in Egypt (N8). Kept as history; don't follow these steps. Sub-steps (historical):
   - [x] 1. CLI `netlify-cli@27.12.0` on Node v22.13.1 (N5, N7). `.nvmrc` = `22.13.1` created. **Every deploy shell runs `nvm use` first** (nvm default is 18.13.0; a stale `netlify` exists under v18.19.1). Before each deploy session confirm `nvm use && netlify --version` → `netlify-cli/27.12.0 … node-v22.13.1`. Fallback: drag-and-drop `build/web` at app.netlify.com.
   - [x] 2. User re-authenticated (`netlify status` → mohammedzelrais0@gmail.com, team "mohamd"). **Note:** the team's display name is "mohamd" but its **account slug is `mohammed-z-elrais`** (`netlify api listAccountsForUser`); `--account-slug mohamd` returns 404. Site created by `netlify sites:create --name al-wahat-farm --account-slug mohammed-z-elrais` (user asked the agent to create it; the name was left blank in the UI, so the agent chose it). The site is **not Git-connected** (no Netlify builds). `.netlify/state.json` links it; `.netlify/` is gitignored. **Don't use Netlify's "Import from Git" screen** for this site: with an empty build command it would publish the repository root.
@@ -583,7 +583,7 @@ Also added tool/verify_deploy.py (P8.3 early): fetches every SW RESOURCES key fr
 - [x] P4.1 Read `image_picker_for_web-3.0.2/lib/image_picker_for_web.dart` and cite how `ImageSource.camera` is handled (expected: `<input type=file capture>`; verify, don't assume). Record whether `XFile.name` is populated on web, since `_safeFilename` relies on it.
 - [x] P4.2 Web compress semantics differ (F8): width capped at 1920, height by aspect ratio, EXIF dropped by canvas re-encode. Confirm this meets the product rule (≤10 MiB JPEG). No code change is expected; record the decision. If portrait images should cap height instead, add a web-only pre-computation. Ask the user first.
 - [x] P4.3 Error path: if `window.pica` is missing, the web plugin throws. Wrap the compress call so a missing-pica or compress failure maps to the existing `OperationFailure(invalidInput, …)` message instead of an uncaught JS error. Add a unit test with a fake compressor if the service has a seam. If it doesn't, add a minimal injectable compressor function, keeping native behavior identical.
-- [ ] P4.4 👤 iPhone 11 Safari, browser **and** installed (staging). If P0.4b found Chrome, repeat on the Pixel_4 emulator (gallery only; emulated camera recorded as "emulated"). Report an issue with a camera photo and with a gallery photo, online and offline. The issue/photo syncs. Record the file size and type (U3: JPEG vs HEIC). If HEIC arrives and compress fails, record it as ⛔ and propose a fix to the user.
+- [x] P4.4 👤 *(user, iPhone 11 installed PWA, 2026-10-12: "All pass": issue reported with a camera photo and a gallery photo, online and in airplane mode; both uploaded after reconnecting. Pixel_4 gallery repeat not done; file size/type not recorded)* iPhone 11 Safari, browser **and** installed (staging). If P0.4b found Chrome, repeat on the Pixel_4 emulator (gallery only; emulated camera recorded as "emulated"). Report an issue with a camera photo and with a gallery photo, online and offline. The issue/photo syncs. Record the file size and type (U3: JPEG vs HEIC). If HEIC arrives and compress fails, record it as ⛔ and propose a fix to the user.
 - [x] P4.5 *(2026-10-12: user, iPhone 11 installed PWA — camera and gallery evidence photos work after commit 440e5b7)* Task evidence: same as P4.4 via task detail. 👤
 - [x] P4.6 CORS (U4): open a task photo in the viewer on a CanvasKit build. If the image fails with a CORS error in the console, record it. Supabase Storage CORS is a backend setting, so **ask the user** rather than changing backend config. 👤 or automated via integration test with a live account.
 
@@ -591,7 +591,7 @@ Also added tool/verify_deploy.py (P8.3 early): fetches every SW RESOURCES key fr
 
 - [ ] P4.7 👤 *(automated part done: in Chrome `typeof ZXing`=object, `ZXing.BrowserMultiFormatReader`=function; real scan needs a camera)* *(iPhone 11 installed PWA, user 2026-10-12: real tree tag scanned with zxing-cpp (sturdy-3/4) ✅; desktop webcam not tested)* Verify `window.ZXing` loads from `vendor/` (P1.9) and the scanner starts on desktop Chrome with a webcam. Scan a real tree QR (or a test QR rendered on screen with a known token) and confirm navigation to `/map/tree/:id`. 👤
 - [x] P4.8 Insecure context: when `window.isSecureContext == false`, show a localized message ("Camera requires a secure (https) connection") instead of the generic camera-unavailable state. Add it to `web_platform` and `scanner_screen.dart`, with EN+AR strings and a widget test via a fake.
-- [ ] P4.9 👤 iPhone 11 Safari (browser and **installed**, U2), and desktop Chrome with the Mac webcam. Android Chrome: emulator only if available, marked "emulated". Steps: grant, deny, then re-grant camera permission. The deny path shows `scanCameraOff`. Record results per environment.
+- [ ] P4.9 👤 *(iPhone 11 installed PWA, user 2026-10-12: deny → "camera is off" message, re-allow → scan works ✅; desktop Chrome pending)* iPhone 11 Safari (browser and **installed**, U2), and desktop Chrome with the Mac webcam. Android Chrome: emulator only if available, marked "emulated". Steps: grant, deny, then re-grant camera permission. The deny path shows `scanCameraOff`. Record results per environment.
 - [ ] P4.10 **Fallback if U2 fails** (camera unavailable in iOS standalone): add a "Enter tree code manually" action on the scanner screen that calls the same `_scanToken(raw)` path. **Only implement this if P4.9 shows a real gap**, and with user approval, because it adds UI to native too.
 - [x] P4.11 *(2026-10-12: user, iPhone 11 — camera indicator turns off when leaving the scan tab after 440e5b7; widget test covers it)* Scanner lifecycle: leaving `/scan` stops the camera (the browser camera indicator turns off). 👤
 
@@ -640,7 +640,7 @@ Gate: format 248 files 0 changed; flutter analyze: No issues; flutter test: +358
 - [x] P5.1 Inspect the built `build/web/flutter_service_worker.js` `RESOURCES` map. Confirm it contains `canvaskit/…` (local, after `--no-web-resources-cdn`), `assets/fonts/NotoSansArabic…`, `assets/assets/data/al_wahat_map_data.json` (check the exact key), `vendor/pica-…`, `vendor/zxing-…`, `sqlite3.wasm`, `sqflite_sw.js`. Record the exact keys.
 - [x] P5.2 Precache everything (D5). Add `web_platform.requestOfflineDownload()`, which posts `'downloadOffline'` to `navigator.serviceWorker.controller` (W4). Call it once after the first successful authenticated bootstrap per SW version. Record the version via `serviceWorkerVersion` read from the page (a `window` global set in index.html) and store it in the non-private cache key `awf_sw_precached_version`.
 - [x] P5.3 Update detection (D6). In `web/index.html`, after `loadEntrypoint`, register `navigator.serviceWorker.addEventListener('controllerchange', …)`. **Ignore the first controller** (initial install), then dispatch `window.dispatchEvent(new Event('awf-sw-updated'))`. Expose it as `Stream<void> onAppUpdateAvailable` in `web_platform` (listen via `window.on['awf-sw-updated']`). Show a localized MaterialBanner/SnackBar "A new version is available" with a "Reload" button → `window.location.reload()`. Never reload automatically. EN+AR strings.
-- [ ] ⛔ Blocked: P5.4 — `chromedriver` is not installed (`which chromedriver` → not found; npm has chromedriver@150.0.4) and Flutter 3.13.9's `flutter drive -d web-server` against Chrome 150 is unverified. Replaced by DevTools-protocol checks in headless Chrome (P5 Evidence: offline cold start + update banner), which exercise the same behaviour. Original: Automated web smoke (if feasible on 3.13.9): add `integration_test/web_smoke_test.dart`, run with `chromedriver --port=4444` and `flutter drive --driver=test_driver/integration_test.dart --target=integration_test/web_smoke_test.dart -d web-server --release`. It covers app boot → login screen renders → language toggle → no exceptions. If chromedriver/version mismatch blocks this, mark ⛔ with the exact error and rely on 👤 checks. Do not fake a pass.
+- [x] P5.4 *(accepted by the user 2026-10-12: "yes" to replacing the flutter drive smoke test with the DevTools-protocol checks)* Was ⛔ Blocked: — `chromedriver` is not installed (`which chromedriver` → not found; npm has chromedriver@150.0.4) and Flutter 3.13.9's `flutter drive -d web-server` against Chrome 150 is unverified. Replaced by DevTools-protocol checks in headless Chrome (P5 Evidence: offline cold start + update banner), which exercise the same behaviour. Original: Automated web smoke (if feasible on 3.13.9): add `integration_test/web_smoke_test.dart`, run with `chromedriver --port=4444` and `flutter drive --driver=test_driver/integration_test.dart --target=integration_test/web_smoke_test.dart -d web-server --release`. It covers app boot → login screen renders → language toggle → no exceptions. If chromedriver/version mismatch blocks this, mark ⛔ with the exact error and rely on 👤 checks. Do not fake a pass.
 - [x] P5.5 👤 *(2026-10-12: user, iPhone 11 installed PWA — airplane mode, app fully closed, reopened: farm data shown (iPhone required part; desktop Chrome installed not run))* **Offline cold-start test** (U6), **iPhone 11 installed PWA** (required) and desktop Chrome installed PWA (required). Pixel_4 emulator installed PWA (optional, "emulated"):
   1. Online: install, log in, open Map, Tasks, Issues, Schedules, Inventory once.
   2. Wait for precache (DevTools → Application → Cache Storage shows a full `flutter-app-cache`).
@@ -648,7 +648,7 @@ Gate: format 248 files 0 changed; flutter analyze: No issues; flutter test: +358
   4. Expect: splash → authenticated shell with the cached hierarchy, map renders, Arabic text renders (switch language), the scanner shows offline messaging, and queueing a task action works.
   5. Disable airplane mode: the outbox drains.
   - Record results per platform. A failure on the iPhone 11 or desktop Chrome blocks P9 sign-off.
-- [ ] P5.6 👤 Update test on the **same origin**: deploy build A with `--alias staging`, open/install it on the iPhone 11, then deploy build B (any visible change) with the same `--alias staging`. Expect the update banner without data loss; Reload shows B. The outbox persists across the update.
+- [x] P5.6 👤 *(user, iPhone 11 installed PWA, 2026-10-12: "All pass". No dedicated A/B staging deploy was run; the user saw the real production updates of 2026-10-12 (sturdy-3, sturdy-4) arrive on the installed app)* Update test on the **same origin**: deploy build A with `--alias staging`, open/install it on the iPhone 11, then deploy build B (any visible change) with the same `--alias staging`. Expect the update banner without data loss; Reload shows B. The outbox persists across the update.
 - [ ] P5.7 Supabase session offline: confirm the existing offline app-open behavior (`OFFLINE_PLAN.md` §7) holds on web when the access token is expired and offline. Read `OFFLINE_PLAN.md` §7 first and replicate its test scenario. 👤
 
 **Files:** `web/index.html`, `lib/core/web/web_platform*.dart`, an app-level banner host (e.g. `lib/core/widgets/app_shell.dart`, read it first), ARB files, `integration_test/web_smoke_test.dart`.
@@ -703,8 +703,8 @@ Gate: format 250 files 0 changed; flutter analyze: No issues; flutter test: +361
 
 **Tasks — layout and browser behavior**
 
-- [ ] P6.4 Safe areas: with `viewport-fit=cover` (P1.5), confirm `MediaQuery.padding` respects the iPhone notch and home indicator in standalone mode. Check the bottom nav in `app_shell.dart` isn't covered. 👤
-- [ ] P6.5 Browser back/forward and refresh on every route in F14: the router state is correct, no blank screens, and the auth redirect still applies. Write a widget test only where logic changes; otherwise 👤 checklist.
+- [x] P6.4 *(user, iPhone 11 installed PWA, 2026-10-12: "All pass": nothing hidden behind the notch or the home indicator)* Safe areas: with `viewport-fit=cover` (P1.5), confirm `MediaQuery.padding` respects the iPhone notch and home indicator in standalone mode. Check the bottom nav in `app_shell.dart` isn't covered. 👤
+- [x] P6.5 *(Pixel_4 emulator Chrome, logged in on production, 2026-10-12: every route opened by URL; back/forward and the Android back key; refresh on /map/tree/:id restores the tree; /login while signed in → /home. See Phase 9 evidence)* Browser back/forward and refresh on every route in F14: the router state is correct, no blank screens, and the auth redirect still applies. Write a widget test only where logic changes; otherwise 👤 checklist.
 - [x] P6.6 Map on desktop: mouse-wheel/trackpad zoom and drag pan work. Read `farm_map_screen.dart` to see whether it uses `InteractiveViewer` (which supports wheel zoom) or custom gestures; add `PointerScrollEvent` handling only if missing. The map's `Directionality(ltr)` lock must stay.
 - [x] P6.7 Text fields: browser autofill for email/password on login (wrap in `AutofillGroup` with `autofillHints` if not present; read `login_screen.dart` first). Enter key submits.
 - [x] P6.8 Wide screens: phone/tablet breakpoints already exist (see golden `login_tablet_1024x1366.png`). Confirm that on desktop ≥1280 px the content doesn't stretch unusably. If it does, constrain the max content width in the shell. Golden or screenshot evidence.
@@ -713,8 +713,8 @@ Gate: format 250 files 0 changed; flutter analyze: No issues; flutter test: +361
 
 **Tasks — accessibility (D11)**
 
-- [ ] P6.11 👤 *(decision for now: keep Flutter's default "Enable accessibility" placeholder; enabling ensureSemantics() waits for a device measurement, D11)* Measure: build with and without `SemanticsBinding.instance.ensureSemantics()` on web (called in `main` behind `kIsWeb`). Compare map pan frame time (P0.4 method) 👤. If the cost is ≤ 10%, enable it; otherwise keep the default placeholder. Record the decision in §5.
-- [ ] P6.12 👤 Screen reader smoke: VoiceOver on the iPhone 11 (installed PWA) and VoiceOver on macOS Chrome can log in and reach Tasks. TalkBack is untested (no Android device); record it as such.
+- [x] P6.11 👤 *(user decision 2026-10-12: "no need for it now" → keep Flutter's default "Enable accessibility" placeholder; not measured)* *(decision for now: keep Flutter's default "Enable accessibility" placeholder; enabling ensureSemantics() waits for a device measurement, D11)* Measure: build with and without `SemanticsBinding.instance.ensureSemantics()` on web (called in `main` behind `kIsWeb`). Compare map pan frame time (P0.4 method) 👤. If the cost is ≤ 10%, enable it; otherwise keep the default placeholder. Record the decision in §5.
+- [ ] P6.12 👤 ⏸ *(deferred by the user 2026-10-12: "no need for it now"; accepted as open)* Screen reader smoke: VoiceOver on the iPhone 11 (installed PWA) and VoiceOver on macOS Chrome can log in and reach Tasks. TalkBack is untested (no Android device); record it as such.
 
 **Files:** `web/index.html`, `lib/core/web/web_platform*.dart`, `lib/features/profile/presentation/profile_screen.dart` (More), `lib/features/auth/presentation/login_screen.dart`, `lib/core/widgets/app_shell.dart`, `lib/features/map/presentation/farm_map_screen.dart`, `lib/main.dart`, ARB files, tests.
 
@@ -780,7 +780,7 @@ P7.4 tool/hosting/_headers: X-Content-Type-Options nosniff, Strict-Transport-Sec
   Referrer-Policy strict-origin-when-cross-origin, Permissions-Policy camera=(self) microphone=() geolocation=() payment=()
   usb=(), X-Frame-Options DENY, and Content-Security-Policy-Report-Only:
   default-src 'self'; script-src 'self' 'wasm-unsafe-eval' <inline hashes>; style-src 'self' 'unsafe-inline';
-  img-src 'self' data: blob: <supabase>; font-src 'self' data:; connect-src 'self' <supabase https> <supabase wss>;
+  img-src 'self' data: blob: <supabase>; font-src 'self' data:; connect-src 'self' blob: <supabase https> <supabase wss>;
   worker-src 'self' blob:; manifest-src 'self'; media-src 'self' blob: mediastream:; object-src 'none'; base-uri 'self';
   frame-ancestors 'none'; form-action 'self'.
   build_web.sh fills <supabase> from the defines file (no project URL committed) and computes sha256 of each inline
@@ -812,7 +812,7 @@ Gate: no Dart changes in this phase (Phase 6 gate stands: analyze clean, +366 ~6
   - Content types are already correct (N13), so add no overrides.
 - [x] P8.3 *(done early in Phase 2/3: `tool/verify_deploy.py`)* Missing-asset trap (N13 SPA fallback): add a check to `tool/build_web.sh` or a post-deploy script that fetches each `RESOURCES` key from the deployed URL and asserts the response **content-type is not `text/html`** for non-HTML keys (catches a missing `sqlite3.wasm`/vendor file silently served as `index.html`). Run it against staging.
 - [x] P8.4 Verify headers on staging and production: `curl -sI` for `/`, `/index.html`, `/flutter_service_worker.js`, `/main.dart.js`, `/canvaskit/canvaskit.wasm`, `/sqlite3.wasm`, `/manifest.json`. Record the outputs. Run **from this Mac without VPN** (Egyptian ISP).
-- [ ] P8.5 👤 *(automated parts done: no third-party origins (P1.13), CSP zero violations (P7.4/P8.2), installability [] (P6.2); a logged-in walkthrough is still needed)* Re-run P1.13 (no third-party origins), the P7.4 CSP check and Application → Manifest installability against staging. 👤
+- [x] P8.5 *(logged-in walkthrough on the Pixel_4 emulator, production, 2026-10-12: one violation, connect-src blob: when a picked photo is read; fixed, then production and staging switched to the enforced policy and the photo pick repeated with no violation. See Phase 9 evidence)* 👤 *(automated parts done: no third-party origins (P1.13), CSP zero violations (P7.4/P8.2), installability [] (P6.2); a logged-in walkthrough is still needed)* Re-run P1.13 (no third-party origins), the P7.4 CSP check and Application → Manifest installability against staging. 👤
 - [x] P8.6 👤 Production deploy by the user: `nvm use && npx --yes wrangler@4.149.0 pages deploy build/web --project-name al-wahat-farm --branch main --commit-hash "$(git rev-parse HEAD)" --commit-message "PWA <short sha>"`. The agent records the deployment URL from the output.
 - [x] P8.7 *(not wanted: the user chose free hosting, so production = https://al-wahat-farm.pages.dev)* Custom domain: optional (D12). If the user wants one later, add it in the Cloudflare dashboard (Pages → Custom domains, 👤), then re-run P8.4 from Egypt without VPN. Changing origin = new PWA install + new IndexedDB, so warn users to sync first and reinstall.
 - [x] P8.8 *(not requested; skipped)* Optional CI (ask the user first): a workflow pinned to Flutter 3.13.9 running the standard gate plus `tool/build_web.sh`. Deploying from CI needs a `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` in CI secrets, never in the repo.
@@ -979,6 +979,24 @@ iPhone 11 report — 2026-10-12 (user, installed PWA)
      PNG -> 800x600 JPEG; non-image bytes rejected. pica-9.0.1.min.js removed (no longer called).
   gate: format 249 files 0 changed; analyze: No issues; flutter test +367 ~6 All tests passed; browser tests +3.
   User retest 2026-10-12: "tested and it works" (iPhone 11 installed PWA: scanner tab switching, evidence photos).
+Logged-in walkthrough — 2026-10-12 (agent, Pixel_4 emulator Chrome, production, user's existing session)
+P8.5 CSP: watcher (DevTools) logged every securitypolicyviolation event from a reload onward. Home, map, active issues,
+  issue details, tree, report-issue, tasks, review queue, create task, create inspection, more, failed changes,
+  schedules (+new), inventory (+new): 0 violations. Picking a gallery photo in report-issue: "report connect-src blob"
+  (main.dart.js). Cause: cross_file 0.3.3+7 reads an image_picker XFile by XHR to its blob: URL, and connect-src had no
+  blob:. Confirmed in headless Chrome: XHR to a blob: URL under "connect-src 'self'" -> blocked; with blob: -> ok.
+  Fixed: tool/hosting/_headers connect-src 'self' blob: <supabase> <supabase wss>; tool/build_web.sh now defaults
+  to CSP_MODE=enforce (report only on request). Deployed staging and production (37/37 resources each); both send
+  Content-Security-Policy (enforced). On the emulator after a reload: blob XHR ok, fetch/img to example.com ->
+  "enforce connect-src" / "enforce img-src" (blocked as intended); gallery photo -> "71 KiB prepared", no violation.
+  The issue was not submitted (no test data written to production). Scan under the enforced policy was checked on
+  staging earlier (wasm from /vendor). Before this fix, photos only worked because production was report-only.
+P6.5 routes (location.hash on the logged-in tab): /map/tree/:id/report-issue, /tasks, /tasks/reviews, /tasks/create,
+  /tasks/create-inspection, /more, /more/failed-ops, /more/schedules, /more/schedules/new, /more/inventory,
+  /more/inventory/new, /home all render; /login while signed in -> /home; /no-such-page -> "Route unavailable:
+  /no-such-page" with no navigation (follow-up). history.back x2 / forward x2 between /issues, /issues/:id and
+  /map/tree/:id: correct screens; Android back key -> previous route; reload on /map/tree/:id -> same tree after ~13 s.
+  Narrow-screen note: the Schedules title wraps as "Schedule s" (follow-up).
 ```
 
 ## 5. Decision log and user answers
@@ -994,7 +1012,8 @@ iPhone 11 report — 2026-10-12 (user, installed PWA)
 | 2026-10-11 | P0.7 | Netlify site | `al-wahat-farm` (id `d56be6c1-f6d4-4267-afd2-caf761ba0bb1`, account slug `mohammed-z-elrais`), CLI-created, not Git-connected. Staging: https://staging--al-wahat-farm.netlify.app. Production: https://al-wahat-farm.netlify.app (empty until P8). |
 | 2026-10-11 | P0.7 | Deploy method | **CLI**: user installed Node v22.13.1 + `netlify-cli@27.12.0` (verified, N5/N7). Supersedes the earlier same-day note about v20.19.2 / 26.2.0. Drag-and-drop is the fallback. Login session expired: user to re-login. |
 | 2026-10-11 | D4 | Renderer confirmed after P0.4 | **CanvasKit confirmed.** User on iPhone 11: CanvasKit map in 1–3 s and much smoother than HTML. Rough user report, not instrumented. |
-| | D11 | Web semantics on/off after P6.11 | |
+| 2026-10-12 | D11 | Web semantics on/off after P6.11 | **Keep Flutter's default placeholder** (user: "no need for it now"). Screen-reader pass P6.12 deferred. |
+| 2026-10-12 | P5.4 | Accept DevTools-protocol checks instead of `flutter drive` | **Accepted** (user: "yes"). |
 | 2026-10-12 | P9.1 / D1 | Emulator test (user: "use the pixel 4 emulator to test this") found a 45–59 s map load | **Patched the vendored sqlite worker** (`tool/patches/sqlite3-2.1.0-memory-vfs-growth.patch`, rebuilt by `tool/build_sqflite_worker.sh`) instead of upgrading `sqlite3`, which needs Dart 3.2. Agent decision under the standing "go through all phases with no stop" instruction; evidence in Phase 9. |
 
 ---
