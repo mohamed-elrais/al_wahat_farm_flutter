@@ -47,3 +47,5 @@ Future<Uint8List> encodeJpegForUpload(
 
 /// Native builds scan with the platform's own barcode APIs.
 void installQrReader() {}
+
+String? qrReaderStatus() => null;

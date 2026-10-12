@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
 import 'package:al_wahat_farm_flutter/core/errors/operation_failure.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
@@ -20,6 +22,7 @@ class ScannerScreen extends StatefulWidget {
     this.scannerBuilder,
     this.onTreeFound,
     this.isSecureContext = web.isSecureContext,
+    this.readerStatus = web.qrReaderStatus,
     super.key,
   });
 
@@ -31,6 +34,10 @@ class ScannerScreen extends StatefulWidget {
   /// access; the screen then says so instead of a generic camera error.
   final bool Function() isSecureContext;
 
+  /// What the web QR loop sees, shown when the message box is long-pressed
+  /// (null on native, where the panel never appears).
+  final String? Function() readerStatus;
+
   @override
   State<ScannerScreen> createState() => _ScannerScreenState();
 }
@@ -39,12 +46,36 @@ class _ScannerScreenState extends State<ScannerScreen> {
   late final TreeQrRepository _repository;
   bool _handling = false;
   String? _error;
+  Timer? _diagnostics;
 
   @override
   void initState() {
     super.initState();
     _repository =
         widget.repository ?? SupabaseTreeQrRepository(Supabase.instance.client);
+  }
+
+  @override
+  void dispose() {
+    _diagnostics?.cancel();
+    super.dispose();
+  }
+
+  /// Long-press on the message box: show or hide the reader's live numbers,
+  /// so a failing scan can be reported from the device.
+  void _toggleDiagnostics() {
+    if (_diagnostics != null) {
+      _diagnostics!.cancel();
+      setState(() => _diagnostics = null);
+      return;
+    }
+    if (widget.readerStatus() == null) return;
+    setState(() {
+      _diagnostics = Timer.periodic(
+        const Duration(milliseconds: 500),
+        (_) => setState(() {}),
+      );
+    });
   }
 
   Future<void> _scan(BarcodeCapture capture) async {
@@ -126,11 +157,36 @@ class _ScannerScreenState extends State<ScannerScreen> {
               ),
             ),
           ),
+          if (_diagnostics != null)
+            Positioned(
+              left: 24,
+              right: 24,
+              top: 24,
+              child: IgnorePointer(
+                child: ColoredBox(
+                  color: Colors.black.withOpacity(0.7),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Text(
+                      widget.readerStatus() ?? '-',
+                      key: const Key('scanner-diagnostics'),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontFamily: 'Roboto',
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
           Positioned(
             left: 24,
             right: 24,
             bottom: 112,
-            child: IgnorePointer(
+            child: GestureDetector(
+              key: const Key('scanner-message'),
+              onLongPress: _toggleDiagnostics,
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   color: AppColors.card.withOpacity(0.94),

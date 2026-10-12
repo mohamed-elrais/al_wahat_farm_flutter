@@ -939,7 +939,12 @@ QR scan on iPhone 11 (user): live preview shown, message stayed "Point the camer
   and the capture canvas is sized once from the first frame. Reproduced in headless Chrome (tool/web_harness/qr_scanner.dart,
   fake camera .y4m with a tag URL, video size reported as 0 for the first 3 s): stock reader 0 detections in 15 s; new
   SturdyQrReader (lib/core/web/web_qr_reader.dart, installed via MobileScannerWebPlugin.barCodeReader) first detection at
-  3.7 s. Normal frames: both readers detect (landscape 1280x720 and portrait 720x1280). 👤 iPhone retest pending. Emulator back camera (virtualscene) never
+  3.7 s. Normal frames: both readers detect (landscape 1280x720 and portrait 720x1280).
+  iPhone retest (a8300f8): still no read, message unchanged. Next build (sturdy-2): camera requested at ideal 1920x1080
+  (the plugin asked for no size, so Safari opened 640x480), TRY_HARDER on the centre crop, ZXing 'no code' errors matched
+  by constructor (minified names stringify as 'R'), and a diagnostics panel on the scan screen (long-press the message box:
+  reader version, camera and video size, canvas luma, tries/found/not-found/other errors, last error). Harness: blank camera
+  -> not found counted, no other errors; QR landscape/portrait/late frames -> found. 👤 iPhone retest + panel screenshot. Emulator back camera (virtualscene) never
   returns frames to getUserMedia (front camera does, 6–8 s), so QR detection cannot be reproduced on Pixel_4.
 gate: format 248 files 0 changed; flutter analyze: No issues; flutter test: +366 ~6 All tests passed.
 

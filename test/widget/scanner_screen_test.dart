@@ -86,6 +86,54 @@ void main() {
     expect(find.text('Unable to scan while offline.'), findsOneWidget);
   });
 
+  testWidgets('long-pressing the message shows the web reader diagnostics', (
+    tester,
+  ) async {
+    var status = 'reader sturdy-2\ntries 4 found 0';
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: ScannerScreen(
+          repository: FakeTreeQrRepository(result: scanned),
+          scannerBuilder: _testScanner,
+          readerStatus: () => status,
+        ),
+      ),
+    );
+    expect(find.byKey(const Key('scanner-diagnostics')), findsNothing);
+
+    await tester.longPress(find.byKey(const Key('scanner-message')));
+    await tester.pump();
+    expect(find.text('reader sturdy-2\ntries 4 found 0'), findsOneWidget);
+
+    status = 'reader sturdy-2\ntries 9 found 1';
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(find.text('reader sturdy-2\ntries 9 found 1'), findsOneWidget);
+
+    await tester.longPress(find.byKey(const Key('scanner-message')));
+    await tester.pump();
+    expect(find.byKey(const Key('scanner-diagnostics')), findsNothing);
+  });
+
+  testWidgets('without a web reader the long-press does nothing', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: ScannerScreen(
+          repository: FakeTreeQrRepository(result: scanned),
+          scannerBuilder: _testScanner,
+          readerStatus: () => null,
+        ),
+      ),
+    );
+
+    await tester.longPress(find.byKey(const Key('scanner-message')));
+    await tester.pump();
+    expect(find.byKey(const Key('scanner-diagnostics')), findsNothing);
+  });
+
   testWidgets('the camera is released while another tab is shown', (
     tester,
   ) async {

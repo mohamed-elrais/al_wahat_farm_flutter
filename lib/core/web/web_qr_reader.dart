@@ -15,16 +15,25 @@ import 'package:mobile_scanner/mobile_scanner_web.dart';
 /// on any error other than "not found" (for example reading a 0x0 canvas while
 /// the video has no frames yet) and sizes its capture canvas once, from the
 /// first frame, so a later resolution or orientation change crops every frame.
-/// On an iPhone 11 the preview showed but no tag was ever read. This loop
-/// waits for real frames, sizes the canvas from the current frame every time,
-/// alternates the whole frame (scaled) with a full-resolution centre crop, and
+/// The stock camera request also names no resolution, so Safari opens the
+/// camera at 640x480. On an iPhone 11 the preview showed but no tag was read.
+///
+/// This reader asks for a 1920x1080 camera, waits for real frames, sizes the
+/// canvas from the current frame every time, alternates the whole frame
+/// (scaled) with a full-resolution centre crop decoded with TRY_HARDER, and
 /// keeps going whatever a single attempt throws. Camera start and stop are the
-/// plugin's own.
+/// plugin's own. [status] reports what the loop sees, for the scanner's
+/// diagnostics panel.
 class SturdyQrReader extends ZXingBarcodeReader {
   SturdyQrReader({required super.videoContainer});
 
+  static const version = 'sturdy-2';
+
   /// Longest side of the canvas handed to ZXing; larger frames are scaled.
   static const _maxDecodeSide = 1280;
+
+  /// ZXing `DecodeHintType.TRY_HARDER`.
+  static const _tryHarderHint = 3;
 
   StreamController<Barcode?>? _results;
   Timer? _timer;
@@ -32,6 +41,55 @@ class SturdyQrReader extends ZXingBarcodeReader {
   bool _cropTurn = false;
   final html.CanvasElement _canvas = html.CanvasElement();
   Object? _qrReader;
+  Object? _tryHarder;
+
+  int _ticks = 0;
+  int _attempts = 0;
+  int _notFound = 0;
+  int _found = 0;
+  int _otherErrors = 0;
+  String _lastError = '-';
+  String _luma = '-';
+  String _camera = '-';
+
+  /// One line per fact, for the scanner's diagnostics panel.
+  String status() => <String>[
+        'reader $version',
+        'camera $_camera',
+        'video ${video.videoWidth}x${video.videoHeight} '
+            'ready ${video.readyState} paused ${video.paused}',
+        'canvas ${_canvas.width}x${_canvas.height} luma $_luma',
+        'ticks $_ticks tries $_attempts found $_found',
+        'not found $_notFound other errors $_otherErrors',
+        'last error $_lastError',
+      ].join('\n');
+
+  @override
+  Future<html.MediaStream?> initMediaStream(CameraFacing cameraFacing) async {
+    final devices = html.window.navigator.mediaDevices;
+    if (devices == null) return null;
+    final constraints = js_util.jsify(<String, Object>{
+      'video': <String, Object>{
+        'facingMode':
+            cameraFacing == CameraFacing.front ? 'user' : 'environment',
+        'width': <String, int>{'ideal': 1920},
+        'height': <String, int>{'ideal': 1080},
+      },
+    }) as Object;
+    try {
+      final stream = await js_util.promiseToFuture<html.MediaStream>(
+        js_util.callMethod<Object>(devices, 'getUserMedia', <Object>[
+          constraints,
+        ]),
+      );
+      _camera = _describe(stream);
+      return stream;
+    } catch (error) {
+      // An over-constrained request: fall back to the plugin's plain one.
+      _camera = 'fallback after ${_short(error)}';
+      return super.initMediaStream(cameraFacing);
+    }
+  }
 
   @override
   Stream<Barcode?> detectBarcodeContinuously() {
@@ -55,20 +113,30 @@ class SturdyQrReader extends ZXingBarcodeReader {
   }
 
   void _tick() {
+    _ticks++;
     if (_decoding) return;
     final width = video.videoWidth;
     final height = video.videoHeight;
     // HAVE_CURRENT_DATA: a frame can be drawn.
     if (width == 0 || height == 0 || video.readyState < 2) return;
     _decoding = true;
+    _attempts++;
+    final crop = _cropTurn;
+    _cropTurn = !_cropTurn;
     try {
-      final text = _decodeFrame(width, height, crop: _cropTurn);
-      _cropTurn = !_cropTurn;
+      final text = _decodeFrame(width, height, crop: crop);
       if (text != null && text.isNotEmpty) {
+        _found++;
         _results?.add(Barcode(rawValue: text, format: BarcodeFormat.qrCode));
       }
-    } catch (_) {
+    } catch (error) {
       // "Not found" on most frames, or a transient canvas error: try again.
+      if (_isNoCodeError(error)) {
+        _notFound++;
+      } else {
+        _otherErrors++;
+        _lastError = _short(error);
+      }
     } finally {
       _decoding = false;
     }
@@ -92,17 +160,9 @@ class SturdyQrReader extends ZXingBarcodeReader {
     final dh = math.max(1, (sh * scale).round());
     if (_canvas.width != dw) _canvas.width = dw;
     if (_canvas.height != dh) _canvas.height = dh;
-    _canvas.context2D.drawImageScaledFromSource(
-      video,
-      sx,
-      sy,
-      sw,
-      sh,
-      0,
-      0,
-      dw,
-      dh,
-    );
+    final context = _canvas.context2D;
+    context.drawImageScaledFromSource(video, sx, sy, sw, sh, 0, 0, dw, dh);
+    if (_attempts % 10 == 1) _luma = _lumaStats(context, dw, dh);
 
     final zxing = js_util.getProperty<Object>(html.window, 'ZXing');
     Object create(String name, List<Object?> arguments) =>
@@ -116,10 +176,82 @@ class SturdyQrReader extends ZXingBarcodeReader {
       ]),
     ]);
     final reader = _qrReader ??= create('QRCodeReader', const <Object?>[]);
+    final hints = crop ? _tryHarder ??= _tryHarderHints() : null;
     final result = js_util.callMethod<Object?>(reader, 'decode', <Object?>[
       bitmap,
+      hints,
     ]);
     return result == null ? null : js_util.getProperty<String?>(result, 'text');
+  }
+
+  /// ZXing's "no readable code in this frame" errors. The minified library
+  /// renames its classes, so they are matched by constructor, not by name.
+  static bool _isNoCodeError(Object error) {
+    try {
+      final zxing = js_util.getProperty<Object>(html.window, 'ZXing');
+      return const <String>[
+        'NotFoundException',
+        'ChecksumException',
+        'FormatException',
+      ].any(
+        (name) => js_util.instanceof(
+          error,
+          js_util.getProperty<Object>(zxing, name),
+        ),
+      );
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Object _tryHarderHints() {
+    final hints = js_util.callConstructor<Object>(
+      js_util.getProperty<Object>(html.window, 'Map'),
+      const <Object?>[],
+    );
+    js_util.callMethod<Object?>(hints, 'set', <Object?>[_tryHarderHint, true]);
+    return hints;
+  }
+
+  /// Mean and spread of brightness over a sparse sample: a black or frozen
+  /// frame shows up as a mean near 0 or a spread near 0.
+  static String _lumaStats(
+    html.CanvasRenderingContext2D context,
+    int width,
+    int height,
+  ) {
+    try {
+      final data = context.getImageData(0, 0, width, height).data;
+      var count = 0;
+      var sum = 0.0;
+      var squares = 0.0;
+      for (var i = 0; i + 2 < data.length; i += 4 * 97) {
+        final value =
+            (data[i] * 299 + data[i + 1] * 587 + data[i + 2] * 114) / 1000;
+        sum += value;
+        squares += value * value;
+        count++;
+      }
+      if (count == 0) return 'empty';
+      final mean = sum / count;
+      final spread = math.sqrt(math.max(0, squares / count - mean * mean));
+      return '${mean.round()}±${spread.round()}';
+    } catch (error) {
+      return 'unreadable (${_short(error)})';
+    }
+  }
+
+  static String _describe(html.MediaStream stream) {
+    final tracks = stream.getVideoTracks();
+    if (tracks.isEmpty) return 'no video track';
+    final settings = tracks.first.getSettings();
+    return '${settings['width']}x${settings['height']} '
+        '${settings['facingMode'] ?? ''}';
+  }
+
+  static String _short(Object error) {
+    final text = error.toString().replaceAll('\n', ' ');
+    return text.length > 90 ? '${text.substring(0, 90)}…' : text;
   }
 
   @override

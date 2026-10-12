@@ -226,3 +226,10 @@ void installQrReader() {
   MobileScannerWebPlugin.barCodeReader =
       SturdyQrReader(videoContainer: MobileScannerWebPlugin.vidDiv);
 }
+
+/// What the web QR loop sees (camera size, attempts, last error), or null
+/// before [installQrReader] ran.
+String? qrReaderStatus() {
+  final reader = MobileScannerWebPlugin.barCodeReader;
+  return reader is SturdyQrReader ? reader.status() : null;
+}

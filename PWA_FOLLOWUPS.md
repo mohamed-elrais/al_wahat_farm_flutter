@@ -59,8 +59,11 @@ workaround.
 
 ## Things to re-test on devices
 
-9. **QR scanning on the iPhone** with `SturdyQrReader`. It was fixed and verified only in Chrome
-   with a simulated late camera; confirm it on the iPhone 11, browser and installed.
+9. **QR scanning on the iPhone** with `SturdyQrReader`. It has been verified only in Chrome (fake
+   camera, including a simulated late camera); the first version still did not read tags on the
+   iPhone 11. Long-press the scan screen's message box for the reader's live numbers. If the
+   decoder never succeeds on iOS, options are a "scan from photo" button (decode a full-resolution
+   still taken with the iPhone camera) or manual tree-code entry (plan P4.10).
 10. **Camera permission on iOS:** the scanner now stops the camera when you leave the Scan tab.
     Check whether iOS asks for camera permission again each time you return. If it is annoying,
     keep the camera paused instead of stopped.
