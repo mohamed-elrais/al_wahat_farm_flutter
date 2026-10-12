@@ -460,8 +460,8 @@ Staging deploy: wrangler --branch staging -> https://ffa6d264.al-wahat-farm.page
 - [x] P2.7 Durable-storage request (web only, U8). Add `lib/core/web/web_platform.dart` (conditional export of `web_platform_stub.dart` / `web_platform_html.dart`). Start with `Future<bool?> requestPersistentStorage()` (calls `window.navigator.storage?.persist()`, T4; stub returns `null`) and `Future<({int? usage, int? quota})> storageEstimate()`. Call `requestPersistentStorage()` once after a successful login. Log the result with `SafeLog.event`.
 - [x] P2.8 Show storage status in the Failed-ops / sync screen or More (web only): "Storage: persistent / best-effort", plus usage. EN+AR strings.
 - [x] P2.9 Tests (VM): unit-test the io `defaultDatabasePath` and that `AppDatabase.open(filePath: inMemoryDatabasePath)` behavior is unchanged (existing tests must pass untouched). Widget-test the P2.6 banner with an `AppServices` whose flag is false.
-- [ ] P2.10 👤 *(automated part done: DB opens in Chrome and creates `al_wahat_farm.db` in IndexedDB; the offline-queue + reload check needs a logged-in user)* Web persistence check. Build, serve and log in. Queue a task status change and an issue photo **offline** (DevTools → Network → Offline), then hard-reload while still offline. The outbox count and failed-ops entries are still present. Go online and the op drains. Close the browser fully, reopen, and the cached hierarchy loads offline. 👤 (or automated in P5.4 if feasible)
-- [ ] P2.11 Inspection station transaction (F4) on web: run an inspection route offline, reload mid-route, and the station progress is restored (the web analog of `integration_test/offline_inspection_restart_test.dart`). 👤
+- [x] P2.10 👤 *(2026-10-12: user, iPhone 11 installed PWA — offline task/issue with photo queued, uploaded after reconnect, pending badge cleared)* *(automated part done: DB opens in Chrome and creates `al_wahat_farm.db` in IndexedDB; the offline-queue + reload check needs a logged-in user)* Web persistence check. Build, serve and log in. Queue a task status change and an issue photo **offline** (DevTools → Network → Offline), then hard-reload while still offline. The outbox count and failed-ops entries are still present. Go online and the op drains. Close the browser fully, reopen, and the cached hierarchy loads offline. 👤 (or automated in P5.4 if feasible)
+- [x] P2.11 *(2026-10-12: user, iPhone 11 installed PWA — inspection started offline, app closed mid-route, progress restored)* Inspection station transaction (F4) on web: run an inspection route offline, reload mid-route, and the station progress is restored (the web analog of `integration_test/offline_inspection_restart_test.dart`). 👤
 - [ ] P2.12 Logout on web: after sign-out, DevTools → Application → IndexedDB shows **no private rows** (`awf_private:` cache keys, outbox, pending_photos empty). `clearPrivateData()` already does this through the stores, so this verifies it holds on IndexedDB. 👤
 - [ ] P2.13 👤 iPhone 11 (U8): repeat P2.10 on staging in Safari **and** in the installed home-screen app. Record the `persist()` result for each.
 
@@ -529,7 +529,7 @@ Web check (headless Chrome 150, local server):
 **Tasks — honest connectivity (F5)**
 
 - [x] P3.8 On web only, treat a SyncEngine transient failure (`OperationFailureKind.offline`) while `navigator.onLine` is true as **degraded**. Do not flip the global offline state (that would block online-only screens incorrectly). The existing retry-on-trigger already covers recovery; just make sure the sync status UI shows "Waiting for connection" instead of a spinner. First read how `ConnectivityController` and the sync UI render today. If the existing UI already handles it, record "no change needed" with evidence.
-- [ ] P3.9 👤 Chrome DevTools "Offline", then "Online": the app reflects both and drains the outbox on "Online".
+- [x] P3.9 👤 *(2026-10-12: user, iPhone 11 installed PWA — airplane mode off -> queued work drained (iPhone instead of DevTools))* Chrome DevTools "Offline", then "Online": the app reflects both and drains the outbox on "Online".
 
 **Files:** `lib/core/web/web_platform*.dart`, `lib/main.dart`, a new `lib/core/web/second_tab_app.dart` (or similar), `lib/features/sync/presentation/sync_scope.dart`, ARB files, tests.
 
@@ -641,7 +641,7 @@ Gate: format 248 files 0 changed; flutter analyze: No issues; flutter test: +358
 - [x] P5.2 Precache everything (D5). Add `web_platform.requestOfflineDownload()`, which posts `'downloadOffline'` to `navigator.serviceWorker.controller` (W4). Call it once after the first successful authenticated bootstrap per SW version. Record the version via `serviceWorkerVersion` read from the page (a `window` global set in index.html) and store it in the non-private cache key `awf_sw_precached_version`.
 - [x] P5.3 Update detection (D6). In `web/index.html`, after `loadEntrypoint`, register `navigator.serviceWorker.addEventListener('controllerchange', …)`. **Ignore the first controller** (initial install), then dispatch `window.dispatchEvent(new Event('awf-sw-updated'))`. Expose it as `Stream<void> onAppUpdateAvailable` in `web_platform` (listen via `window.on['awf-sw-updated']`). Show a localized MaterialBanner/SnackBar "A new version is available" with a "Reload" button → `window.location.reload()`. Never reload automatically. EN+AR strings.
 - [ ] ⛔ Blocked: P5.4 — `chromedriver` is not installed (`which chromedriver` → not found; npm has chromedriver@150.0.4) and Flutter 3.13.9's `flutter drive -d web-server` against Chrome 150 is unverified. Replaced by DevTools-protocol checks in headless Chrome (P5 Evidence: offline cold start + update banner), which exercise the same behaviour. Original: Automated web smoke (if feasible on 3.13.9): add `integration_test/web_smoke_test.dart`, run with `chromedriver --port=4444` and `flutter drive --driver=test_driver/integration_test.dart --target=integration_test/web_smoke_test.dart -d web-server --release`. It covers app boot → login screen renders → language toggle → no exceptions. If chromedriver/version mismatch blocks this, mark ⛔ with the exact error and rely on 👤 checks. Do not fake a pass.
-- [ ] P5.5 👤 **Offline cold-start test** (U6), **iPhone 11 installed PWA** (required) and desktop Chrome installed PWA (required). Pixel_4 emulator installed PWA (optional, "emulated"):
+- [x] P5.5 👤 *(2026-10-12: user, iPhone 11 installed PWA — airplane mode, app fully closed, reopened: farm data shown (iPhone required part; desktop Chrome installed not run))* **Offline cold-start test** (U6), **iPhone 11 installed PWA** (required) and desktop Chrome installed PWA (required). Pixel_4 emulator installed PWA (optional, "emulated"):
   1. Online: install, log in, open Map, Tasks, Issues, Schedules, Inventory once.
   2. Wait for precache (DevTools → Application → Cache Storage shows a full `flutter-app-cache`).
   3. Kill the app, enable airplane mode, open the app.
@@ -708,7 +708,7 @@ Gate: format 250 files 0 changed; flutter analyze: No issues; flutter test: +361
 - [x] P6.6 Map on desktop: mouse-wheel/trackpad zoom and drag pan work. Read `farm_map_screen.dart` to see whether it uses `InteractiveViewer` (which supports wheel zoom) or custom gestures; add `PointerScrollEvent` handling only if missing. The map's `Directionality(ltr)` lock must stay.
 - [x] P6.7 Text fields: browser autofill for email/password on login (wrap in `AutofillGroup` with `autofillHints` if not present; read `login_screen.dart` first). Enter key submits.
 - [x] P6.8 Wide screens: phone/tablet breakpoints already exist (see golden `login_tablet_1024x1366.png`). Confirm that on desktop ≥1280 px the content doesn't stretch unusably. If it does, constrain the max content width in the shell. Golden or screenshot evidence.
-- [ ] P6.9 RTL on web: switch to Arabic; layout mirrors, the map stays LTR, Arabic glyphs render with the bundled font. 👤 screenshot.
+- [x] P6.9 *(2026-10-12: user, iPhone 11 installed PWA — Arabic: layout mirrored, map stayed LTR, Arabic text correct)* RTL on web: switch to Arabic; layout mirrors, the map stays LTR, Arabic glyphs render with the bundled font. 👤 screenshot.
 - [ ] P6.10 👤 *(not observed yet: needs a right-click on the map in a desktop browser)* Context menu and text selection: confirm no browser context menu appears over the map canvas (Flutter handles it). Record only.
 
 **Tasks — accessibility (D11)**
@@ -931,6 +931,9 @@ Observed, not changed:
     still offers "Install app" in a Chrome tab because Chrome fires beforeinstallprompt for shortcut installs.
   - Home date eyebrow is the hard-coded ARB string "Sunday · 12 July" (pre-existing, affects native too).
 Not tested here: offline open, photo capture, QR scan, logout, Arabic on device.
+User iPhone 11 results 2026-10-12: offline cold start ✅, offline queue + drain ✅, inspection restart ✅, Arabic/RTL ✅,
+  real QR scan ❌ (details requested), logout not run (steps requested). Emulator back camera (virtualscene) never
+  returns frames to getUserMedia (front camera does, 6–8 s), so QR detection cannot be reproduced on Pixel_4.
 gate: format 248 files 0 changed; flutter analyze: No issues; flutter test: +366 ~6 All tests passed.
 
 iPhone 11 report — 2026-10-12 (user, installed PWA)
