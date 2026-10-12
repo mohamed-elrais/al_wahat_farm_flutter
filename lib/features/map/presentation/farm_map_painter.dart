@@ -521,7 +521,16 @@ class FarmMapPainter extends CustomPainter {
     final painter = TextPainter(
       text: TextSpan(
         text: text,
-        style: TextStyle(fontSize: size, fontWeight: weight, color: color),
+        // The web renderer (CanvasKit, Flutter 3.13) checks glyph coverage
+        // only against the style's own families; with none it treats any
+        // non-ASCII label such as '—' as missing and downloads a Noto font
+        // from Google. Naming the bundled Roboto keeps the map offline-safe.
+        style: TextStyle(
+          fontSize: size,
+          fontWeight: weight,
+          color: color,
+          fontFamilyFallback: const <String>['Roboto'],
+        ),
       ),
       textDirection: TextDirection.ltr,
     )..layout();

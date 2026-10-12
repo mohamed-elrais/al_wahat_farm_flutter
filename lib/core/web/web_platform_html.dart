@@ -44,12 +44,13 @@ bool isSecureContext() => html.window.isSecureContext ?? true;
 final RegExp _resourceKey = RegExp(r'"([^"]+)":\s*"[0-9a-f]{32}"');
 final RegExp _buildVersion = RegExp(r'serviceWorkerVersion = "(\d+)"');
 
-/// Fetches every app-shell file listed by Flutter's service worker so the app
-/// can cold-start offline. Each request passes through the service worker,
-/// which caches it; files already cached are answered locally, so repeating
-/// this every launch is cheap. Skips the skwasm engine, which this CanvasKit
-/// build never loads. Returns how many files were fetched, or null when no
-/// service worker controls the page yet (the next launch retries).
+/// Fetches every app-shell file listed by Flutter's service worker that is not
+/// cached yet, so the app can cold-start offline. Each request passes through
+/// the service worker, which caches it. Files already cached are skipped:
+/// re-reading the ~24 MB shell every launch kept a phone busy for seconds.
+/// Skips the skwasm engine, which this CanvasKit build never loads. Returns how
+/// many files were fetched (0 when all were cached), or null when no service
+/// worker controls the page yet (the next launch retries).
 Future<int?> precacheAppShell() async {
   if (html.window.navigator.serviceWorker?.controller == null) return null;
   final String worker;
@@ -65,10 +66,14 @@ Future<int?> precacheAppShell() async {
       .map((match) => match.group(1)!)
       .where((key) => !key.startsWith('canvaskit/skwasm'))
       .toList(growable: false);
+  final caches = html.window.caches;
   var fetched = 0;
   for (final key in keys) {
+    final url = key == '/' ? './' : key;
     try {
-      final request = await html.HttpRequest.request(key == '/' ? './' : key);
+      if (caches != null && await caches.match(url) != null) continue;
+      // A blob is handed over without decoding megabytes of wasm as text.
+      final request = await html.HttpRequest.request(url, responseType: 'blob');
       if (request.status == 200) fetched++;
     } catch (_) {
       // Offline or a transient failure: the next launch tries again.

@@ -1,0 +1,29 @@
+--- a/lib/src/wasm/vfs/memory.dart
++++ b/lib/src/wasm/vfs/memory.dart
+@@ -124,10 +124,22 @@
+       // Can write directy
+       file.setRange(fileOffset, fileOffset + buffer.length, buffer);
+     } else {
+-      // We need to grow the file first
+-      final newFile = Uint8List(file.length + increasedSize)
+-        ..setAll(0, file)
+-        ..setAll(fileOffset, buffer);
++      // We need to grow the file first. sqlite appends one page at a time, so
++      // copying the whole file into an exact-size array on every append is
++      // quadratic (~40 s to write 2.6 MB on a phone). Instead, files are
++      // views over a buffer with spare capacity that doubles when full. Bytes
++      // past a view's end are always zero: buffers start zeroed, and truncate
++      // and readFully create exact-size arrays.
++      final newLength = file.length + increasedSize;
++      final Uint8List newFile;
++      if (file.offsetInBytes + newLength <= file.buffer.lengthInBytes) {
++        newFile = file.buffer.asUint8List(file.offsetInBytes, newLength);
++      } else {
++        final storage = Uint8List(max(newLength, file.length * 2))
++          ..setAll(0, file);
++        newFile = storage.buffer.asUint8List(0, newLength);
++      }
++      newFile.setAll(fileOffset, buffer);
+ 
+       vfs.fileData[path] = newFile;
+     }

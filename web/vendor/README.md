@@ -22,11 +22,20 @@ paths.
 
 | File | Source | SHA-256 |
 |---|---|---|
-| `sqflite_sw.js` | Built locally: `dart run sqflite_common_ffi_web:setup --no-sqlite3-wasm` (compiles the package's shared worker against `sqlite3` 2.1.0) | `2ea5708257325f2eb43f46f14bd053122ab145ec71bed1bf5af7884e3b33d370` |
+| `sqflite_sw.js` | Built locally with `tool/build_sqflite_worker.sh`: the package's shared worker compiled against `sqlite3` 2.1.0 plus `tool/patches/sqlite3-2.1.0-memory-vfs-growth.patch` | `56e4247f282b8aa89d2ca69752477615f931491319a0399e49769531ad0f27af` |
 | `sqlite3.wasm` | https://github.com/simolus3/sqlite3.dart/releases/download/sqlite3-2.1.0/sqlite3.wasm | `5ec135f5407f5626982717034ce0d3346ae4e630d86253da57319c78c8513562` |
 
-Do **not** run the setup without `--no-sqlite3-wasm`: version 0.4.2+1 hardcodes the
-`sqlite3-2.2.0` wasm, but the Dart `sqlite3` package is pinned at 2.1.0 because 2.2.0
-needs Dart 3.2. The wasm must come from the release matching `sqlite3` in
-`pubspec.lock`. If that version changes, re-run the setup with `--force
---no-sqlite3-wasm` and download the matching wasm.
+**Why the patch:** in `sqlite3` 2.1.0 the in-memory file behind the IndexedDB file
+system copies the whole file into a new exact-size array on every write past its
+end. sqlite grows files one page at a time, so writing the 2.6 MB farm hierarchy
+cache took ~40 s on a Pixel 4 emulator (profiled 2026-10-12). The patch keeps
+files as views over a buffer with doubling capacity; a randomized check against a
+plain model matched over 60,000 operations, and 10 MB of 8 KB appends went from
+4.9 s to 17 ms on the Dart VM. Newer `sqlite3` releases need Dart 3.2+.
+
+Do **not** run `dart run sqflite_common_ffi_web:setup` on its own: it rebuilds an
+unpatched worker, and without `--no-sqlite3-wasm` it also fetches the
+`sqlite3-2.2.0` wasm (the Dart `sqlite3` package is pinned at 2.1.0 because 2.2.0
+needs Dart 3.2). The wasm must come from the release matching `sqlite3` in
+`pubspec.lock`. If that version changes, the build script stops; port the patch
+and download the matching wasm.
