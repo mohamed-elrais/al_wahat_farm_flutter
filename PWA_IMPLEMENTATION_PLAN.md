@@ -854,15 +854,15 @@ P8.7/P8.8 not wanted / not requested.
 | Feature (route) | Web concern | Desktop Chrome | Android emulator Chrome (functional only) | iPhone 11 Safari (installed) | Offline |
 |---|---|---|---|---|---|
 | Login screen renders (`/login`) | F11/F12, fonts | ✅ headless (EN + AR, external hosts blocked) | 👤 | 👤 (staging loads, user report) | ✅ headless cold start |
-| Sign in with a real account | autofill (P6.7) | 👤 | 👤 | 👤 | n/a |
+| Sign in with a real account | autofill (P6.7) | 👤 | ✅ user (installed from Chrome, logged in) | 👤 | n/a |
 | Offline app-open / session restore | P2, P5.7 | 👤 | 👤 | 👤 | 👤 |
-| Home dashboard (`/home`) | — | 👤 | 👤 | 👤 | 👤 |
-| Farm map + layers + section filter (`/map`) | D4 perf, wheel zoom, LTR lock | 👤 | 👤 | ✅ user: CanvasKit 1–3 s, smooth (P0.4) | 👤 |
+| Home dashboard (`/home`) | — | 👤 | ✅ CDP (data loaded; date eyebrow is a hard-coded "Sunday · 12 July" ARB string, also native) | 👤 | 👤 |
+| Farm map + layers + section filter (`/map`) | D4 perf, wheel zoom, LTR lock | 👤 | ✅ CDP (1539 trees; map 14–16 s after launch incl. network refresh, was 45–59 s; 0.6 s once loaded) | ✅ user: CanvasKit 1–3 s, smooth (P0.4) | 👤 |
 | Tree detail + planting pits (`/map/tree/:id`) | — | 👤 | 👤 | 👤 | 👤 |
 | Report issue + photo (`…/report-issue`) | F8, P4 | 👤 (pica global ✅) | 👤 | 👤 | 👤 |
 | QR scan (`/scan`) | F9, HTTPS, U2 | 👤 (ZXing global ✅) | 👤 | 👤 | 👤 |
 | Issues list/detail (`/issues…`) | — | 👤 | 👤 | 👤 | 👤 |
-| Tasks list + month calendar (`/tasks`) | — | 👤 | 👤 | 👤 | 👤 |
+| Tasks list + month calendar (`/tasks`) | — | 👤 | ✅ list renders (calendar not opened) | 👤 | 👤 |
 | Task create (`/tasks/create`) | outbox | 👤 | 👤 | 👤 | 👤 |
 | Task detail, status changes, evidence photos, photo viewer (`/tasks/:id`) | F15 CORS (✅ ACAO *) | 👤 | 👤 | 👤 | 👤 |
 | Inspection create + runner, restart persistence | F4 | 👤 | 👤 | 👤 | 👤 |
@@ -873,10 +873,10 @@ P8.7/P8.8 not wanted / not requested.
 | Sync badges + drain on reconnect/foreground | P3 | 👤 | 👤 | 👤 | 👤 |
 | Language switch EN↔AR + RTL | P1.10 font | ✅ headless (AR via browser locale) | 👤 | 👤 | ✅ headless (AR, external hosts blocked) |
 | Profile + logout clears private data | P2.12/P7.2 | 👤 (code-verified) | 👤 | 👤 | n/a |
-| Install prompt / iOS instructions | D8 | ✅ headless (installable, prompt captured) | 👤 | 👤 | n/a |
-| Update banner | D6 | ✅ headless (build A → B) | 👤 | 👤 | n/a |
-| Second-tab guard | D2 | ✅ headless (owner=true / owner=false) | n/a | n/a | n/a |
-| Web database opens (IndexedDB) | D1 | ✅ headless (sqlite3.wasm loaded, no fallback) | 👤 | 👤 | n/a |
+| Install prompt / iOS instructions | D8 | ✅ headless (installable, prompt captured) | ✅ user installed; standalone display mode confirmed | 👤 | n/a |
+| Update banner | D6 | ✅ headless (build A → B) | ✅ banner shown; new code ran from the 2nd launch (see evidence) | 👤 | n/a |
+| Second-tab guard | D2 | ✅ headless (owner=true / owner=false) | ✅ CDP (Chrome tab showed the guard while the installed app owned the lease) | n/a | n/a |
+| Web database opens (IndexedDB) | D1 | ✅ headless (sqlite3.wasm loaded, no fallback) | ✅ CDP (2.6 MB DB in IndexedDB) | 👤 | n/a |
 
 **Tasks**
 
@@ -902,6 +902,36 @@ P9.5 final gate: format 252 files 0 changed (excl. gen); flutter analyze: No iss
   Bundle: baseline (P0) build/web 22M, main.dart.js 3.9M -> now 24M, main.dart.js 4.0M (4207174 B). The ~2 MB comes from
   bundled fonts (~1.3 MB), sqlite3.wasm + sqflite_sw.js (~1 MB) and vendor scripts (~0.3 MB).
 P9.6 NOT complete: open 👤 items (see §3) and ⛔ P5.4 await the user.
+
+Pixel_4 emulator session — 2026-10-12 (user installed https://al-wahat-farm.pages.dev from Chrome and logged in;
+agent inspected the installed app over adb + Chrome DevTools protocol, Chrome 154, Android 10 image)
+Found and fixed (commit e9fa400, deployed staging 309334c6 enforce + production f1f7f127 report-only, 36/36 checked):
+  1. Map shown 45–59 s after launch. CPU profile: page idle 38 s waiting on the sqlite worker, worker 37.7 s in
+     Uint8List.setRange from sqlite3 2.1.0 InMemoryFileSystem.xWrite (copies the whole file on every append) while
+     INSERT OR REPLACE rewrites the 2.58 MB farm-hierarchy cache row. Fix: tool/patches/sqlite3-2.1.0-memory-vfs-growth.patch
+     (views over a doubling buffer), built into web/sqflite_sw.js by tool/build_sqflite_worker.sh; app deps unchanged.
+     VM check: 200 files x 300 random ops identical to a List model; 10 MB of 8 KB appends 4913 ms -> 17 ms.
+     After: map 14.2 s / 16.3 s after reload (incl. ~7 s Supabase refresh on the emulator); 0.6 s on tab switch.
+  2. CSP report on every map load: fonts.gstatic.com notosanssymbols. Cause: CanvasKit 3.13 addText() checks glyphs only
+     against the style's own families; the map painter's TextStyle had none, so '—' (zero-tree section label) looked
+     unsupported. Fix: fontFamilyFallback ['Roboto'] on map labels. After: no gstatic request (CDP network log).
+  3. precacheAppShell re-read all 33 files (~24 MB, decoded as text) every launch (~10 s of work on the emulator).
+     Fix: skip files already in CacheStorage, fetch missing ones as blobs. After: offline_precache {fetched=0}.
+  4. Chrome showed "Translate page? Arabic to English" (bilingual splash is the only DOM text). Fix: translate="no" +
+     <meta name="google" content="notranslate">; also added the non-deprecated mobile-web-app-capable meta.
+Observed, not changed:
+  - Update banner -> Reload: the first reload still ran the old main.dart.js (flutter.js "prepareServiceWorker took
+    more than 4000ms … Moving on", old worker serves its cache); the next launch ran the new build. Flutter 3.13 loader
+    behaviour; data unaffected.
+  - Two Supabase requests failed once with ERR_NAME_NOT_RESOLVED while the emulator showed no connectivity ("3G !");
+    they succeeded on later launches.
+  - One reload hung blank while the agent's profiler was attached to the old sqlite worker; two plain reloads right
+    after were normal (14.2 s). Treated as a debugger artifact; not reproduced without it.
+  - storage.persisted() = false in the installed app (shortcut install on an emulator without WebAPK); the More tile
+    still offers "Install app" in a Chrome tab because Chrome fires beforeinstallprompt for shortcut installs.
+  - Home date eyebrow is the hard-coded ARB string "Sunday · 12 July" (pre-existing, affects native too).
+Not tested here: offline open, photo capture, QR scan, logout, Arabic on device.
+gate: format 248 files 0 changed; flutter analyze: No issues; flutter test: +366 ~6 All tests passed.
 ```
 
 ## 5. Decision log and user answers
@@ -918,6 +948,7 @@ P9.6 NOT complete: open 👤 items (see §3) and ⛔ P5.4 await the user.
 | 2026-10-11 | P0.7 | Deploy method | **CLI**: user installed Node v22.13.1 + `netlify-cli@27.12.0` (verified, N5/N7). Supersedes the earlier same-day note about v20.19.2 / 26.2.0. Drag-and-drop is the fallback. Login session expired: user to re-login. |
 | 2026-10-11 | D4 | Renderer confirmed after P0.4 | **CanvasKit confirmed.** User on iPhone 11: CanvasKit map in 1–3 s and much smoother than HTML. Rough user report, not instrumented. |
 | | D11 | Web semantics on/off after P6.11 | |
+| 2026-10-12 | P9.1 / D1 | Emulator test (user: "use the pixel 4 emulator to test this") found a 45–59 s map load | **Patched the vendored sqlite worker** (`tool/patches/sqlite3-2.1.0-memory-vfs-growth.patch`, rebuilt by `tool/build_sqflite_worker.sh`) instead of upgrading `sqlite3`, which needs Dart 3.2. Agent decision under the standing "go through all phases with no stop" instruction; evidence in Phase 9. |
 
 ---
 
@@ -930,6 +961,7 @@ P9.6 NOT complete: open 👤 items (see §3) and ⛔ P5.4 await the user.
 | `web/vendor/pica-9.0.1.min.js`, `web/vendor/zxing-library-0.19.1.min.js`, `web/vendor/README.md` | P1 | Offline third-party JS with checksums and licenses |
 | `assets/fonts/NotoSansArabic-*.ttf`, `assets/fonts/NOTICE-NotoSansArabic.txt` | P1 | Offline Arabic glyphs |
 | `web/sqlite3.wasm`, `web/sqflite_sw.js` | P2 | sqflite web runtime |
+| `tool/build_sqflite_worker.sh`, `tool/patches/sqlite3-2.1.0-memory-vfs-growth.patch` | P9 (2026-10-12) | Rebuilds `web/sqflite_sw.js` with the in-memory VFS growth fix |
 | `lib/core/database/database_platform{,_io,_web}.dart` | P2 | Conditional DB factory and path |
 | `lib/core/web/web_platform{,_stub,_html}.dart` | P2–P6 | Browser APIs behind conditional import: persist/estimate, tab lease, visibility, SW update, offline download, install, secure context |
 | `lib/core/web/second_tab_app.dart` | P3 | Guard screen |
