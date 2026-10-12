@@ -59,10 +59,11 @@ workaround.
 
 ## Things to re-test on devices
 
-9. **QR scanning on the iPhone** with `SturdyQrReader` (zxing-cpp since `sturdy-3`). Verified in
-   Chrome with a fake camera fed the iPhone's own frame; ZXing JS could not read that frame. Long-press the scan screen's message box for the reader's live numbers. If the
-   decoder never succeeds on iOS, options are a "scan from photo" button (decode a full-resolution
-   still taken with the iPhone camera) or manual tree-code entry (plan P4.10).
+9. **QR scanning on the iPhone** with `SturdyQrReader`. Since `sturdy-3` (zxing-cpp), the iPhone
+   reads tags. `sturdy-4` creates a new `<video>` for each camera start, because Safari showed a
+   small letterboxed preview after a return to the Scan tab. Check that the preview fills the
+   screen after several tab switches. Long-press the scan screen's message box for the reader's
+   live numbers; `view` is the preview's size and `starts` counts camera starts.
 10. **Camera permission on iOS:** the scanner now stops the camera when you leave the Scan tab.
     Check whether iOS asks for camera permission again each time you return. If it is annoying,
     keep the camera paused instead of stopped.

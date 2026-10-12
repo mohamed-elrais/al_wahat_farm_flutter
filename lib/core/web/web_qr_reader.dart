@@ -30,7 +30,7 @@ import 'package:mobile_scanner/mobile_scanner_web.dart';
 class SturdyQrReader extends ZXingBarcodeReader {
   SturdyQrReader({required super.videoContainer});
 
-  static const version = 'sturdy-3';
+  static const version = 'sturdy-4';
 
   /// Our copy of zxing-wasm's binary (its default is a CDN).
   static const _wasmPath = 'vendor/zxing_reader-3.1.4.wasm';
@@ -51,6 +51,32 @@ class SturdyQrReader extends ZXingBarcodeReader {
     ]);
   }
 
+  /// The preview element. The plugin keeps one `<video>` for the reader's
+  /// lifetime, but the scanner restarts the camera on every return to the Scan
+  /// tab, and iPhone Safari then draws the new stream in the old element as a
+  /// small letterboxed picture (the rotated frame fitted as if it were
+  /// landscape). A fresh element per start shows it full size, as the first
+  /// start does.
+  html.VideoElement _video = html.VideoElement();
+
+  @override
+  html.VideoElement get video => _video;
+
+  @override
+  Future<void> start({
+    required CameraFacing cameraFacing,
+    List<BarcodeFormat>? formats,
+    Duration? detectionTimeout,
+  }) {
+    _video = html.VideoElement();
+    _starts++;
+    return super.start(
+      cameraFacing: cameraFacing,
+      formats: formats,
+      detectionTimeout: detectionTimeout,
+    );
+  }
+
   /// Longest side of the canvas handed to ZXing; larger frames are scaled.
   static const _maxDecodeSide = 1280;
 
@@ -69,6 +95,7 @@ class SturdyQrReader extends ZXingBarcodeReader {
   /// Why zxing-wasm is not used (missing script or a failed load), or null.
   String? _wasmUnavailable;
 
+  int _starts = 0;
   int _ticks = 0;
   int _attempts = 0;
   int _notFound = 0;
@@ -85,6 +112,7 @@ class SturdyQrReader extends ZXingBarcodeReader {
         'camera $_camera',
         'video ${video.videoWidth}x${video.videoHeight} '
             'ready ${video.readyState} paused ${video.paused}',
+        'view ${video.offsetWidth}x${video.offsetHeight} starts $_starts',
         'canvas ${_canvas.width}x${_canvas.height} luma $_luma',
         'ticks $_ticks tries $_attempts found $_found',
         'not found $_notFound other errors $_otherErrors',

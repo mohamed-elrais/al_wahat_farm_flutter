@@ -10,7 +10,9 @@
 //
 // Every decoded value is printed as `[qr-harness] detected <value>`, and the
 // reader status every 3 s as `[qr-harness] status ...`. Add
-// `?reader=stock` to the URL to compare with mobile_scanner's own loop.
+// `?reader=stock` to the URL to compare with mobile_scanner's own loop, and
+// `?cycle=<seconds>` to remove and rebuild the scanner on that period, as a
+// tab switch does in the app.
 import 'dart:async';
 
 import 'package:al_wahat_farm_flutter/core/web/web_platform.dart' as web;
@@ -37,20 +39,43 @@ class _Harness extends StatefulWidget {
 
 class _HarnessState extends State<_Harness> {
   String _last = 'waiting';
+  bool _shown = true;
+  Timer? _cycle;
+
+  @override
+  void initState() {
+    super.initState();
+    final seconds = int.tryParse(Uri.base.queryParameters['cycle'] ?? '');
+    if (seconds != null && seconds > 0) {
+      _cycle = Timer.periodic(Duration(seconds: seconds), (_) {
+        setState(() => _shown = !_shown);
+        debugPrint('[qr-harness] scanner ${_shown ? 'shown' : 'hidden'}');
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _cycle?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) => Scaffold(
         body: Stack(
           fit: StackFit.expand,
           children: <Widget>[
-            MobileScanner(
-              onDetect: (capture) {
-                final value = capture.barcodes.firstOrNull?.rawValue;
-                if (value == null) return;
-                debugPrint('[qr-harness] detected $value');
-                setState(() => _last = value);
-              },
-            ),
+            if (!_shown)
+              const ColoredBox(color: Colors.green)
+            else
+              MobileScanner(
+                onDetect: (capture) {
+                  final value = capture.barcodes.firstOrNull?.rawValue;
+                  if (value == null) return;
+                  debugPrint('[qr-harness] detected $value');
+                  setState(() => _last = value);
+                },
+              ),
             Align(
               alignment: Alignment.bottomCenter,
               child: ColoredBox(

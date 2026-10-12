@@ -952,7 +952,14 @@ QR scan on iPhone 11 (user): live preview shown, message stayed "Point the camer
   web/vendor/zxing-wasm-reader-3.1.4.js + zxing_reader-3.1.4.wasm, locateFile -> same origin), ZXing JS only if the wasm
   cannot load. Harness with the screenshot as the fake camera: zxing-cpp first read at 2.4 s (17/34 attempts), ZXing JS
   0/34; blank camera no false reads. Emulator Chrome on staging (enforced CSP): wasm loaded from /vendor in 227 ms.
-  👤 iPhone retest pending. Emulator back camera (virtualscene) never
+  iPhone retest (sturdy-3, user): ✅ tags read. New report: after leaving Scan and coming back, the preview is a small
+  centred picture (249x443 pt) on the green background instead of full screen. 249x443 is a 1080x1920 frame letterboxed
+  as if it were 1920x1080, inside the 443x788 pt view: Safari draws the restarted stream in the reused <video> (the plugin
+  keeps one element for the reader's lifetime; the camera restarts on every return since 440e5b7). sturdy-4: a new
+  <video> per camera start (SturdyQrReader overrides `video` and `start`); the diagnostics panel adds
+  `view <layout size> starts <n>`. Harness with `?cycle=5` (scanner removed and rebuilt every 5 s): 3 starts, tag read
+  after each one. Chrome never showed the small preview, so only the iPhone can confirm. 👤 iPhone retest pending.
+  Emulator back camera (virtualscene) never
   returns frames to getUserMedia (front camera does, 6–8 s), so QR detection cannot be reproduced on Pixel_4.
 gate: format 248 files 0 changed; flutter analyze: No issues; flutter test: +366 ~6 All tests passed.
 
