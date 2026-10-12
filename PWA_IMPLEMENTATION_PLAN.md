@@ -191,8 +191,8 @@ Changing any decision requires user approval (rule 9). Record approval in the De
 | P0 | Baseline, decisions, measurements, hosting (Cloudflare Pages) | ✅ gate passed 2026-10-11 | P0.8-6 (explicit iPhone cellular + Wi-Fi without VPN on production), U11 (iOS version) |
 | P1 | Branded, CDN-free web shell (manifest, icons, index.html, fonts, vendored JS) | ✅ gate passed 2026-10-11 (except 👤 DevTools Manifest check) | Chrome DevTools → Application → Manifest shows no errors; iPhone visual check of staging |
 | P2 | Persistent web storage (sqflite on IndexedDB) | ✅ gate passed 2026-10-11 | P2.10–P2.13 (logged-in offline/reload/logout/iPhone checks) |
-| P3 | Single-tab guard and web sync triggers | ✅ gate passed 2026-10-11 | P3.1 (Android SharedWorker), P3.5 handover, P3.9 offline/online drain |
-| P4 | Camera, photos and QR scanner on web | ✅ gate passed 2026-10-11 | P4.4/P4.5 (iPhone photo capture JPEG vs HEIC), P4.7 real scan, P4.9 permissions, P4.11 camera stops |
+| P3 | Single-tab guard and web sync triggers | ✅ gate passed 2026-10-11 | P3.5 handover, P3.9 offline/online drain |
+| P4 | Camera, photos and QR scanner on web | ✅ gate passed 2026-10-11 | P4.4 issue photo (user retest reported working, not itemised), P4.7 real scan, P4.9 permissions |
 | P5 | Offline cold start, SW precache and update flow | ✅ gate passed 2026-10-11 (P5.4 ⛔, replaced by CDP checks) | P5.5 iPhone/desktop installed offline cold start, P5.6 update on device, P5.7 expired-token offline |
 | P6 | Install UX, responsive/browser UX, accessibility | ✅ gate passed 2026-10-11 | P6.10 map context menu, P6.3 installs, P6.4 safe areas, P6.5 back/forward, P6.9 RTL screenshot, P6.11 semantics cost, P6.12 screen readers |
 | P7 | Security and privacy on web | ✅ gate passed 2026-10-11 (CSP report-only) | P7.2 live logout check; CSP must be checked logged in before enforcing |
@@ -515,7 +515,7 @@ Web check (headless Chrome 150, local server):
 
 **Tasks — single tab (D2)**
 
-- [ ] P3.1 👤 *(guard implemented regardless; SharedWorker presence on Android still to observe)* Record U1: in DevTools → Application → Shared workers (desktop) and `chrome://inspect/#workers` on Android 👤, note whether `sqflite_sw.js` runs as a SharedWorker. **Implement the guard regardless.**
+- [x] P3.1 👤 *(2026-10-12: Android Chrome 154 on Pixel_4 runs `sqflite_sw.js` as a shared_worker target (CDP target list))* *(guard implemented regardless; SharedWorker presence on Android still to observe)* Record U1: in DevTools → Application → Shared workers (desktop) and `chrome://inspect/#workers` on Android 👤, note whether `sqflite_sw.js` runs as a SharedWorker. **Implement the guard regardless.**
 - [x] P3.2 Add to `web_platform`: `TabLease` with `Future<bool> tryAcquire()`, `Stream<void> lostOwnership`, `void takeOver()`, built on `BroadcastChannel('awf-tab')` (T4). Protocol: on start, post `{type:'claim', id, ts}` and wait 300 ms. If an owner answers `{type:'owned', id}`, the claim fails. `takeOver()` posts `{type:'takeover', id}`, and the current owner releases and emits `lostOwnership`. Stub (VM/native): always owns.
 - [x] P3.3 In `main.dart`, acquire the lease **before** opening the database. If the lease isn't owned, run a minimal `SecondTabApp` (localized, branded) with a "Use here" button that calls `takeOver()` then `window.location.reload()`. On `lostOwnership`, the owning tab must stop the SyncEngine, close the DB (`AppDatabase.close()`) and show the same screen.
 - [x] P3.4 Unit-test the lease protocol with a fake channel (pure Dart logic separated from `dart:html`, so it runs on VM).
@@ -584,7 +584,7 @@ Also added tool/verify_deploy.py (P8.3 early): fetches every SW RESOURCES key fr
 - [x] P4.2 Web compress semantics differ (F8): width capped at 1920, height by aspect ratio, EXIF dropped by canvas re-encode. Confirm this meets the product rule (≤10 MiB JPEG). No code change is expected; record the decision. If portrait images should cap height instead, add a web-only pre-computation. Ask the user first.
 - [x] P4.3 Error path: if `window.pica` is missing, the web plugin throws. Wrap the compress call so a missing-pica or compress failure maps to the existing `OperationFailure(invalidInput, …)` message instead of an uncaught JS error. Add a unit test with a fake compressor if the service has a seam. If it doesn't, add a minimal injectable compressor function, keeping native behavior identical.
 - [ ] P4.4 👤 iPhone 11 Safari, browser **and** installed (staging). If P0.4b found Chrome, repeat on the Pixel_4 emulator (gallery only; emulated camera recorded as "emulated"). Report an issue with a camera photo and with a gallery photo, online and offline. The issue/photo syncs. Record the file size and type (U3: JPEG vs HEIC). If HEIC arrives and compress fails, record it as ⛔ and propose a fix to the user.
-- [ ] P4.5 Task evidence: same as P4.4 via task detail. 👤
+- [x] P4.5 *(2026-10-12: user, iPhone 11 installed PWA — camera and gallery evidence photos work after commit 440e5b7)* Task evidence: same as P4.4 via task detail. 👤
 - [x] P4.6 CORS (U4): open a task photo in the viewer on a CanvasKit build. If the image fails with a CORS error in the console, record it. Supabase Storage CORS is a backend setting, so **ask the user** rather than changing backend config. 👤 or automated via integration test with a live account.
 
 **Tasks — QR scanner (F9, F10)**
@@ -593,7 +593,7 @@ Also added tool/verify_deploy.py (P8.3 early): fetches every SW RESOURCES key fr
 - [x] P4.8 Insecure context: when `window.isSecureContext == false`, show a localized message ("Camera requires a secure (https) connection") instead of the generic camera-unavailable state. Add it to `web_platform` and `scanner_screen.dart`, with EN+AR strings and a widget test via a fake.
 - [ ] P4.9 👤 iPhone 11 Safari (browser and **installed**, U2), and desktop Chrome with the Mac webcam. Android Chrome: emulator only if available, marked "emulated". Steps: grant, deny, then re-grant camera permission. The deny path shows `scanCameraOff`. Record results per environment.
 - [ ] P4.10 **Fallback if U2 fails** (camera unavailable in iOS standalone): add a "Enter tree code manually" action on the scanner screen that calls the same `_scanToken(raw)` path. **Only implement this if P4.9 shows a real gap**, and with user approval, because it adds UI to native too.
-- [ ] P4.11 Scanner lifecycle: leaving `/scan` stops the camera (the browser camera indicator turns off). 👤
+- [x] P4.11 *(2026-10-12: user, iPhone 11 — camera indicator turns off when leaving the scan tab after 440e5b7; widget test covers it)* Scanner lifecycle: leaving `/scan` stops the camera (the browser camera indicator turns off). 👤
 
 **Files:** `lib/features/issues/data/issue_photo_service.dart`, `lib/features/tasks/data/task_evidence_service.dart` (only if P4.3 needs a seam), `lib/features/map/presentation/scanner_screen.dart`, `lib/core/web/web_platform*.dart`, ARB files, tests.
 
@@ -947,7 +947,7 @@ iPhone 11 report — 2026-10-12 (user, installed PWA)
      <= 1920), no getImageData. Tests (flutter test --platform chrome test/web): 3024x4032 JPEG -> 1440x1920 JPEG; 800x600
      PNG -> 800x600 JPEG; non-image bytes rejected. pica-9.0.1.min.js removed (no longer called).
   gate: format 249 files 0 changed; analyze: No issues; flutter test +367 ~6 All tests passed; browser tests +3.
-  👤 Needs the user's iPhone retest: evidence photo (camera + gallery), issue photo, scanner tab switching.
+  User retest 2026-10-12: "tested and it works" (iPhone 11 installed PWA: scanner tab switching, evidence photos).
 ```
 
 ## 5. Decision log and user answers
