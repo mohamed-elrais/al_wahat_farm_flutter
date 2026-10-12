@@ -944,7 +944,15 @@ QR scan on iPhone 11 (user): live preview shown, message stayed "Point the camer
   (the plugin asked for no size, so Safari opened 640x480), TRY_HARDER on the centre crop, ZXing 'no code' errors matched
   by constructor (minified names stringify as 'R'), and a diagnostics panel on the scan screen (long-press the message box:
   reader version, camera and video size, canvas luma, tries/found/not-found/other errors, last error). Harness: blank camera
-  -> not found counted, no other errors; QR landscape/portrait/late frames -> found. 👤 iPhone retest + panel screenshot. Emulator back camera (virtualscene) never
+  -> not found counted, no other errors; QR landscape/portrait/late frames -> found.
+  iPhone panel (sturdy-2, user screenshot): camera 1920x1080, video 1080x1920 ready 4, luma 146±56, 809 tries, 809 not
+  found, 0 other errors -> frames fine, ZXing JS cannot read the tag. Same screenshot decoded in headless Chrome: ZXing JS
+  0.19.1 fails (with and without TRY_HARDER, full and cropped); zxing-cpp (npm zxing-wasm 3.1.4, MIT, tarball sha512
+  matched the registry) reads https://alwahat.farm/scan-tree?token=547a34eb-…. sturdy-3: decodes with zxing-wasm (vendored
+  web/vendor/zxing-wasm-reader-3.1.4.js + zxing_reader-3.1.4.wasm, locateFile -> same origin), ZXing JS only if the wasm
+  cannot load. Harness with the screenshot as the fake camera: zxing-cpp first read at 2.4 s (17/34 attempts), ZXing JS
+  0/34; blank camera no false reads. Emulator Chrome on staging (enforced CSP): wasm loaded from /vendor in 227 ms.
+  👤 iPhone retest pending. Emulator back camera (virtualscene) never
   returns frames to getUserMedia (front camera does, 6–8 s), so QR detection cannot be reproduced on Pixel_4.
 gate: format 248 files 0 changed; flutter analyze: No issues; flutter test: +366 ~6 All tests passed.
 

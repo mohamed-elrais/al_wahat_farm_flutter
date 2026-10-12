@@ -7,6 +7,7 @@ origin (not a CDN) so the service worker can cache them for offline use
 
 | File | Global | Needed by | Source | License | SHA-256 |
 |---|---|---|---|---|---|
+| `zxing-wasm-reader-3.1.4.js` + `zxing_reader-3.1.4.wasm` | `ZXingWASM` | our web QR loop (`SturdyQrReader` in `lib/core/web/web_qr_reader.dart`); the wasm path is set with `prepareZXingModule` in `installQrReader` | npm `zxing-wasm@3.1.4` (`dist/iife/reader/index.js`, `dist/reader/zxing_reader.wasm`), tarball sha512 `1+v8p7sauddySVNG+ye7GD/0TS95BG2ycdkrC+EnBrFBFkHeIghzUt2yVjtx3NucJeNrQnhT8yGAIz60Vx9o0w==` matched the registry | MIT (`LICENSE`, © 2023 Ze-Zheng Wu) | `d33d09ce132a692faffbed0dce656c36cb2573b4b843885a6e036390d1071d95` / `e8af31edb56d0522f4de74495839385ef019ba8bc90d38e5ecb2f18795d86fb2` |
 | `zxing-library-0.19.1.min.js` | `ZXing` | `mobile_scanner` 4.0.1 web (QR scanning) | https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js (the target of the README URL `https://unpkg.com/@zxing/library@0.19.1`) | MIT (`@zxing/library@0.19.1/package.json`) | `c5837e4858a3775173bab09ee36e6052545c7880c9d7452e2f464770c6e642ce` |
 
 The versions are the ones the plugin READMEs name. Update them only together with

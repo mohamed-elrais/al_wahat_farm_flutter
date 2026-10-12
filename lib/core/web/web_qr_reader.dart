@@ -16,18 +16,40 @@ import 'package:mobile_scanner/mobile_scanner_web.dart';
 /// the video has no frames yet) and sizes its capture canvas once, from the
 /// first frame, so a later resolution or orientation change crops every frame.
 /// The stock camera request also names no resolution, so Safari opens the
-/// camera at 640x480. On an iPhone 11 the preview showed but no tag was read.
+/// camera at 640x480. And ZXing's JavaScript port could not read a real tag
+/// on an iPhone 11 at all (809 frames, all "not found"), while zxing-cpp
+/// (vendored zxing-wasm) read the same tag from a screenshot of that preview.
 ///
 /// This reader asks for a 1920x1080 camera, waits for real frames, sizes the
 /// canvas from the current frame every time, alternates the whole frame
-/// (scaled) with a full-resolution centre crop decoded with TRY_HARDER, and
-/// keeps going whatever a single attempt throws. Camera start and stop are the
-/// plugin's own. [status] reports what the loop sees, for the scanner's
-/// diagnostics panel.
+/// (scaled) with a full-resolution centre crop, decodes with zxing-cpp
+/// (ZXing JS with TRY_HARDER only if the wasm cannot load) and keeps going
+/// whatever a single attempt throws. Camera start and stop are the plugin's
+/// own. [status] reports what the loop sees, for the scanner's diagnostics
+/// panel.
 class SturdyQrReader extends ZXingBarcodeReader {
   SturdyQrReader({required super.videoContainer});
 
-  static const version = 'sturdy-2';
+  static const version = 'sturdy-3';
+
+  /// Our copy of zxing-wasm's binary (its default is a CDN).
+  static const _wasmPath = 'vendor/zxing_reader-3.1.4.wasm';
+
+  /// Points zxing-wasm at [_wasmPath]. Call before the first scan.
+  static void configureWasm() {
+    final zxing = js_util.getProperty<Object?>(html.window, 'ZXingWASM');
+    if (zxing == null) return;
+    js_util.callMethod<Object?>(zxing, 'prepareZXingModule', <Object?>[
+      js_util.jsify(<String, Object>{
+        'overrides': <String, Object>{
+          'locateFile': js_util.allowInterop(
+            (String path, String prefix) =>
+                path.endsWith('.wasm') ? _wasmPath : '$prefix$path',
+          ),
+        },
+      }),
+    ]);
+  }
 
   /// Longest side of the canvas handed to ZXing; larger frames are scaled.
   static const _maxDecodeSide = 1280;
@@ -42,6 +64,10 @@ class SturdyQrReader extends ZXingBarcodeReader {
   final html.CanvasElement _canvas = html.CanvasElement();
   Object? _qrReader;
   Object? _tryHarder;
+  Object? _wasmOptions;
+
+  /// Why zxing-wasm is not used (missing script or a failed load), or null.
+  String? _wasmUnavailable;
 
   int _ticks = 0;
   int _attempts = 0;
@@ -55,6 +81,7 @@ class SturdyQrReader extends ZXingBarcodeReader {
   /// One line per fact, for the scanner's diagnostics panel.
   String status() => <String>[
         'reader $version',
+        'decoder ${_wasmUnavailable == null ? 'zxing-cpp' : 'zxing-js ($_wasmUnavailable)'}',
         'camera $_camera',
         'video ${video.videoWidth}x${video.videoHeight} '
             'ready ${video.readyState} paused ${video.paused}',
@@ -123,26 +150,37 @@ class SturdyQrReader extends ZXingBarcodeReader {
     _attempts++;
     final crop = _cropTurn;
     _cropTurn = !_cropTurn;
+    unawaited(
+      _attempt(width, height, crop: crop).whenComplete(() => _decoding = false),
+    );
+  }
+
+  Future<void> _attempt(int width, int height, {required bool crop}) async {
     try {
-      final text = _decodeFrame(width, height, crop: crop);
+      final text = await _decodeFrame(width, height, crop: crop);
       if (text != null && text.isNotEmpty) {
         _found++;
         _results?.add(Barcode(rawValue: text, format: BarcodeFormat.qrCode));
+      } else {
+        _notFound++;
       }
     } catch (error) {
-      // "Not found" on most frames, or a transient canvas error: try again.
+      // "Not found" from ZXing JS on most frames, or a transient canvas
+      // error: try again on the next tick.
       if (_isNoCodeError(error)) {
         _notFound++;
       } else {
         _otherErrors++;
         _lastError = _short(error);
       }
-    } finally {
-      _decoding = false;
     }
   }
 
-  String? _decodeFrame(int width, int height, {required bool crop}) {
+  Future<String?> _decodeFrame(
+    int width,
+    int height, {
+    required bool crop,
+  }) async {
     var sx = 0;
     var sy = 0;
     var sw = width;
@@ -164,6 +202,40 @@ class SturdyQrReader extends ZXingBarcodeReader {
     context.drawImageScaledFromSource(video, sx, sy, sw, sh, 0, 0, dw, dh);
     if (_attempts % 10 == 1) _luma = _lumaStats(context, dw, dh);
 
+    final wasm = _wasmUnavailable == null
+        ? js_util.getProperty<Object?>(html.window, 'ZXingWASM')
+        : null;
+    if (wasm == null) {
+      _wasmUnavailable ??= 'script missing';
+      return _decodeWithZxingJs(crop: crop);
+    }
+    final List<Object?> results;
+    try {
+      results = await js_util.promiseToFuture<List<Object?>>(
+        js_util.callMethod<Object>(wasm, 'readBarcodes', <Object?>[
+          context.getImageData(0, 0, dw, dh),
+          _wasmOptions ??= js_util.jsify(<String, Object>{
+            'tryHarder': true,
+            'formats': <String>['QRCode'],
+            'maxNumberOfSymbols': 1,
+          }),
+        ]),
+      );
+    } catch (error) {
+      // The .wasm did not load (or crashed): use ZXing JS from now on.
+      _wasmUnavailable = _short(error);
+      rethrow;
+    }
+    for (final result in results) {
+      if (result == null) continue;
+      if (js_util.getProperty<Object?>(result, 'isValid') == false) continue;
+      final text = js_util.getProperty<Object?>(result, 'text');
+      if (text is String && text.isNotEmpty) return text;
+    }
+    return null;
+  }
+
+  String? _decodeWithZxingJs({required bool crop}) {
     final zxing = js_util.getProperty<Object>(html.window, 'ZXing');
     Object create(String name, List<Object?> arguments) =>
         js_util.callConstructor<Object>(

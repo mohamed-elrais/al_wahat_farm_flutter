@@ -223,6 +223,7 @@ Future<Uint8List> encodeJpegForUpload(
 /// Replaces mobile_scanner's web QR decode loop with [SturdyQrReader]. Must
 /// run before the first scanner starts; camera handling stays the plugin's.
 void installQrReader() {
+  SturdyQrReader.configureWasm();
   MobileScannerWebPlugin.barCodeReader =
       SturdyQrReader(videoContainer: MobileScannerWebPlugin.vidDiv);
 }

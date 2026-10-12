@@ -54,14 +54,13 @@ workaround.
 |---|---|---|
 | `tool/patches/sqlite3-2.1.0-memory-vfs-growth.patch` and `tool/build_sqflite_worker.sh` (they build `web/sqflite_sw.js`) | sqlite3 2.1.0 made the 2.6 MB cache write take about 40 s | `sqlite3` ≥ 2.2 is allowed (needs Dart 3.2); check that its in-memory VFS no longer copies the whole file on every append |
 | `encodeJpegForUpload` in `lib/core/web/web_platform_html.dart` | flutter_image_compress_web 0.1.4+1 (pica) failed on iPhone Safari | flutter_image_compress_web ≥ 0.1.5 (needs Dart 3.4) works on an iPhone |
-| `SturdyQrReader` in `lib/core/web/web_qr_reader.dart` | mobile_scanner 4.0.1's ZXing loop never read a tag on the iPhone | a newer mobile_scanner reads tags on an iPhone; test with `tool/web_harness/qr_scanner.dart` |
+| `SturdyQrReader` in `lib/core/web/web_qr_reader.dart`, with vendored zxing-wasm 3.1.4 (zxing-cpp) | mobile_scanner 4.0.1's ZXing JS loop never read a real tag on the iPhone; zxing-cpp reads it | a newer mobile_scanner reads tags on an iPhone (check which decoder it uses); test with `tool/web_harness/qr_scanner.dart` |
 | `fontFamilyFallback: ['Roboto']` on the map painter's labels | CanvasKit 3.13 downloads Noto fonts from Google for text whose style names no family | Flutter's web renderer checks glyphs against the bundled fonts by default |
 
 ## Things to re-test on devices
 
-9. **QR scanning on the iPhone** with `SturdyQrReader`. It has been verified only in Chrome (fake
-   camera, including a simulated late camera); the first version still did not read tags on the
-   iPhone 11. Long-press the scan screen's message box for the reader's live numbers. If the
+9. **QR scanning on the iPhone** with `SturdyQrReader` (zxing-cpp since `sturdy-3`). Verified in
+   Chrome with a fake camera fed the iPhone's own frame; ZXing JS could not read that frame. Long-press the scan screen's message box for the reader's live numbers. If the
    decoder never succeeds on iOS, options are a "scan from photo" button (decode a full-resolution
    still taken with the iPhone camera) or manual tree-code entry (plan P4.10).
 10. **Camera permission on iOS:** the scanner now stops the camera when you leave the Scan tab.
