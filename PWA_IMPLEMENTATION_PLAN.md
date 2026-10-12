@@ -932,6 +932,22 @@ Observed, not changed:
   - Home date eyebrow is the hard-coded ARB string "Sunday · 12 July" (pre-existing, affects native too).
 Not tested here: offline open, photo capture, QR scan, logout, Arabic on device.
 gate: format 248 files 0 changed; flutter analyze: No issues; flutter test: +366 ~6 All tests passed.
+
+iPhone 11 report — 2026-10-12 (user, installed PWA)
+  1. "when i open the QR code scanner then navigate to home or other tabs the iphone keeps telling me i am still using
+     the camera". Cause: StatefulShellRoute.indexedStack keeps the /scan branch mounted offstage, so MobileScanner was
+     never disposed (native had the same leak). Fix: ScannerScreen builds the camera only while TickerMode is on (go_router
+     13.2.0 wraps inactive branches in TickerMode(enabled: false)); dispose -> controller.stop -> web getTracks().stop().
+     Test: scanner_screen_test "the camera is released while another tab is shown" (start, stop, start).
+  2. Evidence photo (camera and gallery): "The selected evidence image could not be prepared." Our wrapper around
+     flutter_image_compress_web 0.1.4+1 (pica 9.0.1). The same pica path works in Android Chrome (CDP: 4000x3000 ->
+     1920x1440 JPEG); pica throws ERR_GET_IMAGE_DATA when canvas readback looks perturbed, which Safari's fingerprinting
+     protection can cause — the likely iPhone cause, not reproduced here (no current Safari available). Fix: web photos are
+     re-encoded by encodeJpegForUpload (browser decode with EXIF orientation, canvas drawImage, toBlob JPEG 0.84, long side
+     <= 1920), no getImageData. Tests (flutter test --platform chrome test/web): 3024x4032 JPEG -> 1440x1920 JPEG; 800x600
+     PNG -> 800x600 JPEG; non-image bytes rejected. pica-9.0.1.min.js removed (no longer called).
+  gate: format 249 files 0 changed; analyze: No issues; flutter test +367 ~6 All tests passed; browser tests +3.
+  👤 Needs the user's iPhone retest: evidence photo (camera + gallery), issue photo, scanner tab switching.
 ```
 
 ## 5. Decision log and user answers

@@ -29,7 +29,7 @@ class DeviceIssuePhotoPicker implements IssuePhotoPicker {
     try {
       compressed = await _compress(await picked.readAsBytes());
     } catch (error) {
-      // e.g. a decode failure, or a missing `pica` script on the web.
+      // e.g. a file the platform cannot decode as an image.
       throw OperationFailure(
         OperationFailureKind.invalidInput,
         'The selected image could not be prepared.',

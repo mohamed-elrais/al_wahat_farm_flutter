@@ -32,7 +32,7 @@ fi
 
 # Files the web build cannot work without (see web/vendor/README.md).
 for required in web/sqlite3.wasm web/sqflite_sw.js \
-  web/vendor/pica-9.0.1.min.js web/vendor/zxing-library-0.19.1.min.js; do
+  web/vendor/zxing-library-0.19.1.min.js; do
   if [ ! -s "$required" ]; then
     echo "error: missing $required (see web/vendor/README.md)" >&2
     exit 1

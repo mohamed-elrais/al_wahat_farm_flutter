@@ -3,6 +3,8 @@
 import 'dart:html' as html;
 // ignore: avoid_web_libraries_in_flutter
 import 'dart:js_util' as js_util;
+import 'dart:math' as math;
+import 'dart:typed_data';
 
 import 'package:al_wahat_farm_flutter/core/web/tab_lease.dart';
 import 'package:al_wahat_farm_flutter/core/web/web_platform_types.dart';
@@ -174,5 +176,44 @@ Future<StorageStatus?> storageStatus() async {
     );
   } catch (_) {
     return null;
+  }
+}
+
+/// Decodes a picked photo with the browser's own decoder (which applies the
+/// EXIF orientation), scales it to fit [maxDimension] on its longest side and
+/// re-encodes it as JPEG, dropping all metadata. Used instead of
+/// flutter_image_compress_web 0.1.4+1, which resizes with pica 9.0.1: pica
+/// reads pixels back with getImageData and refuses to run when the result
+/// looks perturbed (ERR_GET_IMAGE_DATA), as Safari's fingerprinting protection
+/// may make it; evidence photos failed on an iPhone 11 with the plugin.
+Future<Uint8List> encodeJpegForUpload(
+  Uint8List bytes, {
+  required int maxDimension,
+  required double quality,
+}) async {
+  final url = html.Url.createObjectUrlFromBlob(html.Blob(<Object>[bytes]));
+  try {
+    final image = html.ImageElement(src: url);
+    await image.decode();
+    final width = image.naturalWidth;
+    final height = image.naturalHeight;
+    if (width == 0 || height == 0) {
+      throw StateError('The image has no pixels.');
+    }
+    final scale = math.min(1.0, maxDimension / math.max(width, height));
+    final targetWidth = math.max(1, (width * scale).round());
+    final targetHeight = math.max(1, (height * scale).round());
+    final canvas = html.CanvasElement(width: targetWidth, height: targetHeight);
+    canvas.context2D
+      ..imageSmoothingEnabled = true
+      ..imageSmoothingQuality = 'high'
+      ..drawImageScaled(image, 0, 0, targetWidth, targetHeight);
+    final blob = await canvas.toBlob('image/jpeg', quality);
+    final buffer = await js_util.promiseToFuture<ByteBuffer>(
+      js_util.callMethod<Object>(blob, 'arrayBuffer', const <Object>[]),
+    );
+    return buffer.asUint8List();
+  } finally {
+    html.Url.revokeObjectUrl(url);
   }
 }

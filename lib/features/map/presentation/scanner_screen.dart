@@ -91,12 +91,18 @@ class _ScannerScreenState extends State<ScannerScreen> {
   @override
   Widget build(BuildContext context) {
     final scannerBuilder = widget.scannerBuilder;
+    // The scan tab stays mounted (offstage, tickers off) while another tab is
+    // shown. Building the camera only while this tab is active disposes it on
+    // a tab switch, which releases the camera, and restarts it on return.
+    final active = TickerMode.of(context);
     return ColoredBox(
       color: AppColors.ink,
       child: Stack(
         fit: StackFit.expand,
         children: <Widget>[
-          if (scannerBuilder != null)
+          if (!active)
+            const SizedBox.shrink()
+          else if (scannerBuilder != null)
             scannerBuilder(context, _scanToken)
           else if (!widget.isSecureContext())
             _CameraMessage(

@@ -7,12 +7,15 @@ origin (not a CDN) so the service worker can cache them for offline use
 
 | File | Global | Needed by | Source | License | SHA-256 |
 |---|---|---|---|---|---|
-| `pica-9.0.1.min.js` | `window.pica` | `flutter_image_compress_web` 0.1.4+1 (photo compression) | https://cdn.jsdelivr.net/npm/pica@9.0.1/dist/pica.min.js | MIT (`pica@9.0.1/package.json`) | `1f0987f8a2e9cf6993ca6bb21ff34b56600b4af6e39c46290b89df55acda2b70` |
 | `zxing-library-0.19.1.min.js` | `ZXing` | `mobile_scanner` 4.0.1 web (QR scanning) | https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js (the target of the README URL `https://unpkg.com/@zxing/library@0.19.1`) | MIT (`@zxing/library@0.19.1/package.json`) | `c5837e4858a3775173bab09ee36e6052545c7880c9d7452e2f464770c6e642ce` |
 
 The versions are the ones the plugin READMEs name. Update them only together with
 the plugin, re-download from the same URLs, and update the checksums above
 (`shasum -a 256 web/vendor/*.js`).
+
+`pica-9.0.1.min.js` (for `flutter_image_compress_web`) was removed on 2026-10-12: its resize
+failed on iPhone Safari, so web photos are now re-encoded by `encodeJpegForUpload` in
+`lib/core/web/web_platform_html.dart` and the plugin's web code is never called.
 
 ## SQLite for the web database (`web/sqlite3.wasm`, `web/sqflite_sw.js`)
 

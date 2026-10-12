@@ -86,7 +86,7 @@ How the web build differs from native:
 - **Offline data:** sqflite runs on SQLite compiled to WebAssembly, stored in IndexedDB
   (`web/sqlite3.wasm`, `web/sqflite_sw.js`). Regenerate them only as described in
   `web/vendor/README.md`, because the wasm must match the pinned `sqlite3` package.
-- **Third-party scripts** (`pica`, ZXing) and the Arabic and Roboto fonts are served from
+- **Third-party scripts** (ZXing) and the Arabic and Roboto fonts are served from
   this origin, so the app never contacts a CDN and starts offline.
 - **One tab at a time:** a second tab shows "open in another tab". This protects
   the offline queue.

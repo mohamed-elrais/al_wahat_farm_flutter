@@ -28,7 +28,7 @@ class _FakePicker extends ImagePicker {
 }
 
 Future<Uint8List> _failingCompressor(Uint8List _) async =>
-    throw StateError('pica is not defined');
+    throw StateError('The image has no pixels.');
 
 Future<Uint8List> _workingCompressor(Uint8List _) async =>
     Uint8List.fromList(<int>[0xFF, 0xD8, 0xFF]);

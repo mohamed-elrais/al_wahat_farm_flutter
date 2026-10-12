@@ -85,6 +85,68 @@ void main() {
 
     expect(find.text('Unable to scan while offline.'), findsOneWidget);
   });
+
+  testWidgets('the camera is released while another tab is shown', (
+    tester,
+  ) async {
+    // StatefulShellRoute.indexedStack keeps the scan tab mounted with tickers
+    // disabled while another tab is active; the camera view must not survive.
+    final events = <String>[];
+    var active = true;
+    late StateSetter setActive;
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: StatefulBuilder(
+          builder: (context, setState) {
+            setActive = setState;
+            return TickerMode(
+              enabled: active,
+              child: ScannerScreen(
+                repository: FakeTreeQrRepository(result: scanned),
+                scannerBuilder: (_, __) => _CameraProbe(events),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+    expect(events, <String>['start']);
+
+    setActive(() => active = false);
+    await tester.pump();
+    expect(events, <String>['start', 'stop']);
+
+    setActive(() => active = true);
+    await tester.pump();
+    expect(events, <String>['start', 'stop', 'start']);
+  });
+}
+
+class _CameraProbe extends StatefulWidget {
+  const _CameraProbe(this.events);
+
+  final List<String> events;
+
+  @override
+  State<_CameraProbe> createState() => _CameraProbeState();
+}
+
+class _CameraProbeState extends State<_CameraProbe> {
+  @override
+  void initState() {
+    super.initState();
+    widget.events.add('start');
+  }
+
+  @override
+  void dispose() {
+    widget.events.add('stop');
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => const SizedBox.expand();
 }
 
 Widget _testScanner(

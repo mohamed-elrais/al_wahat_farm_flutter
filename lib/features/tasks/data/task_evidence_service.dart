@@ -29,7 +29,7 @@ class DeviceTaskEvidencePicker implements TaskEvidencePicker {
     try {
       compressed = await _compress(await picked.readAsBytes());
     } catch (error) {
-      // e.g. a decode failure, or a missing `pica` script on the web.
+      // e.g. a file the platform cannot decode as an image.
       throw OperationFailure(
         OperationFailureKind.invalidInput,
         'The selected evidence image could not be prepared.',

@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:al_wahat_farm_flutter/core/web/tab_lease.dart';
 import 'package:al_wahat_farm_flutter/core/web/web_platform_types.dart';
 
@@ -34,3 +36,11 @@ Future<bool> isNewerAppVersionAvailable() async => false;
 
 /// Native foreground changes come from the app lifecycle instead.
 Stream<void> pageVisibleEvents() => const Stream<void>.empty();
+
+/// Native builds compress photos with flutter_image_compress instead.
+Future<Uint8List> encodeJpegForUpload(
+  Uint8List bytes, {
+  required int maxDimension,
+  required double quality,
+}) =>
+    throw UnsupportedError('encodeJpegForUpload is only available on the web');
