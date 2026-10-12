@@ -59,11 +59,9 @@ workaround.
 
 ## Things to re-test on devices
 
-9. **QR scanning on the iPhone** with `SturdyQrReader`. Since `sturdy-3` (zxing-cpp), the iPhone
-   reads tags. `sturdy-4` creates a new `<video>` for each camera start, because Safari showed a
-   small letterboxed preview after a return to the Scan tab. Check that the preview fills the
-   screen after several tab switches. Long-press the scan screen's message box for the reader's
-   live numbers; `view` is the preview's size and `starts` counts camera starts.
+9. **QR scanning on the iPhone:** ✅ confirmed by the user on 2026-10-12 (`sturdy-4`). Tags read,
+   and the preview fills the screen after tab switches. Long-press the scan screen's message box
+   for the reader's live numbers if it ever regresses.
 10. **Camera permission on iOS:** the scanner now stops the camera when you leave the Scan tab.
     Check whether iOS asks for camera permission again each time you return. If it is annoying,
     keep the camera paused instead of stopped.

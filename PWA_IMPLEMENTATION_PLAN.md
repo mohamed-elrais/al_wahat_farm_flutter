@@ -589,7 +589,7 @@ Also added tool/verify_deploy.py (P8.3 early): fetches every SW RESOURCES key fr
 
 **Tasks — QR scanner (F9, F10)**
 
-- [ ] P4.7 👤 *(automated part done: in Chrome `typeof ZXing`=object, `ZXing.BrowserMultiFormatReader`=function; real scan needs a camera)* Verify `window.ZXing` loads from `vendor/` (P1.9) and the scanner starts on desktop Chrome with a webcam. Scan a real tree QR (or a test QR rendered on screen with a known token) and confirm navigation to `/map/tree/:id`. 👤
+- [ ] P4.7 👤 *(automated part done: in Chrome `typeof ZXing`=object, `ZXing.BrowserMultiFormatReader`=function; real scan needs a camera)* *(iPhone 11 installed PWA, user 2026-10-12: real tree tag scanned with zxing-cpp (sturdy-3/4) ✅; desktop webcam not tested)* Verify `window.ZXing` loads from `vendor/` (P1.9) and the scanner starts on desktop Chrome with a webcam. Scan a real tree QR (or a test QR rendered on screen with a known token) and confirm navigation to `/map/tree/:id`. 👤
 - [x] P4.8 Insecure context: when `window.isSecureContext == false`, show a localized message ("Camera requires a secure (https) connection") instead of the generic camera-unavailable state. Add it to `web_platform` and `scanner_screen.dart`, with EN+AR strings and a widget test via a fake.
 - [ ] P4.9 👤 iPhone 11 Safari (browser and **installed**, U2), and desktop Chrome with the Mac webcam. Android Chrome: emulator only if available, marked "emulated". Steps: grant, deny, then re-grant camera permission. The deny path shows `scanCameraOff`. Record results per environment.
 - [ ] P4.10 **Fallback if U2 fails** (camera unavailable in iOS standalone): add a "Enter tree code manually" action on the scanner screen that calls the same `_scanToken(raw)` path. **Only implement this if P4.9 shows a real gap**, and with user approval, because it adds UI to native too.
@@ -958,7 +958,8 @@ QR scan on iPhone 11 (user): live preview shown, message stayed "Point the camer
   keeps one element for the reader's lifetime; the camera restarts on every return since 440e5b7). sturdy-4: a new
   <video> per camera start (SturdyQrReader overrides `video` and `start`); the diagnostics panel adds
   `view <layout size> starts <n>`. Harness with `?cycle=5` (scanner removed and rebuilt every 5 s): 3 starts, tag read
-  after each one. Chrome never showed the small preview, so only the iPhone can confirm. 👤 iPhone retest pending.
+  after each one. Chrome never showed the small preview, so only the iPhone can confirm. iPhone retest (sturdy-4, user,
+  2026-10-12): ✅ preview fills the screen after switching tabs, and tags read.
   Emulator back camera (virtualscene) never
   returns frames to getUserMedia (front camera does, 6–8 s), so QR detection cannot be reproduced on Pixel_4.
 gate: format 248 files 0 changed; flutter analyze: No issues; flutter test: +366 ~6 All tests passed.
