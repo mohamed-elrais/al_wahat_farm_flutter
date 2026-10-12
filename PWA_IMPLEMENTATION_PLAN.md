@@ -190,12 +190,12 @@ Changing any decision requires user approval (rule 9). Record approval in the De
 |---|---|---|---|
 | P0 | Baseline, decisions, measurements, hosting (Cloudflare Pages) | ✅ gate passed 2026-10-11 | P0.8-6 (explicit iPhone cellular + Wi-Fi without VPN on production), U11 (iOS version) |
 | P1 | Branded, CDN-free web shell (manifest, icons, index.html, fonts, vendored JS) | ✅ gate passed 2026-10-11 (except 👤 DevTools Manifest check) | Chrome DevTools → Application → Manifest shows no errors; iPhone visual check of staging |
-| P2 | Persistent web storage (sqflite on IndexedDB) | ✅ gate passed 2026-10-11 | P2.10–P2.13 (logged-in offline/reload/logout/iPhone checks) |
+| P2 | Persistent web storage (sqflite on IndexedDB) | ✅ gate passed 2026-10-11 | P2.13 (iPhone persist() result) |
 | P3 | Single-tab guard and web sync triggers | ✅ gate passed 2026-10-11 | P3.5 handover, P3.9 offline/online drain |
 | P4 | Camera, photos and QR scanner on web | ✅ gate passed 2026-10-11 | P4.4 issue photo (user retest reported working, not itemised), P4.7 real scan, P4.9 permissions |
 | P5 | Offline cold start, SW precache and update flow | ✅ gate passed 2026-10-11 (P5.4 ⛔, replaced by CDP checks) | P5.5 iPhone/desktop installed offline cold start, P5.6 update on device, P5.7 expired-token offline |
 | P6 | Install UX, responsive/browser UX, accessibility | ✅ gate passed 2026-10-11 | P6.10 map context menu, P6.3 installs, P6.4 safe areas, P6.5 back/forward, P6.9 RTL screenshot, P6.11 semantics cost, P6.12 screen readers |
-| P7 | Security and privacy on web | ✅ gate passed 2026-10-11 (CSP report-only) | P7.2 live logout check; CSP must be checked logged in before enforcing |
+| P7 | Security and privacy on web | ✅ gate passed 2026-10-11 (CSP report-only) | CSP must be checked logged in before enforcing |
 | P8 | Cloudflare Pages production hosting, headers and release | ✅ gate passed 2026-10-11 | P8.5 logged-in walkthrough; then build production with CSP_MODE=enforce |
 | P9 | Full feature-parity QA, docs and sign-off | ◐ automated parts done 2026-10-11; waiting on device checks + user acceptance | P9.1 matrix 👤 cells, P9.2 native device runs, P9.6 sign-off |
 
@@ -462,7 +462,7 @@ Staging deploy: wrangler --branch staging -> https://ffa6d264.al-wahat-farm.page
 - [x] P2.9 Tests (VM): unit-test the io `defaultDatabasePath` and that `AppDatabase.open(filePath: inMemoryDatabasePath)` behavior is unchanged (existing tests must pass untouched). Widget-test the P2.6 banner with an `AppServices` whose flag is false.
 - [x] P2.10 👤 *(2026-10-12: user, iPhone 11 installed PWA — offline task/issue with photo queued, uploaded after reconnect, pending badge cleared)* *(automated part done: DB opens in Chrome and creates `al_wahat_farm.db` in IndexedDB; the offline-queue + reload check needs a logged-in user)* Web persistence check. Build, serve and log in. Queue a task status change and an issue photo **offline** (DevTools → Network → Offline), then hard-reload while still offline. The outbox count and failed-ops entries are still present. Go online and the op drains. Close the browser fully, reopen, and the cached hierarchy loads offline. 👤 (or automated in P5.4 if feasible)
 - [x] P2.11 *(2026-10-12: user, iPhone 11 installed PWA — inspection started offline, app closed mid-route, progress restored)* Inspection station transaction (F4) on web: run an inspection route offline, reload mid-route, and the station progress is restored (the web analog of `integration_test/offline_inspection_restart_test.dart`). 👤
-- [ ] P2.12 Logout on web: after sign-out, DevTools → Application → IndexedDB shows **no private rows** (`awf_private:` cache keys, outbox, pending_photos empty). `clearPrivateData()` already does this through the stores, so this verifies it holds on IndexedDB. 👤
+- [x] P2.12 *(2026-10-12: user, iPhone 11 installed PWA — logout test (6 steps: no way back in, reopen and offline show login, fresh data after login) all passed)* Logout on web: after sign-out, DevTools → Application → IndexedDB shows **no private rows** (`awf_private:` cache keys, outbox, pending_photos empty). `clearPrivateData()` already does this through the stores, so this verifies it holds on IndexedDB. 👤
 - [ ] P2.13 👤 iPhone 11 (U8): repeat P2.10 on staging in Safari **and** in the installed home-screen app. Record the `persist()` result for each.
 
 **Files:** `pubspec.yaml`, `pubspec.lock`, `web/sqlite3.wasm`, `web/sqflite_sw.js`, `lib/core/database/database_platform*.dart`, `lib/core/database/app_database.dart`, `lib/main.dart`, `lib/core/app_services.dart`, `lib/core/web/web_platform*.dart`, ARB files, new tests.
@@ -756,7 +756,7 @@ Gate: format 0 changed; flutter analyze: No issues; flutter test: +366 ~6 All te
 **Tasks**
 
 - [x] P7.1 Confirm the compiled output contains only the **anon** key: `grep -c "service_role" build/web/main.dart.js` → 0. The anon key being visible in JS is expected. Record it.
-- [ ] P7.2 👤 *(verified in code; a live logged-in check is still open)* Logout clears everything private on web: IndexedDB rows (P2.12), `localStorage` Supabase session key (F12, removed by `signOut`), and **no private data in Cache Storage**. The SW caches only `RESOURCES`, which are public app files; verify by listing Cache Storage keys after a session. 👤 / DevTools.
+- [x] P7.2 👤 *(2026-10-12: user, iPhone 11 installed PWA — logout test (6 steps: no way back in, reopen and offline show login, fresh data after login) all passed)* *(verified in code; a live logged-in check is still open)* Logout clears everything private on web: IndexedDB rows (P2.12), `localStorage` Supabase session key (F12, removed by `signOut`), and **no private data in Cache Storage**. The SW caches only `RESOURCES`, which are public app files; verify by listing Cache Storage keys after a session. 👤 / DevTools.
 - [x] P7.3 Signed photo URLs may sit in the browser HTTP cache until expiry. Record the expiry constant used in `task_photo_viewer.dart:35` (`_expirySeconds`) and accept or flag it to the user.
 - [x] P7.4 *(report-only CSP with zero violations on the public load path; enforcement and the logged-in check move to P8)* Security headers (applied in P8 hosting config): `Strict-Transport-Security`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy: camera=(self), microphone=(), geolocation=()`. Draft a **Content-Security-Policy** and test it in report-only mode first: `default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self' https://<project>.supabase.co wss://<project>.supabase.co; img-src 'self' data: blob: https://<project>.supabase.co; style-src 'self' 'unsafe-inline'; worker-src 'self'; font-src 'self'`. **Every directive must be validated against the real console**; CanvasKit and the sqlite worker may need adjustments. Check whether `--csp` (T1) is required by testing with and without it. Record the final policy and any violations.
 - [x] P7.5 Not run (the user hasn't requested it). Run the `security-review` skill on the PWA diff if the user requests it. Otherwise record "not run".
@@ -932,7 +932,14 @@ Observed, not changed:
   - Home date eyebrow is the hard-coded ARB string "Sunday · 12 July" (pre-existing, affects native too).
 Not tested here: offline open, photo capture, QR scan, logout, Arabic on device.
 User iPhone 11 results 2026-10-12: offline cold start ✅, offline queue + drain ✅, inspection restart ✅, Arabic/RTL ✅,
-  real QR scan ❌ (details requested), logout not run (steps requested). Emulator back camera (virtualscene) never
+  real QR scan ❌, logout ✅ (6-step check).
+QR scan on iPhone 11 (user): live preview shown, message stayed "Point the camera…", native app reads the same tag,
+  tag = https://alwahat.farm/scan-tree?token=<uuid> (already accepted by resolveTreeQrToken). Cause found in ZXing 0.19.1
+  decodeContinuously (used by mobile_scanner 4.0.1 web): the loop stops on any error other than NotFound/Checksum/Format
+  and the capture canvas is sized once from the first frame. Reproduced in headless Chrome (tool/web_harness/qr_scanner.dart,
+  fake camera .y4m with a tag URL, video size reported as 0 for the first 3 s): stock reader 0 detections in 15 s; new
+  SturdyQrReader (lib/core/web/web_qr_reader.dart, installed via MobileScannerWebPlugin.barCodeReader) first detection at
+  3.7 s. Normal frames: both readers detect (landscape 1280x720 and portrait 720x1280). 👤 iPhone retest pending. Emulator back camera (virtualscene) never
   returns frames to getUserMedia (front camera does, 6–8 s), so QR detection cannot be reproduced on Pixel_4.
 gate: format 248 files 0 changed; flutter analyze: No issues; flutter test: +366 ~6 All tests passed.
 

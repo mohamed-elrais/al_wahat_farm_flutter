@@ -44,3 +44,6 @@ Future<Uint8List> encodeJpegForUpload(
   required double quality,
 }) =>
     throw UnsupportedError('encodeJpegForUpload is only available on the web');
+
+/// Native builds scan with the platform's own barcode APIs.
+void installQrReader() {}

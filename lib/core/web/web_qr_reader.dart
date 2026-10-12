@@ -1,0 +1,131 @@
+// Only compiled for the web: imported by web_platform_html.dart.
+import 'dart:async';
+// ignore: avoid_web_libraries_in_flutter
+import 'dart:html' as html;
+// ignore: avoid_web_libraries_in_flutter
+import 'dart:js_util' as js_util;
+import 'dart:math' as math;
+
+import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:mobile_scanner/mobile_scanner_web.dart';
+
+/// mobile_scanner 4.0.1's web reader with a sturdier decode loop.
+///
+/// The stock loop is ZXing 0.19.1's `decodeContinuously`, which stops for good
+/// on any error other than "not found" (for example reading a 0x0 canvas while
+/// the video has no frames yet) and sizes its capture canvas once, from the
+/// first frame, so a later resolution or orientation change crops every frame.
+/// On an iPhone 11 the preview showed but no tag was ever read. This loop
+/// waits for real frames, sizes the canvas from the current frame every time,
+/// alternates the whole frame (scaled) with a full-resolution centre crop, and
+/// keeps going whatever a single attempt throws. Camera start and stop are the
+/// plugin's own.
+class SturdyQrReader extends ZXingBarcodeReader {
+  SturdyQrReader({required super.videoContainer});
+
+  /// Longest side of the canvas handed to ZXing; larger frames are scaled.
+  static const _maxDecodeSide = 1280;
+
+  StreamController<Barcode?>? _results;
+  Timer? _timer;
+  bool _decoding = false;
+  bool _cropTurn = false;
+  final html.CanvasElement _canvas = html.CanvasElement();
+  Object? _qrReader;
+
+  @override
+  Stream<Barcode?> detectBarcodeContinuously() {
+    _results ??= StreamController<Barcode?>(
+      onListen: () {
+        _timer?.cancel();
+        _timer = Timer.periodic(frameInterval, (_) => _tick());
+      },
+      onCancel: stopDetectBarcodeContinuously,
+    );
+    return _results!.stream;
+  }
+
+  @override
+  Future<void> stopDetectBarcodeContinuously() async {
+    _timer?.cancel();
+    _timer = null;
+    final results = _results;
+    _results = null;
+    await results?.close();
+  }
+
+  void _tick() {
+    if (_decoding) return;
+    final width = video.videoWidth;
+    final height = video.videoHeight;
+    // HAVE_CURRENT_DATA: a frame can be drawn.
+    if (width == 0 || height == 0 || video.readyState < 2) return;
+    _decoding = true;
+    try {
+      final text = _decodeFrame(width, height, crop: _cropTurn);
+      _cropTurn = !_cropTurn;
+      if (text != null && text.isNotEmpty) {
+        _results?.add(Barcode(rawValue: text, format: BarcodeFormat.qrCode));
+      }
+    } catch (_) {
+      // "Not found" on most frames, or a transient canvas error: try again.
+    } finally {
+      _decoding = false;
+    }
+  }
+
+  String? _decodeFrame(int width, int height, {required bool crop}) {
+    var sx = 0;
+    var sy = 0;
+    var sw = width;
+    var sh = height;
+    if (crop) {
+      // The middle of the frame, where the on-screen guide box points.
+      final side = (math.min(width, height) * 0.6).round();
+      sx = (width - side) ~/ 2;
+      sy = (height - side) ~/ 2;
+      sw = side;
+      sh = side;
+    }
+    final scale = math.min(1.0, _maxDecodeSide / math.max(sw, sh));
+    final dw = math.max(1, (sw * scale).round());
+    final dh = math.max(1, (sh * scale).round());
+    if (_canvas.width != dw) _canvas.width = dw;
+    if (_canvas.height != dh) _canvas.height = dh;
+    _canvas.context2D.drawImageScaledFromSource(
+      video,
+      sx,
+      sy,
+      sw,
+      sh,
+      0,
+      0,
+      dw,
+      dh,
+    );
+
+    final zxing = js_util.getProperty<Object>(html.window, 'ZXing');
+    Object create(String name, List<Object?> arguments) =>
+        js_util.callConstructor<Object>(
+          js_util.getProperty<Object>(zxing, name),
+          arguments,
+        );
+    final bitmap = create('BinaryBitmap', <Object?>[
+      create('HybridBinarizer', <Object?>[
+        create('HTMLCanvasElementLuminanceSource', <Object?>[_canvas]),
+      ]),
+    ]);
+    final reader = _qrReader ??= create('QRCodeReader', const <Object?>[]);
+    final result = js_util.callMethod<Object?>(reader, 'decode', <Object?>[
+      bitmap,
+    ]);
+    return result == null ? null : js_util.getProperty<String?>(result, 'text');
+  }
+
+  @override
+  Future<void> stop() async {
+    _timer?.cancel();
+    _timer = null;
+    await super.stop();
+  }
+}

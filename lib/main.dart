@@ -38,6 +38,7 @@ Future<void> main() async {
     (_) => runApp(SecondTabApp(onUseHere: () => _takeOver(lease))),
   );
   final services = await _bootstrapServices();
+  installQrReader();
   runApp(AlWahatApp(config: config, services: services));
   unawaited(_warmOfflineCache());
 }

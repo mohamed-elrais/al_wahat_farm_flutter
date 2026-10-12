@@ -7,7 +7,9 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:al_wahat_farm_flutter/core/web/tab_lease.dart';
+import 'package:al_wahat_farm_flutter/core/web/web_qr_reader.dart';
 import 'package:al_wahat_farm_flutter/core/web/web_platform_types.dart';
+import 'package:mobile_scanner/mobile_scanner_web_plugin.dart';
 
 /// A `BroadcastChannel` shared by every tab of this origin, or null where the
 /// browser lacks it (then each tab acts alone, as before).
@@ -216,4 +218,11 @@ Future<Uint8List> encodeJpegForUpload(
   } finally {
     html.Url.revokeObjectUrl(url);
   }
+}
+
+/// Replaces mobile_scanner's web QR decode loop with [SturdyQrReader]. Must
+/// run before the first scanner starts; camera handling stays the plugin's.
+void installQrReader() {
+  MobileScannerWebPlugin.barCodeReader =
+      SturdyQrReader(videoContainer: MobileScannerWebPlugin.vidDiv);
 }
