@@ -4,6 +4,7 @@ import 'package:al_wahat_farm_flutter/core/cache/local_cache_store.dart';
 import 'package:al_wahat_farm_flutter/core/logging/safe_log.dart';
 import 'package:al_wahat_farm_flutter/features/farm/domain/farm_hierarchy.dart';
 import 'package:al_wahat_farm_flutter/features/planting_pits/domain/planting_pit.dart';
+import 'package:crypto/crypto.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 abstract interface class FarmHierarchyDataSource {
@@ -147,6 +148,15 @@ class PersistentFarmHierarchyCache implements FarmHierarchyCache {
 
   static String keyFor(String farmId) => '$keyPrefix$farmId';
 
+  /// SHA-256 of the stored JSON. Every launch refreshes the hierarchy from the
+  /// network; when nothing changed, comparing this small value skips
+  /// rewriting the ~2.6 MB entry, which held the database for over 10 s on a
+  /// phone browser ("database has been locked for 0:00:10"). Written after
+  /// the entry and removed with it, so a match always means the entry is
+  /// present and current. Private, so logout clears it.
+  static String fingerprintKeyFor(String farmId) =>
+      '${privateCachePrefix}hierarchy_sha256:$farmId';
+
   @override
   Future<FarmHierarchy?> read(String farmId) async {
     final raw = await _store.read(keyFor(farmId));
@@ -161,21 +171,33 @@ class PersistentFarmHierarchyCache implements FarmHierarchyCache {
         'farm_hierarchy_cache_dropped',
         data: <String, Object?>{'error': error.runtimeType},
       );
-      await _store.remove(keyFor(farmId));
+      await clear(farmId);
       return null;
     }
   }
 
   @override
   Future<void> write(FarmHierarchy hierarchy) async {
-    await _store.write(
-      keyFor(hierarchy.farmId),
-      jsonEncode(hierarchy.toCacheJson()),
+    final farmId = hierarchy.farmId;
+    final value = jsonEncode(hierarchy.toCacheJson());
+    final fingerprint = sha256.convert(utf8.encode(value)).toString();
+    final unchanged =
+        await _store.read(fingerprintKeyFor(farmId)) == fingerprint;
+    SafeLog.event(
+      'farm_hierarchy_cache_write',
+      data: <String, Object?>{'skipped': unchanged},
     );
+    if (unchanged) return;
+    await _store.remove(fingerprintKeyFor(farmId));
+    await _store.write(keyFor(farmId), value);
+    await _store.write(fingerprintKeyFor(farmId), fingerprint);
   }
 
   @override
-  Future<void> clear(String farmId) => _store.remove(keyFor(farmId));
+  Future<void> clear(String farmId) async {
+    await _store.remove(fingerprintKeyFor(farmId));
+    await _store.remove(keyFor(farmId));
+  }
 }
 
 enum FarmHierarchySource { network, cache }
@@ -197,6 +219,10 @@ abstract interface class FarmHierarchyRepository {
     String farmId, {
     bool allowCachedFallback = true,
   });
+
+  /// The hierarchy stored on this device, without touching the network, or
+  /// null when there is none (or it cannot be read).
+  Future<FarmHierarchySnapshot?> loadCached(String farmId);
 }
 
 class DefaultFarmHierarchyRepository implements FarmHierarchyRepository {
@@ -204,6 +230,21 @@ class DefaultFarmHierarchyRepository implements FarmHierarchyRepository {
 
   final FarmHierarchyDataSource _dataSource;
   final FarmHierarchyCache _cache;
+
+  @override
+  Future<FarmHierarchySnapshot?> loadCached(String farmId) async {
+    try {
+      final cached = await _cache.read(farmId);
+      return cached == null
+          ? null
+          : FarmHierarchySnapshot(
+              hierarchy: cached,
+              source: FarmHierarchySource.cache,
+            );
+    } catch (_) {
+      return null;
+    }
+  }
 
   @override
   Future<FarmHierarchySnapshot> load(

@@ -33,11 +33,36 @@ class FarmHierarchyController extends ChangeNotifier {
 
   FarmHierarchyState get state => _state;
 
+  int _generation = 0;
+
+  /// Shows the hierarchy stored on the device at once when there is one, then
+  /// replaces it with the network copy. A launch no longer waits for the full
+  /// network refresh (seconds on a slow connection) before the map and home
+  /// can draw. While data is shown, a reload refreshes it in the background,
+  /// and a failed refresh keeps the data on screen.
   Future<void> load(String farmId) async {
-    _setState(const FarmHierarchyLoading());
+    final generation = ++_generation;
+    final current = _state;
+    var showing = current is FarmHierarchyReady &&
+        current.snapshot.hierarchy.farmId == farmId;
+    if (!showing) {
+      _setState(const FarmHierarchyLoading());
+      final cached = await _repository.loadCached(farmId);
+      if (generation != _generation) return;
+      if (cached != null) {
+        _setState(FarmHierarchyReady(cached));
+        showing = true;
+      }
+    }
     try {
-      _setState(FarmHierarchyReady(await _repository.load(farmId)));
+      final fresh = await _repository.load(
+        farmId,
+        allowCachedFallback: !showing,
+      );
+      if (generation != _generation) return;
+      _setState(FarmHierarchyReady(fresh));
     } catch (error) {
+      if (generation != _generation || showing) return;
       _setState(FarmHierarchyFailure(error));
     }
   }

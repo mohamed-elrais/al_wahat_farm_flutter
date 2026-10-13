@@ -19,7 +19,59 @@ class _ThrowingDataSource implements FarmHierarchyDataSource {
       throw StateError('offline');
 }
 
+/// Counts writes per key, to prove unchanged data is not rewritten.
+class _CountingStore extends InMemoryCacheStore {
+  final Map<String, int> writes = <String, int>{};
+
+  @override
+  Future<void> write(String key, String value) {
+    writes[key] = (writes[key] ?? 0) + 1;
+    return super.write(key, value);
+  }
+}
+
 void main() {
+  test('an unchanged hierarchy is not rewritten; a changed one is', () async {
+    final store = _CountingStore();
+    final cache = PersistentFarmHierarchyCache(store);
+    final key = PersistentFarmHierarchyCache.keyFor('farm-id');
+
+    await cache.write(_hierarchy);
+    await cache.write(_hierarchy);
+    expect(store.writes[key], 1);
+
+    final changed = FarmHierarchy(
+      farmId: _hierarchy.farmId,
+      sections: _hierarchy.sections,
+      zones: _hierarchy.zones,
+      trees: _hierarchy.trees,
+    );
+    await cache.write(changed);
+    expect(store.writes[key], 2);
+    expect((await cache.read('farm-id'))!.plantingPits, isEmpty);
+  });
+
+  test('clear and a corrupt read remove the fingerprint with the entry',
+      () async {
+    final store = InMemoryCacheStore();
+    final cache = PersistentFarmHierarchyCache(store);
+    final fingerprint =
+        PersistentFarmHierarchyCache.fingerprintKeyFor('farm-id');
+
+    await cache.write(_hierarchy);
+    expect(await store.read(fingerprint), isNotNull);
+    await cache.clear('farm-id');
+    expect(await store.read(fingerprint), isNull);
+
+    await cache.write(_hierarchy);
+    await store.write(PersistentFarmHierarchyCache.keyFor('farm-id'), '{');
+    expect(await cache.read('farm-id'), isNull);
+    expect(await store.read(fingerprint), isNull);
+    // With the fingerprint gone, the next write stores the entry again.
+    await cache.write(_hierarchy);
+    expect(await cache.read('farm-id'), isNotNull);
+  });
+
   test('persisted hierarchy round-trips through the cache store', () async {
     final store = InMemoryCacheStore();
     final cache = PersistentFarmHierarchyCache(store);
