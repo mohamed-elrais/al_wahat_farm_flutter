@@ -1,60 +1,38 @@
 # PWA follow-ups
 
-Things to look at once the PWA feature (`PWA_IMPLEMENTATION_PLAN.md`) is signed off. Each item
-says what was seen, where, and what to check first. Nothing here blocks using the web app today.
+Things found while finishing the PWA feature (`PWA_IMPLEMENTATION_PLAN.md`). Each item says what
+was seen, what was done, and what is still open. Nothing here blocks using the web app today.
 
-Written 2026-10-12 after testing on the Pixel_4 emulator (Chrome DevTools protocol) and the
-user's iPhone 11 (installed PWA). "Seen" means observed; "not verified" means reasoned from code.
+Started 2026-10-12 after testing on the Pixel_4 emulator and the user's iPhone 11 (installed PWA);
+updated 2026-10-13 after desktop Chrome, emulator and native runs. "Seen" means observed; "not
+verified" means reasoned from code.
 
-## Bugs and risks (do first)
+## Fixed (2026-10-13)
 
-1. **"Warning database has been locked for 0:00:10" on every launch.**
-   - Seen: logged by sqflite in Android Chrome on each start of the logged-in app.
-   - Meaning: a database call outside a transaction waited 10 s for an open transaction to
-     finish. Startup is slower than it needs to be, and code that awaits the outer call while
-     holding the transaction can deadlock.
-   - Check first: every `db.transaction(...)` body uses its `txn`/executor argument and never
-     `_database.db` (for example `SqfliteCacheStore.writeWithExecutor`, the outbox and
-     pending-photo stores, `InspectionStationLocalStore`). Not verified whether native shows it.
-2. **Logout deletes unsynced offline work without warning.**
-   - `AppServices.clearPrivateData()` clears the outbox and pending photos
-     (`lib/core/app_services.dart`).
-   - Native behaves the same; this was not introduced by the web work.
-   - Suggested: when the outbox is not empty, confirm before signing out ("N changes have not
-     been uploaded").
-3. **Home date header is fixed text.** `homeDateEyebrow` in `lib/l10n/arb/app_en.arb` (and the
-   Arabic file) is the literal "Sunday · 12 July". Replace it with a formatted current date.
-4. **Small screen issues seen on the emulator (2026-10-12).**
-   - An unknown address (for example `#/no-such-page`) shows only "Route unavailable: …" with no
-     button back to Home. Native shows the same router error page.
-   - On a phone-width screen the Schedules page title wraps as "Schedule s" next to the
-     "New schedule" button.
-   - On desktop, right-clicking the map opens Chrome's own menu (Back, Reload, Inspect…). If
-     that is unwanted, call `BrowserContextMenu.disableContextMenu()` on web at startup.
-   - The production security policy is enforced since 2026-10-12. If a new feature fails only
-     on the web, deploy staging with `CSP_MODE=report` and look for `securitypolicyviolation`
-     reports.
+| # | What was wrong | Fix | Verified |
+|---|---|---|---|
+| 1 | "Warning database has been locked for 0:00:10" on every launch. Not a transaction misuse: the ~2.6 MB farm hierarchy was rewritten on every launch and held the database for over 10 s on a phone browser | `PersistentFarmHierarchyCache` stores a SHA-256 of the JSON and skips the write when unchanged (0278c4c) | desktop Chrome on staging: second launch logs `farm_hierarchy_cache_write {skipped=true}`; not re-checked on a phone |
+| 2 | Logout deleted unsynced offline work without warning | Logout asks first when the outbox has pending or failed changes (60fc168) | widget tests (cancel keeps the session; confirm signs out) |
+| 3 | Home date line was the fixed text "Sunday · 12 July" | Today's date in the app language (60fc168) | widget test (EN + AR); staging showed "TUESDAY · 13 OCTOBER" |
+| 4 | Unknown address was a dead end; Schedules title wrapped as "Schedule s"; inspection tasks listed raw route/photo flags; two user-facing strings said "Supabase" | "Go to Home" button; title scales down (golden updated); flags hidden; plain wording (60fc168) | tests; staging screenshot of the unknown-route page |
+| 5 | Offline token refresh logged an uncaught `Error` every ~20 s | The router's auth listener handles stream errors (gotrue 2.11.1 reports refresh failures there) (60fc168) | code + gotrue source; not re-observed offline with an expired token |
+| 6 | Launch waited for the full network refresh before drawing | The farm hierarchy shows from the device cache at once and refreshes in the background; a failed refresh keeps it (0278c4c) | unit tests; staging warm start showed Home within 10 s |
+| 7 | The 2.6 MB cache row was rewritten every launch | Same fingerprint as #1 | as #1 |
+| 8 | The offline download fetched both CanvasKit engines (~6 MB each) | Only the variant this browser loads, by the engine's own test (d189167) | fresh Chrome profile cached only `canvaskit/chromium/`, offline reload rendered; Safari path not run (check the next iPhone offline start) |
+| 9 | The first reload after an update ran the old build | `index.html` gives flutter.js 15 s instead of 4 s to activate the new service worker (d189167) | staging: build A → deploy B → one reload ran B |
+| — | Native Android offline start showed "Unable to load farm data" ("Row too big to fit into CursorWindow", the 2.6 MB row) | Large cache values are read in 256K-character slices (de98a48) | Pixel_4 native app offline: Home and Map from cache |
+| — | `lib/core/supabase/auth_repository.dart` was never committed (`.gitignore` `supabase/` matched it), so a clean checkout could not build | Rule anchored to `/supabase/`, file committed (b5bcb4b) | clean worktree analyzes clean and builds for the iOS simulator |
+| — | Map tree sheet hidden under the bottom bar on wide, short windows; side panel showed the zone uuid | Sheets on the root navigator; zone code; panel scrolls (eefdd71) | test + desktop Chrome 1280x510 |
 
-5. **Offline token refresh logs uncaught errors.** With an expired session and no network, gotrue
-   2.11.1 retries the refresh in bursts of 5 about every 20 s, and each failed burst ends in an
-   uncaught `Error` in the console (seen 2026-10-13 on the emulator). The app keeps working and
-   refreshes once online. Check whether `onAuthStateChange` / the auth client's error stream
-   needs a listener that swallows `AuthRetryableFetchException` while offline.
+## Still open
 
-## Speed
-
-6. **The map waits for a full network refresh** (about 7 s on the emulator) before drawing,
-   even when cached data is already on the device. Consider showing the cached hierarchy at once
-   and refreshing in the background (`DefaultFarmHierarchyRepository.load`).
-7. **The farm hierarchy cache is one 2.6 MB JSON row, rewritten on every launch.** It is fast
-   since the sqlite patch, but skipping the write when the data has not changed, or storing rows
-   per tree, would save work on every start.
-8. **The offline download fetches both CanvasKit engines** (`canvaskit/` and
-   `canvaskit/chromium/`, about 6 MB each). A browser only uses one of them, so
-   `precacheAppShell` could skip the other and save about 6 MB of storage per device.
-9. **The first reload after an update runs the old code.** flutter.js 3.13 gives the new service
-   worker 4 s, then loads with the old one. The new code runs from the next launch. Options: wait
-   longer for the new worker, or reload once more automatically after the update banner's reload.
+1. **Desktop right-click on the map** opens Chrome's own menu (Back, Reload, Inspect…).
+   `BrowserContextMenu.disableContextMenu()` would hide it, but also removes the browser's
+   copy/paste menu in text fields on desktop, so it was left as is. Decide if desktop matters.
+2. **Re-check on a phone:** #1 (no "database has been locked" line on launch), #5 (no uncaught
+   errors offline with an expired session), #8 on the iPhone (offline start after this update).
+3. **Leaving the shell re-creates the login gate.** Opening an unknown address and coming back
+   re-runs the authenticated bootstrap (a short spinner). Rare, and unchanged by these fixes.
 
 ## Workarounds to remove when Flutter/Dart is upgraded
 
@@ -68,39 +46,34 @@ workaround.
 | `encodeJpegForUpload` in `lib/core/web/web_platform_html.dart` | flutter_image_compress_web 0.1.4+1 (pica) failed on iPhone Safari | flutter_image_compress_web ≥ 0.1.5 (needs Dart 3.4) works on an iPhone |
 | `SturdyQrReader` in `lib/core/web/web_qr_reader.dart`, with vendored zxing-wasm 3.1.4 (zxing-cpp) | mobile_scanner 4.0.1's ZXing JS loop never read a real tag on the iPhone; zxing-cpp reads it | a newer mobile_scanner reads tags on an iPhone (check which decoder it uses); test with `tool/web_harness/qr_scanner.dart` |
 | `fontFamilyFallback: ['Roboto']` on the map painter's labels | CanvasKit 3.13 downloads Noto fonts from Google for text whose style names no family | Flutter's web renderer checks glyphs against the bundled fonts by default |
+| `offlinePrecacheKeys` (`lib/core/web/precache_keys.dart`) mirrors the engine's CanvasKit variant test | Flutter 3.13 lists both variants in the service worker | a Flutter upgrade: re-check `browserSupportsCanvaskitChromium` and the variant file names |
+| `timeoutMillis: 15000` in `web/index.html` | flutter.js 3.13's 4 s default loaded the old build after an update | a newer flutter.js / `flutter_bootstrap.js` handles updates differently |
 
 ## Things to re-test on devices
 
-10. **QR scanning on the iPhone:** ✅ confirmed by the user on 2026-10-12 (`sturdy-4`). Tags read,
-   and the preview fills the screen after tab switches. Long-press the scan screen's message box
-   for the reader's live numbers if it ever regresses.
-11. **Camera permission on iOS:** the scanner now stops the camera when you leave the Scan tab.
-    Check whether iOS asks for camera permission again each time you return. If it is annoying,
-    keep the camera paused instead of stopped.
-12. **Real Android phone.** Everything Android so far is emulator-only. Untested: low-end
-    performance, the camera and photos, QR scanning, and `persist()` for a real WebAPK install.
-    On the emulator, Chrome made a plain shortcut install: `persisted()` was false, and More still
-    offers "Install app".
-13. **Screen readers:** decide on Flutter's "Enable accessibility" placeholder (plan D11 / P6.11)
-    and do a VoiceOver pass on the installed iPhone app (P6.12).
-
-## Open items in the plan (see §3 of `PWA_IMPLEMENTATION_PLAN.md`)
-
-- ⛔ P5.4 needs the user's acceptance: the `flutter drive` test was replaced by DevTools-protocol
-  checks.
-- P0.8-6: production on iPhone over cellular and Wi-Fi without VPN (explicit check).
-- P5.6: the update flow on the iPhone. The emulator showed the banner and the second-launch
-  update.
-- P5.7: an expired session token while offline.
-- P6.3–P6.5 (install on desktop Chrome, iPhone safe areas, browser back/forward/refresh),
-  P6.10 (desktop right-click on the map).
-- P9.2: run the native app on the iPhone or simulator and on the Pixel_4 to check for regressions.
+- **Camera permission on iOS:** the scanner stops the camera when you leave the Scan tab. Check
+  whether iOS asks for camera permission again each time you return. If it is annoying, keep the
+  camera paused instead of stopped.
+- **Real Android phone.** Everything Android so far is emulator-only. Untested: low-end
+  performance, the camera and photos, QR scanning, and `persist()` for a real WebAPK install.
+- **Screen readers:** deferred by the user (plan P6.12).
 
 ## Testing notes
 
 - **Emulator camera:** the Pixel_4 emulator's back camera (`virtualscene`) never returns frames to
-  Chrome's `getUserMedia`; the front camera works (6–8 s to start). Test the QR loop with
-  `tool/web_harness/qr_scanner.dart` in desktop Chrome and a fake camera file, as described at the
-  top of that file.
+  Chrome's `getUserMedia` (nor to the native scanner); the front camera works in Chrome (6–8 s to
+  start). Test the QR loop with `tool/web_harness/qr_scanner.dart` in desktop Chrome and a fake
+  camera file, as described at the top of that file.
+- **Emulator network:** on 2026-10-13 the Pixel_4 lost networking (netsim Wi-Fi sees
+  "AndroidWifi" but will not connect, even after `-no-snapshot-load`). Wiping its data would
+  probably fix it but also removes the logged-in sessions and the installed PWA there.
+- **One device at a time:** do not run the iOS simulator and the Android emulator together; the
+  Mac cannot handle both (user, 2026-10-13).
 - **DevTools on the emulator:** `adb forward tcp:9333 localabstract:chrome_devtools_remote`. Don't
-  leave a profiler attached to the sqlite shared worker across a reload; that hung the app once.
+  attach DevTools (profiler or network emulation) to the sqlite shared worker across a reload; it
+  hangs the app's database open.
+- **Headless Chrome:** the page reports `visibilityState = hidden`, so route transitions can stay
+  frozen mid-animation in screenshots; load the URL directly to check a page.
+- **Deploying from a fresh shell:** `export NVM_DIR="$HOME/.nvm"` and put `/usr/local/bin` first
+  (Python 3.14; macOS's 3.9 lacked 308 handling before 2aa4c71). CocoaPods 1.17.0 is in
+  `/usr/local/Cellar/cocoapods/1.17.0/bin` (not linked).

@@ -1041,6 +1041,17 @@ P9.2 native regression — 2026-10-13 (agent; logins by the user)
   ios/Runner.xcodeproj/project.pbxproj change (removes the PBXBuildFile section) was left untouched; building from
   that working copy is unverified.
   Tooling: verify_deploy.py now follows Cloudflare's 308 itself (Python 3.9 urllib does not) — 2aa4c71.
+Follow-ups fixed — 2026-10-13 (agent, user away; details in PWA_FOLLOWUPS.md "Fixed")
+  60fc168 Home date line from today's date (EN/AR), plain wording instead of "Supabase", "Go to Home" on unknown
+  routes, Schedules title fits a phone (golden updated), inspection flags hidden, logout asks when changes are
+  unsent, router handles auth stream errors. 0278c4c hierarchy shown from cache first and refreshed in the
+  background; SHA-256 fingerprint skips rewriting an unchanged 2.6 MB cache (the 10 s "database locked" warning).
+  d189167 offline download skips the unused CanvasKit variant; flutter.js timeoutMillis 15000. Gate: format clean
+  (l10n/gen excluded), analyze clean, flutter test +383 ~6. Staging (desktop Chrome, test account): date
+  "TUESDAY · 13 OCTOBER", cache write skipped on the 2nd launch, Home within 10 s, unknown route page with the
+  button, build A → B ran B on the first reload, fresh profile cached only canvaskit/chromium/ and started offline.
+  Production deployed (1172454540). The Pixel_4 emulator lost networking (netsim Wi-Fi), so these were not
+  re-checked there.
 ```
 
 ## 5. Decision log and user answers
