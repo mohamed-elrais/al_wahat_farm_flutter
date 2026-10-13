@@ -1,7 +1,8 @@
 import 'dart:async';
 
+import 'package:al_wahat_farm_flutter/app/route_unavailable_screen.dart';
 import 'package:al_wahat_farm_flutter/core/config/app_config.dart';
-import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
+import 'package:al_wahat_farm_flutter/core/logging/safe_log.dart';
 import 'package:al_wahat_farm_flutter/features/auth/presentation/authenticated_gate.dart';
 import 'package:al_wahat_farm_flutter/features/auth/presentation/login_screen.dart';
 import 'package:al_wahat_farm_flutter/features/home/presentation/home_screen.dart';
@@ -217,11 +218,7 @@ GoRouter createRouter(AppConfig config) {
         ],
       ),
     ],
-    errorBuilder: (context, state) => Scaffold(
-      body: Center(
-        child: Text(context.l10n.routeUnavailable(state.uri.path)),
-      ),
-    ),
+    errorBuilder: (_, state) => RouteUnavailableScreen(path: state.uri.path),
   );
 }
 
@@ -230,6 +227,13 @@ class _AuthListenable extends ChangeNotifier {
     if (config.isConfigured) {
       _subscription = Supabase.instance.client.auth.onAuthStateChange.listen(
         (_) => notifyListeners(),
+        // gotrue reports a failed token refresh (for example while offline)
+        // as an error on this stream and retries by itself; the session is
+        // kept. Without this handler each failure is an uncaught error.
+        onError: (Object error) => SafeLog.event(
+          'auth_state_error',
+          data: <String, Object?>{'error': error.runtimeType},
+        ),
       );
     }
   }

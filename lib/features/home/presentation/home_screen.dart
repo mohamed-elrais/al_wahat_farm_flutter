@@ -12,9 +12,13 @@ import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_widgets.d
 import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_workspace_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({this.today, super.key});
+
+  /// The date shown above the title; tests pin it, the app uses the clock.
+  final DateTime? today;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -34,7 +38,10 @@ class _HomeScreenState extends State<HomeScreen> with SectionReturnAware {
           builder: (BuildContext context, BoxConstraints constraints) {
             final tablet = constraints.maxWidth >= AppBreakpoints.tablet;
             final wide = constraints.maxWidth >= AppBreakpoints.wide;
-            final intro = _Intro(onScan: () => context.go('/scan'));
+            final intro = _Intro(
+              today: widget.today ?? DateTime.now(),
+              onScan: () => context.go('/scan'),
+            );
             const operations = _OperationsPanel();
 
             late final Widget content;
@@ -105,14 +112,15 @@ class _HomeScreenState extends State<HomeScreen> with SectionReturnAware {
 }
 
 class _Intro extends StatelessWidget {
-  const _Intro({required this.onScan});
+  const _Intro({required this.today, required this.onScan});
+  final DateTime today;
   final VoidCallback onScan;
 
   @override
   Widget build(BuildContext context) => Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          Eyebrow(context.l10n.homeDateEyebrow),
+          Eyebrow(_dateLabel(context, today)),
           const SizedBox(height: 7),
           Text(
             context.l10n.homeHeroTitle,
@@ -348,4 +356,13 @@ class _TaskPreview extends StatelessWidget {
         trailing: const Icon(Icons.chevron_right),
         onTap: () => context.go('/tasks/${task.id}'),
       );
+}
+
+/// "Sunday · 12 July" in the app's language.
+String _dateLabel(BuildContext context, DateTime date) {
+  final locale = Localizations.localeOf(context).toString();
+  return context.l10n.homeDateEyebrow(
+    DateFormat.EEEE(locale).format(date),
+    DateFormat('d MMMM', locale).format(date),
+  );
 }

@@ -63,6 +63,9 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String get routeUnavailableHome => 'الذهاب إلى الرئيسية';
+
+  @override
   String get commonCamera => 'الكاميرا';
 
   @override
@@ -123,7 +126,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get loginFailed => 'تعذّر تسجيل الدخول. تحقق من اتصالك.';
 
   @override
-  String get homeDateEyebrow => 'الأحد · 12 يوليو';
+  String homeDateEyebrow(String weekday, String date) {
+    return '$weekday · $date';
+  }
 
   @override
   String get homeHeroTitle => 'مزرعتك.\nشجرةً شجرة.';
@@ -191,7 +196,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get syncOffline => 'غير متصل';
 
   @override
-  String get syncOnlineSubtitle => 'متصل · يتم تحديث بيانات العمليات من Supabase';
+  String get syncOnlineSubtitle => 'متصل · بيانات المزرعة محدّثة';
 
   @override
   String get syncOfflineSubtitle => 'غير متصل · عرض بيانات المزرعة والمهام المخزّنة';
@@ -203,10 +208,30 @@ class AppLocalizationsAr extends AppLocalizations {
   String get syncStatusOfflineSemantics => 'حالة المزامنة: غير متصل';
 
   @override
-  String get syncDefaultSubtitle => 'يتم تحديث بيانات العمليات من Supabase';
+  String get syncDefaultSubtitle => 'تُحدَّث بيانات المزرعة عند الاتصال بالإنترنت';
 
   @override
   String get logout => 'تسجيل الخروج';
+
+  @override
+  String get logoutUnsentTitle => 'تغييرات لم تُرفع بعد';
+
+  @override
+  String logoutUnsentBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'يوجد $count تغيير على هذا الجهاز لم يُرفع بعد.',
+      many: 'يوجد $count تغييرًا على هذا الجهاز لم يُرفع بعد.',
+      few: 'يوجد $count تغييرات على هذا الجهاز لم تُرفع بعد.',
+      two: 'يوجد تغييران على هذا الجهاز لم يُرفعا بعد.',
+      one: 'يوجد تغيير واحد على هذا الجهاز لم يُرفع بعد.',
+    );
+    return '$_temp0 تسجيل الخروج يحذفها. اتصل بالإنترنت وانتظر حتى تتم مزامنتها أولًا.';
+  }
+
+  @override
+  String get logoutAnyway => 'تسجيل الخروج على أي حال';
 
   @override
   String get syncTitle => 'المزامنة';
@@ -570,7 +595,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get tasksEmptyAllTitle => 'لا توجد مهام مرئية';
 
   @override
-  String get tasksEmptyManager => 'أنشئ مهمة أو غيّر التاريخ والإسناد في Supabase.';
+  String get tasksEmptyManager => 'أنشئ مهمة، أو اختر يومًا أو تصفية أخرى.';
 
   @override
   String get tasksEmptyWorker => 'تظهر هنا فقط المهام النشطة المُسندة إليك.';

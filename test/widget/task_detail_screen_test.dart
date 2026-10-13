@@ -403,6 +403,8 @@ void main() {
           'required_quantity': 42.133,
           'required_unit': 'liter',
           'application_method': null,
+          'inspection_route_version': 2,
+          'inspection_requires_issue_photo': false,
         },
       ),
     );
@@ -442,6 +444,8 @@ void main() {
     );
     expect(find.textContaining('operation_plan'), findsNothing);
     expect(find.textContaining('inventory_item_id'), findsNothing);
+    expect(find.textContaining('inspection route'), findsNothing);
+    expect(find.textContaining('issue photo'), findsNothing);
   });
 }
 

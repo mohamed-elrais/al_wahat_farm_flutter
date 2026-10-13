@@ -24,7 +24,8 @@
         "type": "String"
       }
     }
-  },
+  },  "routeUnavailableHome": "Go to Home",
+
   "commonCamera": "Camera",
   "commonGallery": "Gallery",
   "commonRemove": "Remove",
@@ -45,7 +46,14 @@
   "loginInvalidEmail": "Enter a valid email address",
   "loginInvalidPassword": "Password is required",
   "loginFailed": "Unable to sign in. Check your connection.",
-  "homeDateEyebrow": "Sunday · 12 July",
+  "homeDateEyebrow": "{weekday} · {date}",
+  "@homeDateEyebrow": {
+    "description": "Today's date above the home title, for example Sunday · 12 July.",
+    "placeholders": {
+      "weekday": {"type": "String"},
+      "date": {"type": "String"}
+    }
+  },
   "homeHeroTitle": "Your farm.\nTree by tree.",
   "homeHeroLede": "Field operations grounded in every mapped tree and irrigation zone.",
   "homeScanTreeQr": "Scan Tree QR",
@@ -74,12 +82,20 @@
   },
   "syncOnline": "Online",
   "syncOffline": "Offline",
-  "syncOnlineSubtitle": "Online · operational reads refresh from Supabase",
+  "syncOnlineSubtitle": "Online · farm data is kept up to date",
   "syncOfflineSubtitle": "Offline · showing cached farm and task data",
   "syncStatusOnlineSemantics": "Sync status online",
   "syncStatusOfflineSemantics": "Sync status offline",
-  "syncDefaultSubtitle": "Operational reads refresh from Supabase",
+  "syncDefaultSubtitle": "Farm data refreshes whenever you are online",
   "logout": "Log out",
+  "logoutUnsentTitle": "Changes not uploaded yet",
+  "logoutUnsentBody": "{count, plural, =1{1 change on this device has not been uploaded.} other{{count} changes on this device have not been uploaded.}} Logging out deletes them. Connect to the internet and wait for them to sync first.",
+  "@logoutUnsentBody": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "logoutAnyway": "Log out anyway",
   "syncTitle": "Sync",
   "syncStatusAllSynced": "All changes are synced",
   "syncStatusPending": "{count, plural, =1{1 change waiting to sync} other{{count} changes waiting to sync}}",
@@ -227,7 +243,7 @@
   "tasksFailureDefault": "Unable to load farm tasks. Check your connection and try again.",
   "tasksEmptyTodayTitle": "No tasks scheduled today",
   "tasksEmptyAllTitle": "No visible tasks",
-  "tasksEmptyManager": "Create a task or switch the date and assignment in Supabase.",
+  "tasksEmptyManager": "Create a task, or choose another day or filter.",
   "tasksEmptyWorker": "Only active tasks assigned to you appear here.",
   "reviewQueueEntryTitle": "Review queue",
   "reviewQueueEntryNone": "No tasks awaiting review",

@@ -63,6 +63,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get routeUnavailableHome => 'Go to Home';
+
+  @override
   String get commonCamera => 'Camera';
 
   @override
@@ -123,7 +126,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginFailed => 'Unable to sign in. Check your connection.';
 
   @override
-  String get homeDateEyebrow => 'Sunday · 12 July';
+  String homeDateEyebrow(String weekday, String date) {
+    return '$weekday · $date';
+  }
 
   @override
   String get homeHeroTitle => 'Your farm.\nTree by tree.';
@@ -191,7 +196,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get syncOffline => 'Offline';
 
   @override
-  String get syncOnlineSubtitle => 'Online · operational reads refresh from Supabase';
+  String get syncOnlineSubtitle => 'Online · farm data is kept up to date';
 
   @override
   String get syncOfflineSubtitle => 'Offline · showing cached farm and task data';
@@ -203,10 +208,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get syncStatusOfflineSemantics => 'Sync status offline';
 
   @override
-  String get syncDefaultSubtitle => 'Operational reads refresh from Supabase';
+  String get syncDefaultSubtitle => 'Farm data refreshes whenever you are online';
 
   @override
   String get logout => 'Log out';
+
+  @override
+  String get logoutUnsentTitle => 'Changes not uploaded yet';
+
+  @override
+  String logoutUnsentBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count changes on this device have not been uploaded.',
+      one: '1 change on this device has not been uploaded.',
+    );
+    return '$_temp0 Logging out deletes them. Connect to the internet and wait for them to sync first.';
+  }
+
+  @override
+  String get logoutAnyway => 'Log out anyway';
 
   @override
   String get syncTitle => 'Sync';
@@ -567,7 +589,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tasksEmptyAllTitle => 'No visible tasks';
 
   @override
-  String get tasksEmptyManager => 'Create a task or switch the date and assignment in Supabase.';
+  String get tasksEmptyManager => 'Create a task, or choose another day or filter.';
 
   @override
   String get tasksEmptyWorker => 'Only active tasks assigned to you appear here.';

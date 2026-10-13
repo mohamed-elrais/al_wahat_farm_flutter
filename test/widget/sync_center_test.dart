@@ -95,4 +95,60 @@ void main() {
     expect(find.text('1 change failed to sync'), findsOneWidget);
     expect(find.byKey(const Key('sync-retry-failed-button')), findsOneWidget);
   });
+
+  testWidgets('logout asks first when changes have not been uploaded',
+      (tester) async {
+    tester.view.physicalSize = const Size(430, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final engine = await _engineWith(<PendingMutation>[_op('a'), _op('b')]);
+    addTearDown(engine.dispose);
+    var signOuts = 0;
+    await tester.pumpWidget(MaterialApp(
+      theme: AppTheme.light,
+      home: SyncScope(
+        engine: engine,
+        child: ProfileScreen(signOut: () async => signOuts++),
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('logout-button')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('logout-unsent-dialog')), findsOneWidget);
+    expect(find.textContaining('2 changes on this device'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('logout-unsent-cancel')));
+    await tester.pumpAndSettle();
+    expect(signOuts, 0);
+
+    await tester.tap(find.byKey(const Key('logout-button')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('logout-unsent-confirm')));
+    await tester.pumpAndSettle();
+    expect(signOuts, 1);
+  });
+
+  testWidgets('logout with nothing queued signs out at once', (tester) async {
+    tester.view.physicalSize = const Size(430, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final engine = await _engineWith(const <PendingMutation>[]);
+    addTearDown(engine.dispose);
+    var signOuts = 0;
+    await tester.pumpWidget(MaterialApp(
+      theme: AppTheme.light,
+      home: SyncScope(
+        engine: engine,
+        child: ProfileScreen(signOut: () async => signOuts++),
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('logout-button')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('logout-unsent-dialog')), findsNothing);
+    expect(signOuts, 1);
+  });
 }

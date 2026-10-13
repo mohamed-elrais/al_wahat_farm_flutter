@@ -201,6 +201,12 @@ abstract class AppLocalizations {
   /// **'Route unavailable: {path}'**
   String routeUnavailable(String path);
 
+  /// No description provided for @routeUnavailableHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Home'**
+  String get routeUnavailableHome;
+
   /// No description provided for @commonCamera.
   ///
   /// In en, this message translates to:
@@ -321,11 +327,11 @@ abstract class AppLocalizations {
   /// **'Unable to sign in. Check your connection.'**
   String get loginFailed;
 
-  /// No description provided for @homeDateEyebrow.
+  /// Today's date above the home title, for example Sunday · 12 July.
   ///
   /// In en, this message translates to:
-  /// **'Sunday · 12 July'**
-  String get homeDateEyebrow;
+  /// **'{weekday} · {date}'**
+  String homeDateEyebrow(String weekday, String date);
 
   /// No description provided for @homeHeroTitle.
   ///
@@ -456,7 +462,7 @@ abstract class AppLocalizations {
   /// No description provided for @syncOnlineSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Online · operational reads refresh from Supabase'**
+  /// **'Online · farm data is kept up to date'**
   String get syncOnlineSubtitle;
 
   /// No description provided for @syncOfflineSubtitle.
@@ -480,7 +486,7 @@ abstract class AppLocalizations {
   /// No description provided for @syncDefaultSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Operational reads refresh from Supabase'**
+  /// **'Farm data refreshes whenever you are online'**
   String get syncDefaultSubtitle;
 
   /// No description provided for @logout.
@@ -488,6 +494,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Log out'**
   String get logout;
+
+  /// No description provided for @logoutUnsentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Changes not uploaded yet'**
+  String get logoutUnsentTitle;
+
+  /// No description provided for @logoutUnsentBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 change on this device has not been uploaded.} other{{count} changes on this device have not been uploaded.}} Logging out deletes them. Connect to the internet and wait for them to sync first.'**
+  String logoutUnsentBody(int count);
+
+  /// No description provided for @logoutAnyway.
+  ///
+  /// In en, this message translates to:
+  /// **'Log out anyway'**
+  String get logoutAnyway;
 
   /// No description provided for @syncTitle.
   ///
@@ -1152,7 +1176,7 @@ abstract class AppLocalizations {
   /// No description provided for @tasksEmptyManager.
   ///
   /// In en, this message translates to:
-  /// **'Create a task or switch the date and assignment in Supabase.'**
+  /// **'Create a task, or choose another day or filter.'**
   String get tasksEmptyManager;
 
   /// No description provided for @tasksEmptyWorker.

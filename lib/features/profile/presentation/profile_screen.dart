@@ -16,7 +16,11 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
+  const ProfileScreen({this.signOut, super.key});
+
+  /// Ends the session; tests replace it. Defaults to [AuthRepository], which
+  /// clears private local data first.
+  final Future<void> Function()? signOut;
 
   @override
   Widget build(BuildContext context) {
@@ -101,10 +105,14 @@ class ProfileScreen extends StatelessWidget {
                   const SizedBox(height: 8),
                   OutlinedButton.icon(
                     key: const Key('logout-button'),
-                    onPressed: () => AuthRepository(
-                      Supabase.instance.client,
-                      onSignOut: services?.clearPrivateData,
-                    ).signOut(),
+                    onPressed: () => _confirmAndSignOut(
+                      context,
+                      signOut ??
+                          AuthRepository(
+                            Supabase.instance.client,
+                            onSignOut: services?.clearPrivateData,
+                          ).signOut,
+                    ),
                     icon: const Icon(Icons.logout),
                     label: Text(l10n.logout),
                   ),
@@ -321,4 +329,39 @@ class _SyncStatusRow extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Logging out clears the outbox and pending photos with the rest of the
+/// private data, so ask first when changes are still waiting to upload.
+Future<void> _confirmAndSignOut(
+  BuildContext context,
+  Future<void> Function() signOut,
+) async {
+  final engine = SyncScope.maybeOf(context);
+  final unsent = (engine?.pendingCount ?? 0) + (engine?.failedCount ?? 0);
+  if (unsent > 0) {
+    final l10n = context.l10n;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        key: const Key('logout-unsent-dialog'),
+        title: Text(l10n.logoutUnsentTitle),
+        content: Text(l10n.logoutUnsentBody(unsent)),
+        actions: <Widget>[
+          TextButton(
+            key: const Key('logout-unsent-cancel'),
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.commonCancel),
+          ),
+          TextButton(
+            key: const Key('logout-unsent-confirm'),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.logoutAnyway),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+  }
+  await signOut();
 }

@@ -2,6 +2,7 @@ import 'package:al_wahat_farm_flutter/app/theme/app_theme.dart';
 import 'package:al_wahat_farm_flutter/features/farm/data/farm_hierarchy_repository.dart';
 import 'package:al_wahat_farm_flutter/features/farm/presentation/farm_hierarchy_gate.dart';
 import 'package:al_wahat_farm_flutter/features/home/presentation/home_screen.dart';
+import 'package:al_wahat_farm_flutter/l10n/gen/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -63,5 +64,28 @@ void main() {
     expect(find.text('1876'), findsOneWidget);
     expect(find.text('Planting pits'), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('date above the title is today, in the app language',
+      (tester) async {
+    Future<void> pumpIn(Locale locale) => tester.pumpWidget(
+          MaterialApp(
+            locale: locale,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            theme: AppTheme.light,
+            home: Scaffold(body: HomeScreen(today: DateTime(2026, 10, 13))),
+          ),
+        );
+
+    await pumpIn(const Locale('en'));
+    await tester.pumpAndSettle();
+    expect(find.text('TUESDAY · 13 OCTOBER'), findsOneWidget);
+
+    await pumpIn(const Locale('ar'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('الثلاثاء'), findsOneWidget);
+    expect(find.textContaining('أكتوبر'), findsOneWidget);
+    expect(find.textContaining('يوليو'), findsNothing);
   });
 }

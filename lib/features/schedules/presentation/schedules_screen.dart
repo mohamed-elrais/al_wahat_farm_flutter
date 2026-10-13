@@ -130,13 +130,20 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Eyebrow(l10n.schedulesEyebrow),
-                    Text(
-                      l10n.schedulesTitle,
-                      style: Theme.of(context).textTheme.headlineLarge,
+                    // Shrinks rather than breaking the word next to the
+                    // "New schedule" button on a phone ("Schedule s").
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: AlignmentDirectional.centerStart,
+                      child: Text(
+                        l10n.schedulesTitle,
+                        style: Theme.of(context).textTheme.headlineLarge,
+                      ),
                     ),
                   ],
                 ),
               ),
+              const SizedBox(width: 8),
               FilledButton.icon(
                 key: const Key('schedule-new'),
                 onPressed: () => context.go('/more/schedules/new'),

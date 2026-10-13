@@ -1024,12 +1024,14 @@ String? _productLine(BuildContext context, Map<String, Object?> instructions) {
   }
 }
 
-/// Machine metadata the schedule generator and consumption logic stamp
-/// into `instructions`. Never shown raw: the product row renders the
-/// dosing, and the ids mean nothing to a field worker.
+/// Machine metadata the schedule generator, consumption logic and inspection
+/// creation stamp into `instructions`. Never shown raw: the product row
+/// renders the dosing, and the ids and flags mean nothing to a field worker.
 const Set<String> _internalInstructionKeys = <String>{
   'text',
   'priority',
+  'inspection_route_version',
+  'inspection_requires_issue_photo',
   'operation_plan_id',
   'operation_plan_target_id',
   'operation_plan_run_id',
