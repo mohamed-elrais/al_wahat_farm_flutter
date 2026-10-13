@@ -130,10 +130,10 @@ Each fact below was checked on 2026-10-11. If code changes invalidate one, updat
 | # | Unknown | Verify in |
 |---|---|---|
 | U1 | Whether Android Chrome now supports SharedWorker (the README's note is from 2022). The design must work **without** it. | P3 |
-| U2 | Camera (`getUserMedia`) for the QR scanner inside an **installed iOS PWA** (standalone mode). | P4 👤 |
-| U3 | Whether iOS Safari's `<input capture>` returns JPEG or HEIC to `image_picker_for_web`. | P4 👤 |
+| ~~U2~~ | **Resolved 2026-10-12 (user, iPhone 11 installed PWA):** the camera works in standalone mode and tags scan (P4.9). | — |
+| ~~U3~~ | **Moot since 2026-10-12:** every picked photo is re-encoded to JPEG by `encodeJpegForUpload` (browser decoder), so the format iOS returns no longer matters; camera and gallery photos upload (P4.4). The original format was not recorded. | — |
 | ~~U4~~ | **Resolved P4.6:** Supabase Storage answers `Access-Control-Allow-Origin: *` (preflight 200 and GET, even on errors). | — |
-| U5 | Map rendering performance (CustomPainter, ~1.5k trees) under CanvasKit vs HTML. No low-end Android phone is available, so measure on the **iPhone 11**. Low-end Android performance stays an **accepted, recorded risk** (§5). | P0 👤 |
+| ~~U5~~ | **Answered P0.4 (user, iPhone 11):** CanvasKit draws the map in 1–3 s and pans much more smoothly than HTML (D4). Low-end Android performance stays an **accepted, recorded risk** (§5). | — |
 | U6 | Whether `sqlite3.wasm`/`sqflite_sw.js` fetched by the worker are served from the SW cache when offline. | P5 |
 | ~~U7~~ | **Resolved 2026-10-11:** Netlify, domain root. The production domain is not chosen yet; use `<site>.netlify.app` until the user names a custom domain. | §5 |
 | U9 | ~~Whether the CLI applies headers~~ **Mostly answered by N7:** the 27.12.0 help says deploy processes headers from `netlify.toml` or `_headers`. The plan still uses `_headers` (works for drag-and-drop too). P8.4 `curl` confirms the live result. | P8 |
@@ -189,15 +189,15 @@ Changing any decision requires user approval (rule 9). Record approval in the De
 | Phase | Title | Status | Open 👤 checks |
 |---|---|---|---|
 | P0 | Baseline, decisions, measurements, hosting (Cloudflare Pages) | ✅ gate passed 2026-10-11; P0.8-6 confirmed by the user 2026-10-12 | U11 (iOS version, record only) |
-| P1 | Branded, CDN-free web shell (manifest, icons, index.html, fonts, vendored JS) | ✅ gate passed 2026-10-11 (except 👤 DevTools Manifest check) | Chrome DevTools → Application → Manifest shows no errors; iPhone visual check of staging |
-| P2 | Persistent web storage (sqflite on IndexedDB) | ✅ gate passed 2026-10-11 | P2.13 (iPhone persist() result) |
+| P1 | Branded, CDN-free web shell (manifest, icons, index.html, fonts, vendored JS) | ✅ gate passed 2026-10-11; manifest checked by Page.getInstallabilityErrors = [] and a desktop install (P6.3), iPhone visuals by the user's daily use | — |
+| P2 | Persistent web storage (sqflite on IndexedDB) | ✅ gate passed 2026-10-11 | P2.13 (iPhone "Offline storage" line) |
 | P3 | Single-tab guard and web sync triggers | ✅ gate passed 2026-10-11; P3.5 handover verified 2026-10-12 | — |
 | P4 | Camera, photos and QR scanner on web | ✅ gate passed 2026-10-11; P4.4, P4.7, P4.9 done 2026-10-12/13 (P4.10 not needed) | — |
 | P5 | Offline cold start, SW precache and update flow | ✅ gate passed 2026-10-11; P5.4 accepted by the user, P5.5/P5.6 done 2026-10-12, P5.7 done 2026-10-13 | — |
 | P6 | Install UX, responsive/browser UX, accessibility | ✅ gate passed 2026-10-11; P6.3, P6.4, P6.5, P6.10, P6.11 done 2026-10-12/13 | P6.12 screen readers (deferred by the user) |
 | P7 | Security and privacy on web | ✅ gate passed 2026-10-11; CSP enforced 2026-10-12 (connect-src gained blob:) | — |
 | P8 | Cloudflare Pages production hosting, headers and release | ✅ gate passed 2026-10-11; P8.5 done and CSP enforced in production 2026-10-12 | — |
-| P9 | Full feature-parity QA, docs and sign-off | ◐ automated parts done 2026-10-11; waiting on device checks + user acceptance | P9.1 matrix 👤 cells, P9.2 native device runs, P9.6 sign-off |
+| P9 | Full feature-parity QA, docs and sign-off | ◐ P9.1–P9.5 done 2026-10-13; P9.6 waits for the user's acceptance | P2.13 iPhone storage line, U11 iOS version, P6.12 (deferred) |
 
 ---
 
@@ -853,39 +853,51 @@ P8.7/P8.8 not wanted / not requested.
 
 | Feature (route) | Web concern | Desktop Chrome | Android emulator Chrome (functional only) | iPhone 11 Safari (installed) | Offline |
 |---|---|---|---|---|---|
-| Login screen renders (`/login`) | F11/F12, fonts | ✅ headless (EN + AR, external hosts blocked) | 👤 | 👤 (staging loads, user report) | ✅ headless cold start |
-| Sign in with a real account | autofill (P6.7) | 👤 | ✅ user (installed from Chrome, logged in) | 👤 | n/a |
-| Offline app-open / session restore | P2, P5.7 | 👤 | 👤 | 👤 | 👤 |
-| Home dashboard (`/home`) | — | 👤 | ✅ CDP (data loaded; date eyebrow is a hard-coded "Sunday · 12 July" ARB string, also native) | 👤 | 👤 |
-| Farm map + layers + section filter (`/map`) | D4 perf, wheel zoom, LTR lock | 👤 | ✅ CDP (1539 trees; map 14–16 s after launch incl. network refresh, was 45–59 s; 0.6 s once loaded) | ✅ user: CanvasKit 1–3 s, smooth (P0.4) | 👤 |
-| Tree detail + planting pits (`/map/tree/:id`) | — | 👤 | 👤 | 👤 | 👤 |
-| Report issue + photo (`…/report-issue`) | F8, P4 | 👤 (pica global ✅) | 👤 | 👤 | 👤 |
-| QR scan (`/scan`) | F9, HTTPS, U2 | 👤 (ZXing global ✅) | 👤 | 👤 | 👤 |
-| Issues list/detail (`/issues…`) | — | 👤 | 👤 | 👤 | 👤 |
-| Tasks list + month calendar (`/tasks`) | — | 👤 | ✅ list renders (calendar not opened) | 👤 | 👤 |
-| Task create (`/tasks/create`) | outbox | 👤 | 👤 | 👤 | 👤 |
-| Task detail, status changes, evidence photos, photo viewer (`/tasks/:id`) | F15 CORS (✅ ACAO *) | 👤 | 👤 | 👤 | 👤 |
-| Inspection create + runner, restart persistence | F4 | 👤 | 👤 | 👤 | 👤 |
-| Engineer reviews queue/detail (`/tasks/reviews…`) | offline review queue | 👤 | 👤 | 👤 | 👤 |
-| Schedules list/form/detail (`/more/schedules…`) | — | 👤 | 👤 | 👤 | 👤 |
-| Inventory list/item/form (`/more/inventory…`) | — | 👤 | 👤 | 👤 | 👤 |
-| Failed ops: retry/discard (`/more/failed-ops`) | — | 👤 | 👤 | 👤 | 👤 |
-| Sync badges + drain on reconnect/foreground | P3 | 👤 | 👤 | 👤 | 👤 |
-| Language switch EN↔AR + RTL | P1.10 font | ✅ headless (AR via browser locale) | 👤 | 👤 | ✅ headless (AR, external hosts blocked) |
-| Profile + logout clears private data | P2.12/P7.2 | 👤 (code-verified) | 👤 | 👤 | n/a |
-| Install prompt / iOS instructions | D8 | ✅ headless (installable, prompt captured) | ✅ user installed; standalone display mode confirmed | 👤 | n/a |
-| Update banner | D6 | ✅ headless (build A → B) | ✅ banner shown; new code ran from the 2nd launch (see evidence) | 👤 | n/a |
-| Second-tab guard | D2 | ✅ headless (owner=true / owner=false) | ✅ CDP (Chrome tab showed the guard while the installed app owned the lease) | n/a | n/a |
-| Web database opens (IndexedDB) | D1 | ✅ headless (sqlite3.wasm loaded, no fallback) | ✅ CDP (2.6 MB DB in IndexedDB) | 👤 | n/a |
+| Login screen renders (`/login`) | F11/F12, fonts | ✅ headless (EN + AR, external hosts blocked) | ✅ (staging + production) | ✅ user | ✅ headless cold start |
+| Sign in with a real account | autofill (P6.7) | ✅ 10-13 (test account; also the user in desktop Chrome) | ✅ user | ✅ user | n/a |
+| Offline app-open / session restore | P2, P5.7 | ✅ 10-13 (page offline → Home, Map, Tasks, Issues from cache) | ✅ airplane mode; expired token (P5.7) | ✅ user | ✅ |
+| Home dashboard (`/home`) | — | ✅ (date eyebrow is a fixed ARB string, follow-up) | ✅ | ✅ user | ✅ |
+| Farm map + layers + section filter (`/map`) | D4 perf, wheel zoom, LTR lock | ✅ (wide layout fixed eefdd71; right-click opens Chrome's menu, follow-up) | ✅ (map 14–16 s after launch incl. network refresh) | ✅ user (CanvasKit 1–3 s, P0.4) | ✅ desktop + emulator |
+| Tree detail + planting pits (`/map/tree/:id`) | — | ✅ page, side panel and sheet | ✅ | ✅ user (opened from a scan) | not run |
+| Report issue + photo (`…/report-issue`) | F8, P4 | ✅ form; not submitted (shared production data) | ✅ gallery photo prepared under the enforced CSP; not submitted | ✅ user (P4.4: camera + gallery, online + offline, uploaded) | ✅ user |
+| QR scan (`/scan`) | F9, HTTPS, U2 | ✅ fake webcam fed a real tag frame → TREE-B-258 | ❌ emulator back camera gives no frames (environment, not the app) | ✅ user (sturdy-4, preview full after tab switches) | not run (lookup needs the network) |
+| Issues list/detail (`/issues…`) | — | ✅ | ✅ | not itemised by the user | ✅ desktop (list) |
+| Tasks list + month calendar (`/tasks`) | — | ✅ list, All filter, calendar | ✅ list | not itemised by the user | ✅ desktop (list) |
+| Task create (`/tasks/create`) | outbox | ✅ form; not submitted | ✅ form; not submitted | not itemised by the user | ✅ user (offline queue, P2.10) |
+| Task detail, status changes, evidence photos, photo viewer (`/tasks/:id`) | F15 CORS (✅ ACAO *) | ✅ detail (no status change: shared data) | not run | ✅ user (offline status change + photo queued and uploaded, P2.10) | ✅ user |
+| Inspection create + runner, restart persistence | F4 | ✅ create form, inspection task detail | ✅ create form | ✅ user ("inspection restart works") | ✅ user |
+| Engineer reviews queue/detail (`/tasks/reviews…`) | offline review queue | ✅ queue + detail | ✅ queue | not itemised by the user | not run |
+| Schedules list/form/detail (`/more/schedules…`) | — | ✅ list (empty) | ✅ list + new form ("Schedule s" title wrap, follow-up) | not itemised by the user | not run |
+| Inventory list/item/form (`/more/inventory…`) | — | ✅ list + item | ✅ list + new form | not itemised by the user | not run |
+| Failed ops: retry/discard (`/more/failed-ops`) | — | ✅ empty state | ✅ empty state | not itemised by the user | n/a (no failed ops to retry) |
+| Sync badges + drain on reconnect/foreground | P3 | not run | not run | ✅ user (pending badge cleared after reconnect, P3.9) | ✅ user |
+| Language switch EN↔AR + RTL | P1.10 font | ✅ More → العربية → RTL Home/More/Map; back to system default | ✅ (earlier CDP, Arabic labels) | ✅ user | ✅ headless (AR, external hosts blocked) |
+| Profile + logout clears private data | P2.12/P7.2 | ✅ logout → /login, session removed from localStorage | not run | ✅ user (6 logout steps) | n/a |
+| Install prompt / iOS instructions | D8 | ✅ user clicked Install; standalone window (P6.3) | ✅ user installed; standalone display mode confirmed | ✅ user (Add to Home Screen) | n/a |
+| Update banner | D6 | ✅ headless (build A → B) | ✅ banner shown; new code ran from the 2nd launch | ✅ user (P5.6) | n/a |
+| Second-tab guard | D2 | ✅ handover with "Use here" (P3.5) | ✅ CDP (Chrome tab showed the guard while the installed app owned the lease) | n/a | n/a |
+| Web database opens (IndexedDB) | D1 | ✅ headless (sqlite3.wasm loaded, no fallback) | ✅ CDP (2.6 MB DB in IndexedDB) | ✅ user (offline data survived restarts) | n/a |
+
+Desktop column 2026-10-13: headless Chrome 150 on production, logged in with the config.json test account (typed by
+DevTools, never printed); 0 exceptions and 0 CSP violations across the tour. "not itemised by the user" = the user
+reported broad iPhone passes (offline start/work, inspection restart, Arabic, photos, QR, logout, install, update)
+but not that screen specifically. Writes were not run where they would create records in the shared production data.
 
 **Tasks**
 
-- [ ] P9.1 👤 *(matrix filled with what was verified in headless Chrome and the user's P0.4 report; every cell needing a login or a real device is still 👤)* Fill the matrix 👤. Every ❌ becomes a ⛔ item in the owning phase, which is reopened.
+- [x] P9.1 *(2026-10-13: matrix filled from desktop Chrome (logged in), the Pixel_4 emulator and the user's iPhone reports. One ❌ — QR scan on the Android emulator — is the emulator's camera, not the app (native and desktop scans work), so no phase is reopened; cells marked "not run" / "not itemised" are listed in P9.6)* Fill the matrix 👤. Every ❌ becomes a ⛔ item in the owning phase, which is reopened.
 - [x] P9.2 *(2026-10-13: flutter test +371 ~6; native Android debug APK on the Pixel_4 emulator and native iOS on the iPhone 14 simulator (Xcode 14.2), user logged in on both. Found and fixed two native bugs: the Android offline start failed (CursorWindow, de98a48) and lib/core/supabase/auth_repository.dart was never committed (b5bcb4b). Offline-queue writes were not run natively, to keep test data out of production. See Phase 9 evidence)* 👤 *(automated part done: flutter test +366 ~6 and `flutter build apk --debug` ✓; running on the iPhone/simulator and the Pixel_4 emulator is still open)* Native regression: `flutter test` (all), `flutter build apk --debug`, and 👤 `flutter run` on the iPhone 11 (native build) or an iOS simulator (Xcode 14.2), plus the Pixel_4 emulator, with a smoke test of login, map, scan and offline queue.
 - [x] P9.3 Update `README.md` with a **Web / PWA** section: build command (`tool/build_web.sh`), local serve, required secure context, regenerating `sqlite3.wasm`/vendor files, Cloudflare Pages deploy steps (`nvm use`, `npx --yes wrangler@4.149.0 pages deploy build/web --project-name al-wahat-farm --branch staging|main`, `tool/hosting/_headers`, dashboard rollback), the Egypt note (never `*.netlify.app`), known limitations (D7 no background sync, D9 no push, iOS needs install for durable storage, Android single tab).
 - [x] P9.4 Update the memory directory: add a `pwa-architecture` memory summarizing D1–D11 and the key files (`web_platform`, `database_platform`, vendored JS, build script), and link it from `MEMORY.md`.
 - [x] P9.5 Final standard gate plus apk build; record the final web bundle size against the P0 baseline.
-- [ ] P9.6 *(phases 0–8 have verified gates; the plan is NOT complete: open 👤 items listed in §3 and ⛔ P5.4, which was replaced by DevTools-protocol checks and needs the user's acceptance)* Set every phase in §3 to ✅ only if its gate evidence exists. List any remaining 👤 items explicitly. **The plan is complete only when no ⛔ items remain and the user accepts any open 👤 items.**
+- [ ] P9.6 *(2026-10-13: every phase gate has evidence; no ⛔ items remain (P5.4 accepted by the user). Waiting only for the user to accept the open items below — the plan is complete when they do.)*
+  Open for the user to accept or do:
+  1. 👤 P2.13 / U8: the iPhone's More → "Offline storage" line, in the installed app and in Safari (whether `persist()` is granted).
+  2. 👤 U11: the iPhone's iOS version (Settings → General → About), record only.
+  3. ⏸ P6.12 screen readers — deferred by the user 2026-10-12.
+  4. Matrix cells "not run" / "not itemised by the user" (P9.1): writes that would create records in the shared production data (issue submit, task create/status from desktop), emulator scanning (no camera frames), offline tree detail / reviews / schedules / inventory, desktop sync badges.
+  5. Accepted risks (§5): no physical Android phone (emulator only, Chrome 109); low-end Android performance untested.
+  Original: Set every phase in §3 to ✅ only if its gate evidence exists. List any remaining 👤 items explicitly. **The plan is complete only when no ⛔ items remain and the user accepts any open 👤 items.**
 
 **Evidence**
 ```
