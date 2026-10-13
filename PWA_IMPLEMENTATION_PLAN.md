@@ -188,13 +188,13 @@ Changing any decision requires user approval (rule 9). Record approval in the De
 
 | Phase | Title | Status | Open 👤 checks |
 |---|---|---|---|
-| P0 | Baseline, decisions, measurements, hosting (Cloudflare Pages) | ✅ gate passed 2026-10-11 | P0.8-6 (explicit iPhone cellular + Wi-Fi without VPN on production), U11 (iOS version) |
+| P0 | Baseline, decisions, measurements, hosting (Cloudflare Pages) | ✅ gate passed 2026-10-11; P0.8-6 confirmed by the user 2026-10-12 | U11 (iOS version, record only) |
 | P1 | Branded, CDN-free web shell (manifest, icons, index.html, fonts, vendored JS) | ✅ gate passed 2026-10-11 (except 👤 DevTools Manifest check) | Chrome DevTools → Application → Manifest shows no errors; iPhone visual check of staging |
 | P2 | Persistent web storage (sqflite on IndexedDB) | ✅ gate passed 2026-10-11 | P2.13 (iPhone persist() result) |
-| P3 | Single-tab guard and web sync triggers | ✅ gate passed 2026-10-11 | P3.5 handover, P3.9 offline/online drain |
-| P4 | Camera, photos and QR scanner on web | ✅ gate passed 2026-10-11 | P4.4 issue photo (user retest reported working, not itemised), P4.7 real scan, P4.9 permissions |
-| P5 | Offline cold start, SW precache and update flow | ✅ gate passed 2026-10-11 (P5.4 ⛔, replaced by CDP checks) | P5.5 iPhone/desktop installed offline cold start, P5.6 update on device, P5.7 expired-token offline |
-| P6 | Install UX, responsive/browser UX, accessibility | ✅ gate passed 2026-10-11 | P6.10 map context menu, P6.3 installs, P6.4 safe areas, P6.5 back/forward, P6.9 RTL screenshot, P6.11 semantics cost, P6.12 screen readers |
+| P3 | Single-tab guard and web sync triggers | ✅ gate passed 2026-10-11; P3.5 handover verified 2026-10-12 | — |
+| P4 | Camera, photos and QR scanner on web | ✅ gate passed 2026-10-11; P4.4, P4.7, P4.9 done 2026-10-12/13 (P4.10 not needed) | — |
+| P5 | Offline cold start, SW precache and update flow | ✅ gate passed 2026-10-11; P5.4 accepted by the user, P5.5/P5.6 done 2026-10-12 | P5.7 expired-token offline |
+| P6 | Install UX, responsive/browser UX, accessibility | ✅ gate passed 2026-10-11; P6.3, P6.4, P6.5, P6.10, P6.11 done 2026-10-12/13 | P6.12 screen readers (deferred by the user) |
 | P7 | Security and privacy on web | ✅ gate passed 2026-10-11; CSP enforced 2026-10-12 (connect-src gained blob:) | — |
 | P8 | Cloudflare Pages production hosting, headers and release | ✅ gate passed 2026-10-11; P8.5 done and CSP enforced in production 2026-10-12 | — |
 | P9 | Full feature-parity QA, docs and sign-off | ◐ automated parts done 2026-10-11; waiting on device checks + user acceptance | P9.1 matrix 👤 cells, P9.2 native device runs, P9.6 sign-off |
@@ -589,10 +589,10 @@ Also added tool/verify_deploy.py (P8.3 early): fetches every SW RESOURCES key fr
 
 **Tasks — QR scanner (F9, F10)**
 
-- [ ] P4.7 👤 *(automated part done: in Chrome `typeof ZXing`=object, `ZXing.BrowserMultiFormatReader`=function; real scan needs a camera)* *(iPhone 11 installed PWA, user 2026-10-12: real tree tag scanned with zxing-cpp (sturdy-3/4) ✅; desktop webcam not tested)* Verify `window.ZXing` loads from `vendor/` (P1.9) and the scanner starts on desktop Chrome with a webcam. Scan a real tree QR (or a test QR rendered on screen with a known token) and confirm navigation to `/map/tree/:id`. 👤
+- [x] P4.7 *(desktop Chrome 150 on macOS, production, logged in by the user, 2026-10-13: camera = Chrome fake device fed the frame of the real tag photographed on the iPhone (no physical webcam). Scan tab → TREE-B-258 page (/map/tree/8d0c30eb-…) about 11 s after opening Scan on the first camera start, 1 s on later starts)* 👤 *(automated part done: in Chrome `typeof ZXing`=object, `ZXing.BrowserMultiFormatReader`=function; real scan needs a camera)* *(iPhone 11 installed PWA, user 2026-10-12: real tree tag scanned with zxing-cpp (sturdy-3/4) ✅; desktop webcam not tested)* Verify `window.ZXing` loads from `vendor/` (P1.9) and the scanner starts on desktop Chrome with a webcam. Scan a real tree QR (or a test QR rendered on screen with a known token) and confirm navigation to `/map/tree/:id`. 👤
 - [x] P4.8 Insecure context: when `window.isSecureContext == false`, show a localized message ("Camera requires a secure (https) connection") instead of the generic camera-unavailable state. Add it to `web_platform` and `scanner_screen.dart`, with EN+AR strings and a widget test via a fake.
-- [ ] P4.9 👤 *(iPhone 11 installed PWA, user 2026-10-12: deny → "camera is off" message, re-allow → scan works ✅; desktop Chrome pending)* iPhone 11 Safari (browser and **installed**, U2), and desktop Chrome with the Mac webcam. Android Chrome: emulator only if available, marked "emulated". Steps: grant, deny, then re-grant camera permission. The deny path shows `scanCameraOff`. Record results per environment.
-- [ ] P4.10 **Fallback if U2 fails** (camera unavailable in iOS standalone): add a "Enter tree code manually" action on the scanner screen that calls the same `_scanToken(raw)` path. **Only implement this if P4.9 shows a real gap**, and with user approval, because it adds UI to native too.
+- [x] P4.9 *(desktop Chrome 150 on macOS, production, logged in by the user, 2026-10-13: camera set to Block in the site settings → Scan shows "Camera access is off. Enable it in Settings to scan tree labels."; set back to Allow → scan opens TREE-B-258. DevTools Browser.setPermission was ignored for this origin, so the setting was changed in the profile with Chrome closed. Android: emulator back camera returns no frames)* 👤 *(iPhone 11 installed PWA, user 2026-10-12: deny → "camera is off" message, re-allow → scan works ✅; desktop Chrome pending)* iPhone 11 Safari (browser and **installed**, U2), and desktop Chrome with the Mac webcam. Android Chrome: emulator only if available, marked "emulated". Steps: grant, deny, then re-grant camera permission. The deny path shows `scanCameraOff`. Record results per environment.
+- [x] P4.10 *(not needed: the camera works in the installed iPhone app, P4.9, and tags scan, 2026-10-12)* **Fallback if U2 fails** (camera unavailable in iOS standalone): add a "Enter tree code manually" action on the scanner screen that calls the same `_scanToken(raw)` path. **Only implement this if P4.9 shows a real gap**, and with user approval, because it adds UI to native too.
 - [x] P4.11 *(2026-10-12: user, iPhone 11 — camera indicator turns off when leaving the scan tab after 440e5b7; widget test covers it)* Scanner lifecycle: leaving `/scan` stops the camera (the browser camera indicator turns off). 👤
 
 **Files:** `lib/features/issues/data/issue_photo_service.dart`, `lib/features/tasks/data/task_evidence_service.dart` (only if P4.3 needs a seam), `lib/features/map/presentation/scanner_screen.dart`, `lib/core/web/web_platform*.dart`, ARB files, tests.
@@ -699,7 +699,7 @@ Gate: format 250 files 0 changed; flutter analyze: No issues; flutter test: +361
 
 - [x] P6.1 `web_platform`: `bool get isStandalone` (matchMedia `(display-mode: standalone)` or `navigator.standalone`), `bool get isIos` (UA check, documented as a heuristic), `Stream<void> installAvailable` + `Future<bool> promptInstall()` (capture and `preventDefault()` `beforeinstallprompt`, T4; call `.prompt()` later). Capture the event **in index.html** before Flutter boots (it can fire early) and stash it on `window`. Read it from Dart.
 - [x] P6.2 More screen (web, not standalone): an "Install app" tile. Chromium uses `promptInstall()`. iOS opens a localized sheet with "Share → Add to Home Screen" steps. Hide it when standalone. EN+AR strings; widget test via fake `web_platform`.
-- [ ] P6.3 👤 Install on the iPhone 11 (Safari → Share → Add to Home Screen) and desktop Chrome (install prompt). Pixel_4 emulator Chrome optional ("emulated"). The launched app is standalone, with the correct name, icon, splash colors and status bar.
+- [x] P6.3 *(iPhone 11: installed and used by the user since 2026-10-11. Desktop (desktop Chrome 150 on macOS, production, logged in by the user, 2026-10-13): user clicked More → Install app → Install; the page then reports display-mode standalone in its own 1280x860 window, and macOS lists "Al Wahat Farm Operations.app" under ~/Applications/Chrome Apps)* 👤 Install on the iPhone 11 (Safari → Share → Add to Home Screen) and desktop Chrome (install prompt). Pixel_4 emulator Chrome optional ("emulated"). The launched app is standalone, with the correct name, icon, splash colors and status bar.
 
 **Tasks — layout and browser behavior**
 
@@ -709,7 +709,7 @@ Gate: format 250 files 0 changed; flutter analyze: No issues; flutter test: +361
 - [x] P6.7 Text fields: browser autofill for email/password on login (wrap in `AutofillGroup` with `autofillHints` if not present; read `login_screen.dart` first). Enter key submits.
 - [x] P6.8 Wide screens: phone/tablet breakpoints already exist (see golden `login_tablet_1024x1366.png`). Confirm that on desktop ≥1280 px the content doesn't stretch unusably. If it does, constrain the max content width in the shell. Golden or screenshot evidence.
 - [x] P6.9 *(2026-10-12: user, iPhone 11 installed PWA — Arabic: layout mirrored, map stayed LTR, Arabic text correct)* RTL on web: switch to Arabic; layout mirrors, the map stays LTR, Arabic glyphs render with the bundled font. 👤 screenshot.
-- [ ] P6.10 👤 *(not observed yet: needs a right-click on the map in a desktop browser)* Context menu and text selection: confirm no browser context menu appears over the map canvas (Flutter handles it). Record only.
+- [x] P6.10 *(recorded, desktop Chrome 150 on macOS, production, logged in by the user, 2026-10-13: a right-click on the map canvas fires contextmenu on FLUTTER-VIEW with defaultPrevented=false, so Chrome's own menu (Back, Reload, Inspect…) opens; the map does not react. Flutter 3.13 leaves the browser menu on by default; follow-up)* Context menu and text selection: confirm no browser context menu appears over the map canvas (Flutter handles it). Record only.
 
 **Tasks — accessibility (D11)**
 

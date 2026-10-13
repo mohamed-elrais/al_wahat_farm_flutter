@@ -29,6 +29,8 @@ user's iPhone 11 (installed PWA). "Seen" means observed; "not verified" means re
      button back to Home. Native shows the same router error page.
    - On a phone-width screen the Schedules page title wraps as "Schedule s" next to the
      "New schedule" button.
+   - On desktop, right-clicking the map opens Chrome's own menu (Back, Reload, Inspect…). If
+     that is unwanted, call `BrowserContextMenu.disableContextMenu()` on web at startup.
    - The production security policy is enforced since 2026-10-12. If a new feature fails only
      on the web, deploy staging with `CSP_MODE=report` and look for `securitypolicyviolation`
      reports.
