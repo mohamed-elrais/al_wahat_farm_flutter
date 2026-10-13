@@ -18,6 +18,9 @@ class AppShell extends StatelessWidget {
             Expanded(child: navigationShell),
           ],
         ),
+        // The tabs draw under the floating navigation bar, and so does any
+        // route pushed on a tab's navigator. Bottom sheets therefore open on
+        // the root navigator (useRootNavigator: true), above the bar.
         extendBody: true,
         bottomNavigationBar: WahatNavigation(
           index: navigationShell.currentIndex,

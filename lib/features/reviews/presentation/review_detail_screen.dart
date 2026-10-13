@@ -278,6 +278,7 @@ class _ReviewDetailScreenState extends State<ReviewDetailScreen> {
   ) async {
     await showModalBottomSheet<void>(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       builder: (context) =>
           _DecisionSheet(controller: controller, decision: decision),

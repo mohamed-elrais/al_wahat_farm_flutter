@@ -490,6 +490,7 @@ class _InspectionRunnerScreenState extends State<InspectionRunnerScreen> {
   Future<void> _pickIssuePhoto(String treeId, TreeIssueType type) async {
     final source = await showModalBottomSheet<TaskEvidenceSource>(
       context: context,
+      useRootNavigator: true,
       builder: (context) => SafeArea(
         child: Wrap(
           children: <Widget>[

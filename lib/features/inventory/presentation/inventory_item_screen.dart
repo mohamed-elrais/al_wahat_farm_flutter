@@ -326,6 +326,7 @@ class _InventoryItemScreenState extends State<InventoryItemScreen> {
     final noteController = TextEditingController();
     final submitted = await showModalBottomSheet<bool>(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       builder: (sheetContext) => Padding(
         padding: EdgeInsets.only(

@@ -463,6 +463,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
         .toSet();
     final result = await showModalBottomSheet<Set<String>>(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       builder: (context) => StatefulBuilder(
         builder: (context, setSheetState) => SafeArea(
@@ -521,6 +522,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
   Future<void> _showCompleteSheet(TaskDetailController controller) async {
     await showModalBottomSheet<void>(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       builder: (context) => _CompleteTaskSheet(controller: controller),
     );
@@ -529,6 +531,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
   Future<void> _showEvidenceSheet(TaskDetailController controller) async {
     await showModalBottomSheet<void>(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       builder: (context) => _AddEvidenceSheet(controller: controller),
     );

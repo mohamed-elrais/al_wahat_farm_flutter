@@ -60,6 +60,7 @@ class _InstallAppTileState extends State<InstallAppTile> {
     final l10n = context.l10n;
     showModalBottomSheet<void>(
       context: context,
+      useRootNavigator: true,
       builder: (context) => SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),

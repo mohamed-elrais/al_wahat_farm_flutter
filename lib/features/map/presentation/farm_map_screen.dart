@@ -359,6 +359,9 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
                                     child: _MapSummary(
                                       map: map,
                                       selected: _selectedTree,
+                                      selectedZoneLabel: _selectedTree == null
+                                          ? null
+                                          : _zoneLabel(_selectedTree!),
                                       selectedPlantingPit: _selectedPlantingPit,
                                     ),
                                   ),
@@ -466,6 +469,18 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
     return labels;
   }
 
+  /// The tree's irrigation zone code (for example IRR-ZCV-SM06-R02-W), or null
+  /// when the live hierarchy has no such zone; [TreeIdentity] then shows the
+  /// raw zone id.
+  String? _zoneLabel(FarmTree tree) {
+    final hierarchy = FarmHierarchyScope.maybeOf(context)?.hierarchy;
+    if (hierarchy == null) return null;
+    for (final zone in hierarchy.zones) {
+      if (zone.id == tree.zoneId) return zone.code;
+    }
+    return null;
+  }
+
   void _selectTree(FarmTree tree, {BuildContext? presentationContext}) {
     setState(() {
       _selectedTree = tree;
@@ -475,19 +490,10 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
     final hierarchy = FarmHierarchyScope.maybeOf(context)?.hierarchy;
     final operational = OperationalContextScope.maybeOf(context);
     final isLive = hierarchy?.trees.any((item) => item.id == tree.id) ?? false;
-    String? zoneLabel;
-    if (hierarchy != null) {
-      for (final zone in hierarchy.zones) {
-        if (zone.id == tree.zoneId) {
-          zoneLabel = zone.code;
-          break;
-        }
-      }
-    }
     final identity = TreeIdentity.fromMapTree(
       tree,
       farmId: operational?.selectedMembership.farm.id,
-      zoneLabel: zoneLabel,
+      zoneLabel: _zoneLabel(tree),
     );
     final canManageTasks =
         operational?.selectedMembership.role.canManageTasks ?? false;
@@ -498,6 +504,7 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
         const <TreeIssueSummary>[];
     showModalBottomSheet<void>(
       context: presentationContext ?? context,
+      useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (sheetContext) => TreeDetailSheet(
@@ -571,6 +578,7 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
   }) async {
     final result = await showModalBottomSheet<_MapIssueFilterSelection>(
       context: presentationContext ?? context,
+      useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => _MapIssueFiltersSheet(
@@ -612,6 +620,7 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
     final next = projected.pit.status.next;
     showModalBottomSheet<void>(
       context: presentationContext ?? context,
+      useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => _PlantingPitSheet(
@@ -647,6 +656,7 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
     if (scope == null) return;
     await showModalBottomSheet<void>(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => _PlantingPitCreateSheet(
@@ -731,6 +741,7 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
             false);
     showModalBottomSheet<void>(
       context: presentationContext ?? context,
+      useRootNavigator: true,
       backgroundColor: Colors.transparent,
       builder: (sheetContext) => _ZoneSheet(
         valve: valve,
@@ -2062,40 +2073,49 @@ class _MapSummary extends StatelessWidget {
     required this.map,
     required this.selected,
     required this.selectedPlantingPit,
+    this.selectedZoneLabel,
   });
   final ProjectedFarmMap map;
   final FarmTree? selected;
+  final String? selectedZoneLabel;
   final PlantingPit? selectedPlantingPit;
 
+  // Scrolls so a short window (a laptop browser) never clips the details.
   @override
   Widget build(BuildContext context) => WahatCard(
-        child: selectedPlantingPit != null
-            ? _PlantingPitContent(pit: selectedPlantingPit!)
-            : selected == null
-                ? Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      const Icon(
-                        Icons.touch_app_outlined,
-                        size: 40,
-                        color: AppColors.green,
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        context.l10n.mapSelectAnyTree,
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        context.l10n
-                            .mapTreePointsAvailable(map.data.trees.length),
-                      ),
-                    ],
-                  )
-                : TreeDetailContent(
-                    tree: TreeIdentity.fromMapTree(selected!),
-                  ),
+        child: SingleChildScrollView(
+          child: _content(context),
+        ),
       );
+
+  Widget _content(BuildContext context) => selectedPlantingPit != null
+      ? _PlantingPitContent(pit: selectedPlantingPit!)
+      : selected == null
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                const Icon(
+                  Icons.touch_app_outlined,
+                  size: 40,
+                  color: AppColors.green,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  context.l10n.mapSelectAnyTree,
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  context.l10n.mapTreePointsAvailable(map.data.trees.length),
+                ),
+              ],
+            )
+          : TreeDetailContent(
+              tree: TreeIdentity.fromMapTree(
+                selected!,
+                zoneLabel: selectedZoneLabel,
+              ),
+            );
 }
 
 class _PlantingPitCreateSheet extends StatefulWidget {

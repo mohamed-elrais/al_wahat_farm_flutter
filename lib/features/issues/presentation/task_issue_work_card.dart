@@ -210,6 +210,7 @@ class _TaskIssueWorkCardState extends State<TaskIssueWorkCard> {
   Future<void> _pickPhoto(String issueId) async {
     final source = await showModalBottomSheet<IssuePhotoSource>(
       context: context,
+      useRootNavigator: true,
       builder: (context) => SafeArea(
         child: Wrap(
           children: <Widget>[
@@ -240,6 +241,7 @@ class _TaskIssueWorkCardState extends State<TaskIssueWorkCard> {
     final controller = IssueWorkspaceScope.maybeOf(context)!;
     final reason = await showModalBottomSheet<TreeIssueUnableReason>(
       context: context,
+      useRootNavigator: true,
       builder: (context) => SafeArea(
         child: ListView(
           shrinkWrap: true,
