@@ -881,7 +881,7 @@ P8.7/P8.8 not wanted / not requested.
 **Tasks**
 
 - [ ] P9.1 👤 *(matrix filled with what was verified in headless Chrome and the user's P0.4 report; every cell needing a login or a real device is still 👤)* Fill the matrix 👤. Every ❌ becomes a ⛔ item in the owning phase, which is reopened.
-- [ ] P9.2 👤 *(automated part done: flutter test +366 ~6 and `flutter build apk --debug` ✓; running on the iPhone/simulator and the Pixel_4 emulator is still open)* Native regression: `flutter test` (all), `flutter build apk --debug`, and 👤 `flutter run` on the iPhone 11 (native build) or an iOS simulator (Xcode 14.2), plus the Pixel_4 emulator, with a smoke test of login, map, scan and offline queue.
+- [x] P9.2 *(2026-10-13: flutter test +371 ~6; native Android debug APK on the Pixel_4 emulator and native iOS on the iPhone 14 simulator (Xcode 14.2), user logged in on both. Found and fixed two native bugs: the Android offline start failed (CursorWindow, de98a48) and lib/core/supabase/auth_repository.dart was never committed (b5bcb4b). Offline-queue writes were not run natively, to keep test data out of production. See Phase 9 evidence)* 👤 *(automated part done: flutter test +366 ~6 and `flutter build apk --debug` ✓; running on the iPhone/simulator and the Pixel_4 emulator is still open)* Native regression: `flutter test` (all), `flutter build apk --debug`, and 👤 `flutter run` on the iPhone 11 (native build) or an iOS simulator (Xcode 14.2), plus the Pixel_4 emulator, with a smoke test of login, map, scan and offline queue.
 - [x] P9.3 Update `README.md` with a **Web / PWA** section: build command (`tool/build_web.sh`), local serve, required secure context, regenerating `sqlite3.wasm`/vendor files, Cloudflare Pages deploy steps (`nvm use`, `npx --yes wrangler@4.149.0 pages deploy build/web --project-name al-wahat-farm --branch staging|main`, `tool/hosting/_headers`, dashboard rollback), the Egypt note (never `*.netlify.app`), known limitations (D7 no background sync, D9 no push, iOS needs install for durable storage, Android single tab).
 - [x] P9.4 Update the memory directory: add a `pwa-architecture` memory summarizing D1–D11 and the key files (`web_platform`, `database_platform`, vendored JS, build script), and link it from `MEMORY.md`.
 - [x] P9.5 Final standard gate plus apk build; record the final web bundle size against the P0 baseline.
@@ -1011,6 +1011,24 @@ Wide-window UI fix — 2026-10-13 (user screenshot, desktop Chrome 1280x566)
   now use the root navigator; the side panel uses the sheet's zone-code lookup and scrolls (eefdd71). Test
   map_wide_tree_selection_test (fails without the zone fix). Desktop Chrome at 1280x510 on production: sheet above
   the bar, buttons reachable by scrolling the sheet.
+P9.2 native regression — 2026-10-13 (agent; logins by the user)
+  Android (debug APK, --dart-define-from-file=config.json, Pixel_4 emulator): login → Home (1539 trees, 12 sections,
+  122 zones, 1876 pits) → Map renders → Scan opens, asks camera permission, preview black (emulator back camera, as in
+  Chrome; native scan confirmed by the user on the iPhone earlier) → Home → Scan again, no crash. Offline cold start
+  (airplane mode, force-stop, relaunch) showed "Unable to load farm data": logcat "SQLiteQuery: Row too big to fit
+  into CursorWindow ... SELECT value FROM cache_entries" — the 2.59 MB hierarchy row exceeds Android's ~2 MB
+  CursorWindow, so the native offline start could not read its cache (not a web-work regression; the row grew past
+  2 MB). Fix de98a48: SqfliteCacheStore.read reads values over 256K characters with substr() in one transaction;
+  unit test with Arabic/emoji across chunk boundaries. After the fix, offline cold start → Home and Map from cache with
+  the offline banner. Web (production, emulator Chrome, build 2482021954) offline reload with the new read → Home from
+  cache, offline banner.
+  iOS: building from a clean worktree of HEAD failed — lib/core/supabase/auth_repository.dart was never in git
+  ('.gitignore' rule 'supabase/' also matched lib/core/supabase/). Fixed b5bcb4b ('/supabase/', file added; clean
+  checkout analyzes clean). Built for the simulator (CocoaPods 1.17.0 from Homebrew's Cellar, not linked on PATH),
+  installed on iPhone 14 (iOS simulator), user logged in → Home with the full farm. The user's uncommitted
+  ios/Runner.xcodeproj/project.pbxproj change (removes the PBXBuildFile section) was left untouched; building from
+  that working copy is unverified.
+  Tooling: verify_deploy.py now follows Cloudflare's 308 itself (Python 3.9 urllib does not) — 2aa4c71.
 ```
 
 ## 5. Decision log and user answers
