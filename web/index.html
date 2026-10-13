@@ -102,6 +102,12 @@
       _flutter.loader.loadEntrypoint({
         serviceWorker: {
           serviceWorkerVersion: serviceWorkerVersion,
+          // flutter.js waits this long for a new service worker before
+          // loading main.dart.js. Its 4 s default often ran out on a phone,
+          // so the first launch after an update still ran the old build.
+          // It only matters while an update installs: offline or with no
+          // update the wait ends at once.
+          timeoutMillis: 15000,
         },
         onEntrypointLoaded: function(engineInitializer) {
           engineInitializer.initializeEngine().then(function(appRunner) {

@@ -6,6 +6,7 @@ import 'dart:js_util' as js_util;
 import 'dart:math' as math;
 import 'dart:typed_data';
 
+import 'package:al_wahat_farm_flutter/core/web/precache_keys.dart';
 import 'package:al_wahat_farm_flutter/core/web/tab_lease.dart';
 import 'package:al_wahat_farm_flutter/core/web/web_qr_reader.dart';
 import 'package:al_wahat_farm_flutter/core/web/web_platform_types.dart';
@@ -52,7 +53,7 @@ final RegExp _buildVersion = RegExp(r'serviceWorkerVersion = "(\d+)"');
 /// cached yet, so the app can cold-start offline. Each request passes through
 /// the service worker, which caches it. Files already cached are skipped:
 /// re-reading the ~24 MB shell every launch kept a phone busy for seconds.
-/// Skips the skwasm engine, which this CanvasKit build never loads. Returns how
+/// Skips engine files this browser never loads ([offlinePrecacheKeys]). Returns how
 /// many files were fetched (0 when all were cached), or null when no service
 /// worker controls the page yet (the next launch retries).
 Future<int?> precacheAppShell() async {
@@ -65,11 +66,10 @@ Future<int?> precacheAppShell() async {
   } catch (_) {
     return null;
   }
-  final keys = _resourceKey
-      .allMatches(worker)
-      .map((match) => match.group(1)!)
-      .where((key) => !key.startsWith('canvaskit/skwasm'))
-      .toList(growable: false);
+  final keys = offlinePrecacheKeys(
+    _resourceKey.allMatches(worker).map((match) => match.group(1)!),
+    chromiumCanvasKit: _browserUsesChromiumCanvasKit(),
+  );
   final caches = html.window.caches;
   var fetched = 0;
   for (final key in keys) {
@@ -84,6 +84,15 @@ Future<int?> precacheAppShell() async {
     }
   }
   return fetched;
+}
+
+/// The engine's own test for the Chromium CanvasKit variant (see
+/// [offlinePrecacheKeys]).
+bool _browserUsesChromiumCanvasKit() {
+  final intl = js_util.getProperty<Object?>(html.window, 'Intl');
+  return intl != null &&
+      js_util.getProperty<Object?>(intl, 'v8BreakIterator') != null &&
+      js_util.getProperty<Object?>(intl, 'Segmenter') != null;
 }
 
 /// True when running as an installed app (home-screen / standalone window).
