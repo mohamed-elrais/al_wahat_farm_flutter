@@ -14,10 +14,11 @@ import re
 import sys
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 
 
-def fetch(url):
+def fetch(url, redirects=3):
     # Cloudflare rejects Python's default User-Agent with 403.
     request = urllib.request.Request(url, headers={
         'Cache-Control': 'no-cache',
@@ -28,6 +29,11 @@ def fetch(url):
             return (response.status, response.headers.get('Content-Type', ''),
                     response.read())
     except urllib.error.HTTPError as error:
+        # Cloudflare answers /index.html with a 308 to /, which urllib only
+        # follows from Python 3.11 (macOS ships 3.9).
+        location = error.headers.get('Location')
+        if error.code == 308 and location and redirects > 0:
+            return fetch(urllib.parse.urljoin(url, location), redirects - 1)
         return error.code, error.headers.get('Content-Type', ''), b''
 
 
