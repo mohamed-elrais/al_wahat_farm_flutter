@@ -193,7 +193,7 @@ Changing any decision requires user approval (rule 9). Record approval in the De
 | P2 | Persistent web storage (sqflite on IndexedDB) | ✅ gate passed 2026-10-11 | P2.13 (iPhone persist() result) |
 | P3 | Single-tab guard and web sync triggers | ✅ gate passed 2026-10-11; P3.5 handover verified 2026-10-12 | — |
 | P4 | Camera, photos and QR scanner on web | ✅ gate passed 2026-10-11; P4.4, P4.7, P4.9 done 2026-10-12/13 (P4.10 not needed) | — |
-| P5 | Offline cold start, SW precache and update flow | ✅ gate passed 2026-10-11; P5.4 accepted by the user, P5.5/P5.6 done 2026-10-12 | P5.7 expired-token offline |
+| P5 | Offline cold start, SW precache and update flow | ✅ gate passed 2026-10-11; P5.4 accepted by the user, P5.5/P5.6 done 2026-10-12, P5.7 done 2026-10-13 | — |
 | P6 | Install UX, responsive/browser UX, accessibility | ✅ gate passed 2026-10-11; P6.3, P6.4, P6.5, P6.10, P6.11 done 2026-10-12/13 | P6.12 screen readers (deferred by the user) |
 | P7 | Security and privacy on web | ✅ gate passed 2026-10-11; CSP enforced 2026-10-12 (connect-src gained blob:) | — |
 | P8 | Cloudflare Pages production hosting, headers and release | ✅ gate passed 2026-10-11; P8.5 done and CSP enforced in production 2026-10-12 | — |
@@ -649,7 +649,7 @@ Gate: format 248 files 0 changed; flutter analyze: No issues; flutter test: +358
   5. Disable airplane mode: the outbox drains.
   - Record results per platform. A failure on the iPhone 11 or desktop Chrome blocks P9 sign-off.
 - [x] P5.6 👤 *(user, iPhone 11 installed PWA, 2026-10-12: "All pass". No dedicated A/B staging deploy was run; the user saw the real production updates of 2026-10-12 (sturdy-3, sturdy-4) arrive on the installed app)* Update test on the **same origin**: deploy build A with `--alias staging`, open/install it on the iPhone 11, then deploy build B (any visible change) with the same `--alias staging`. Expect the update banner without data loss; Reload shows B. The outbox persists across the update.
-- [ ] P5.7 Supabase session offline: confirm the existing offline app-open behavior (`OFFLINE_PLAN.md` §7) holds on web when the access token is expired and offline. Read `OFFLINE_PLAN.md` §7 first and replicate its test scenario. 👤
+- [x] P5.7 *(Pixel_4 emulator Chrome, production, 2026-10-13: access token really expired (exp 08:45:47 UTC, emulator offline from 08:12), offline cold start at 08:47 → Home with cached data and the offline banner, session kept; back online at 08:50 → POST /auth/v1/token succeeded (new exp 09:50:31), data reloaded, still on Home. See Phase 9 evidence)* Supabase session offline: confirm the existing offline app-open behavior (`OFFLINE_PLAN.md` §7) holds on web when the access token is expired and offline. Read `OFFLINE_PLAN.md` §7 first and replicate its test scenario. 👤
 
 **Files:** `web/index.html`, `lib/core/web/web_platform*.dart`, an app-level banner host (e.g. `lib/core/widgets/app_shell.dart`, read it first), ARB files, `integration_test/web_smoke_test.dart`.
 
@@ -997,6 +997,20 @@ P6.5 routes (location.hash on the logged-in tab): /map/tree/:id/report-issue, /t
   /no-such-page" with no navigation (follow-up). history.back x2 / forward x2 between /issues, /issues/:id and
   /map/tree/:id: correct screens; Android back key -> previous route; reload on /map/tree/:id -> same tree after ~13 s.
   Narrow-screen note: the Schedules title wraps as "Schedule s" (follow-up).
+P5.7 expired session offline — 2026-10-13 (agent, Pixel_4 emulator Chrome, production, user's session)
+  Editing expires_at in localStorage does not expire a session: gotrue 2.11.1 reads the expiry from the access
+  token's exp claim (Session._expiresAt) and rewrites the stored value. So the real expiry was used: airplane mode
+  from 08:12:46 UTC, token exp 08:45:47, offline cold start 08:47:07 (reload over DevTools). Result: tab_lease owner,
+  Home with "Offline · showing cached farm and task data", session still stored. gotrue retried POST /auth/v1/token
+  in bursts of 5 every ~20 s, each burst ending in an uncaught Error in the console (follow-up). Airplane mode off at
+  08:50:07: refresh succeeded at +19 s (exp 09:50:31), tasks and issues refetched, route stayed /home. Test-only
+  localStorage/sessionStorage keys removed afterwards.
+Wide-window UI fix — 2026-10-13 (user screenshot, desktop Chrome 1280x566)
+  The tree sheet sat under the floating navigation bar (AppShell extendBody; sheets opened on the tab navigator),
+  hiding Attach a task / Report an issue; the side panel showed the zone uuid and overflowed. All 14 bottom sheets
+  now use the root navigator; the side panel uses the sheet's zone-code lookup and scrolls (eefdd71). Test
+  map_wide_tree_selection_test (fails without the zone fix). Desktop Chrome at 1280x510 on production: sheet above
+  the bar, buttons reachable by scrolling the sheet.
 ```
 
 ## 5. Decision log and user answers

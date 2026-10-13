@@ -35,18 +35,24 @@ user's iPhone 11 (installed PWA). "Seen" means observed; "not verified" means re
      on the web, deploy staging with `CSP_MODE=report` and look for `securitypolicyviolation`
      reports.
 
+5. **Offline token refresh logs uncaught errors.** With an expired session and no network, gotrue
+   2.11.1 retries the refresh in bursts of 5 about every 20 s, and each failed burst ends in an
+   uncaught `Error` in the console (seen 2026-10-13 on the emulator). The app keeps working and
+   refreshes once online. Check whether `onAuthStateChange` / the auth client's error stream
+   needs a listener that swallows `AuthRetryableFetchException` while offline.
+
 ## Speed
 
-5. **The map waits for a full network refresh** (about 7 s on the emulator) before drawing,
+6. **The map waits for a full network refresh** (about 7 s on the emulator) before drawing,
    even when cached data is already on the device. Consider showing the cached hierarchy at once
    and refreshing in the background (`DefaultFarmHierarchyRepository.load`).
-6. **The farm hierarchy cache is one 2.6 MB JSON row, rewritten on every launch.** It is fast
+7. **The farm hierarchy cache is one 2.6 MB JSON row, rewritten on every launch.** It is fast
    since the sqlite patch, but skipping the write when the data has not changed, or storing rows
    per tree, would save work on every start.
-7. **The offline download fetches both CanvasKit engines** (`canvaskit/` and
+8. **The offline download fetches both CanvasKit engines** (`canvaskit/` and
    `canvaskit/chromium/`, about 6 MB each). A browser only uses one of them, so
    `precacheAppShell` could skip the other and save about 6 MB of storage per device.
-8. **The first reload after an update runs the old code.** flutter.js 3.13 gives the new service
+9. **The first reload after an update runs the old code.** flutter.js 3.13 gives the new service
    worker 4 s, then loads with the old one. The new code runs from the next launch. Options: wait
    longer for the new worker, or reload once more automatically after the update banner's reload.
 
@@ -65,17 +71,17 @@ workaround.
 
 ## Things to re-test on devices
 
-9. **QR scanning on the iPhone:** ✅ confirmed by the user on 2026-10-12 (`sturdy-4`). Tags read,
+10. **QR scanning on the iPhone:** ✅ confirmed by the user on 2026-10-12 (`sturdy-4`). Tags read,
    and the preview fills the screen after tab switches. Long-press the scan screen's message box
    for the reader's live numbers if it ever regresses.
-10. **Camera permission on iOS:** the scanner now stops the camera when you leave the Scan tab.
+11. **Camera permission on iOS:** the scanner now stops the camera when you leave the Scan tab.
     Check whether iOS asks for camera permission again each time you return. If it is annoying,
     keep the camera paused instead of stopped.
-11. **Real Android phone.** Everything Android so far is emulator-only. Untested: low-end
+12. **Real Android phone.** Everything Android so far is emulator-only. Untested: low-end
     performance, the camera and photos, QR scanning, and `persist()` for a real WebAPK install.
     On the emulator, Chrome made a plain shortcut install: `persisted()` was false, and More still
     offers "Install app".
-12. **Screen readers:** decide on Flutter's "Enable accessibility" placeholder (plan D11 / P6.11)
+13. **Screen readers:** decide on Flutter's "Enable accessibility" placeholder (plan D11 / P6.11)
     and do a VoiceOver pass on the installed iPhone app (P6.12).
 
 ## Open items in the plan (see §3 of `PWA_IMPLEMENTATION_PLAN.md`)
