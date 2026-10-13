@@ -10,16 +10,47 @@ class SqfliteCacheStore implements LocalCacheStore {
 
   final AppDatabase _database;
 
+  /// Characters per read. Android returns query results through a
+  /// CursorWindow of about 2 MB, so reading a larger value in one row fails
+  /// ("Row too big to fit into CursorWindow"); the farm hierarchy alone is
+  /// about 2.6 MB. 256K characters stay under 1 MB of UTF-8 even when every
+  /// character takes 4 bytes.
+  static const readChunkChars = 256 * 1024;
+
   @override
   Future<String?> read(String key) async {
-    final rows = await _database.db.query(
-      AppDatabase.cacheTable,
-      columns: <String>['value'],
-      where: 'key = ?',
-      whereArgs: <Object?>[key],
-      limit: 1,
+    final db = _database.db;
+    final sizes = await db.rawQuery(
+      'SELECT length(value) AS size FROM ${AppDatabase.cacheTable} '
+      'WHERE key = ? LIMIT 1',
+      <Object?>[key],
     );
-    return rows.isEmpty ? null : rows.first['value'] as String;
+    if (sizes.isEmpty) return null;
+    final size = sizes.first['size']! as int;
+    if (size <= readChunkChars) {
+      final rows = await db.query(
+        AppDatabase.cacheTable,
+        columns: <String>['value'],
+        where: 'key = ?',
+        whereArgs: <Object?>[key],
+        limit: 1,
+      );
+      return rows.isEmpty ? null : rows.first['value'] as String;
+    }
+    // One transaction, so a concurrent write cannot mix two versions.
+    return db.transaction((txn) async {
+      final value = StringBuffer();
+      for (var start = 1; start <= size; start += readChunkChars) {
+        final rows = await txn.rawQuery(
+          'SELECT substr(value, ?, ?) AS part FROM ${AppDatabase.cacheTable} '
+          'WHERE key = ? LIMIT 1',
+          <Object?>[start, readChunkChars, key],
+        );
+        if (rows.isEmpty) return null;
+        value.write(rows.first['part']! as String);
+      }
+      return value.toString();
+    });
   }
 
   @override

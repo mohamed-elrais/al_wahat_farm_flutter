@@ -32,6 +32,32 @@ void main() {
     expect(await store.read('k'), isNull);
   });
 
+  test('reads values larger than one chunk back unchanged', () async {
+    // Android cannot return a ~2 MB row in one read, so large values are read
+    // in slices; multi-byte characters must not be split or lost.
+    const chunk = SqfliteCacheStore.readChunkChars;
+    const pattern = 'شجرة-🌴-tree-';
+    String sized(int length) {
+      final buffer = StringBuffer();
+      while (buffer.length < length) {
+        buffer.write(pattern);
+      }
+      return buffer.toString().substring(0, length);
+    }
+
+    for (final length in <int>[chunk, chunk + 1, chunk * 2, chunk * 10 + 7]) {
+      // Code units can split a surrogate pair; the stored text must stay
+      // valid, so trim a dangling high surrogate.
+      var value = sized(length);
+      if (value.codeUnitAt(value.length - 1) >= 0xD800 &&
+          value.codeUnitAt(value.length - 1) <= 0xDBFF) {
+        value = value.substring(0, value.length - 1);
+      }
+      await store.write('big', value);
+      expect(await store.read('big'), value, reason: 'length $length');
+    }
+  });
+
   test('removeWithPrefix clears only the private namespace', () async {
     await store.write('${privateCachePrefix}hierarchy:farm', 'a');
     await store.write('${privateCachePrefix}tasks:farm', 'b');
