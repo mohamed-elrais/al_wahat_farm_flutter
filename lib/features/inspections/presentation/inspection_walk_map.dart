@@ -235,7 +235,13 @@ class _WalkPainter extends CustomPainter {
       canvas.drawPath(path, rowPaint);
     }
 
-    // Walking path: walked part solid, the rest dashed.
+    // Walking path: legs into a saved station solid, the rest dashed.
+    bool saved(int station) {
+      final trees = walk.station(station);
+      return trees.isNotEmpty &&
+          trees.every((item) => marks.containsKey(item.treeId));
+    }
+
     final centers = <int, Offset>{
       for (final station in walk.stations)
         if (geometry.stationCenter(station) case final center?) station: center,
@@ -255,9 +261,9 @@ class _WalkPainter extends CustomPainter {
       final center = centers[station];
       if (center == null) continue;
       if (previous != null) {
-        if (station <= currentStation) {
+        if (saved(station)) {
           canvas.drawLine(previous, center, walked);
-        } else if (station > currentStation + 1) {
+        } else if (station != currentStation + 1) {
           _dashed(canvas, previous, center, ahead);
         }
       }

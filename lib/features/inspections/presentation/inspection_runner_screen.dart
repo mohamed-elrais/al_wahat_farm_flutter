@@ -133,14 +133,22 @@ class _InspectionRunnerScreenState extends State<InspectionRunnerScreen> {
     };
   }
 
-  /// The station the walk continues from; past the end when all are saved.
+  /// The lowest unsaved station, where the walk continues; the last station
+  /// when all are saved. Independent of the order the items arrive in.
   static int _firstPendingStation(InspectionDetails details) {
-    final pending = details.items
-        .where((item) => item.status == InspectionItemStatus.pending)
-        .toList(growable: false);
-    return pending.isEmpty
-        ? details.session.totalStations
-        : pending.first.routeItem.stationIndex;
+    int? first;
+    for (final item in details.items) {
+      if (item.status != InspectionItemStatus.pending) continue;
+      final station = item.routeItem.stationIndex;
+      if (first == null || station < first) first = station;
+    }
+    return first ?? details.session.totalStations;
+  }
+
+  static bool _stationSaved(InspectionDetails details, int station) {
+    final items = details.station(station);
+    return items.isNotEmpty &&
+        items.every((item) => item.status == InspectionItemStatus.inspected);
   }
 
   void _seedStation() {
@@ -998,8 +1006,8 @@ class _InspectionRunnerScreenState extends State<InspectionRunnerScreen> {
     await _jumpTo(station - 1);
   }
 
-  /// Opens a saved station (or the current one) again. Stations ahead of the
-  /// first unsaved one stay closed: they are saved in walking order.
+  /// Opens a saved station, or the first unsaved one. Unsaved stations past
+  /// it stay closed so the walk keeps its order.
   Future<void> _jumpTo(int station) async {
     final details = _details;
     if (_busy || details == null || station == _stationIndex) return;
@@ -1032,8 +1040,10 @@ class _InspectionRunnerScreenState extends State<InspectionRunnerScreen> {
           marks: _marks,
           currentStation: station,
           fix: _location.fix,
-          canOpenStation:
-              canJump ? (candidate) => candidate <= firstPending : null,
+          canOpenStation: canJump
+              ? (candidate) =>
+                  candidate <= firstPending || _stationSaved(details, candidate)
+              : null,
           blockedMessage: context.l10n.inspectionJumpBlocked(firstPending),
         ),
       ),

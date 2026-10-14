@@ -66,18 +66,19 @@ class _Location implements LocationService {
 
 late InspectionRoute _route;
 
-InspectionDetails _detailsAt(int current) {
+InspectionDetails _detailsAt(int current, {Set<int> alsoSaved = const {}}) {
   final now = DateTime.utc(2026, 10, 14, 8);
+  bool saved(int station) => station < current || alsoSaved.contains(station);
   final items = _route.items
       .map(
         (item) => InspectionSessionItem(
           id: 'item-${item.sequenceIndex}',
           sessionId: 'session',
           routeItem: item,
-          status: item.stationIndex < current
+          status: saved(item.stationIndex)
               ? InspectionItemStatus.inspected
               : InspectionItemStatus.pending,
-          noNewIssueFound: item.stationIndex < current,
+          noNewIssueFound: saved(item.stationIndex),
         ),
       )
       .toList(growable: false);
@@ -435,5 +436,26 @@ void main() {
     expect(find.byKey(const Key('inspection-takeover')), findsOneWidget);
     expect(find.byKey(const Key('inspection-walk-map')), findsOneWidget);
     expect(find.byKey(const Key('inspection-save-next')), findsNothing);
+  });
+
+  testWidgets('opens the lowest unsaved station whatever the item order',
+      (tester) async {
+    phone(tester);
+    // Like a real session: 1-7 and 147-153 saved, items newest first
+    // (postgrest 2.x sorts descending by default).
+    final details = _detailsAt(8, alsoSaved: {147, 148, 149, 150, 151, 152});
+    final reversed = InspectionDetails(
+      session: details.session,
+      items: details.items.reversed.toList(growable: false),
+    );
+    final repository = _Repository(reversed);
+    await tester.pumpWidget(_app(repository));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Station 8 of 153'), findsOneWidget);
+    expect(
+      find.text('Aisle 1 of 8 · station 8 of 22 in this aisle'),
+      findsOneWidget,
+    );
   });
 }

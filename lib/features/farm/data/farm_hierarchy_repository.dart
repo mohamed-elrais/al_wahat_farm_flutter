@@ -53,7 +53,8 @@ class SupabaseFarmHierarchyDataSource
         .select(sectionColumns)
         .eq('farm_id', farmId)
         .eq('is_active', true)
-        .order('sort_order');
+        // postgrest 2.x orders descending unless told otherwise.
+        .order('sort_order', ascending: true);
     return _rows(result);
   }
 
@@ -67,7 +68,7 @@ class SupabaseFarmHierarchyDataSource
         .select(zoneColumns)
         .inFilter('section_id', sectionIds)
         .eq('is_active', true)
-        .order('code');
+        .order('code', ascending: true);
     return _rows(result);
   }
 
@@ -81,7 +82,7 @@ class SupabaseFarmHierarchyDataSource
           .select(treeColumns)
           .eq('farm_id', farmId)
           .eq('is_active', true)
-          .order('tree_code')
+          .order('tree_code', ascending: true)
           .range(offset, offset + treePageSize - 1);
       final page = _rows(result);
       rows.addAll(page);
@@ -100,7 +101,7 @@ class SupabaseFarmHierarchyDataSource
           .from('planting_pits')
           .select(plantingPitColumns)
           .eq('farm_id', farmId)
-          .order('pit_code')
+          .order('pit_code', ascending: true)
           .range(offset, offset + plantingPitPageSize - 1);
       final page = _rows(result);
       rows.addAll(page);

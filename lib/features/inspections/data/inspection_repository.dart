@@ -106,12 +106,13 @@ class SupabaseInspectionRepository implements InspectionRepository {
             .from('inspection_session_items')
             .select(itemColumns)
             .eq('session_id', sessionJson['id']! as String)
-            .order('sequence_index');
+            // postgrest 2.x orders descending unless told otherwise.
+            .order('sequence_index', ascending: true);
         final observationsJson = await _client
             .from('inspection_issue_observations')
             .select(observationColumns)
             .eq('session_id', sessionJson['id']! as String)
-            .order('observed_at');
+            .order('observed_at', ascending: true);
         return InspectionDetails(
           session: InspectionSession.fromJson(sessionJson),
           items: itemsJson
