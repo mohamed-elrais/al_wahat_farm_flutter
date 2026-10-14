@@ -4,7 +4,7 @@
 
 This is step 1 of supporting users who can't read or write. Voice, picture pickers and simpler login come later.
 
-Status: **V0 done (2026-10-14) — waiting for the palette review on a phone** before V1. Decisions D1–D5 accepted.
+Status: **V0–V4 done and deployed (2026-10-14).** V5 automated checks done; the phone-in-daylight check and the worker test need people (see V5 in Progress).
 
 ---
 
@@ -228,4 +228,4 @@ Each phase ends with: tests and analyze green, a commit, then a staging and prod
 | V2 | Done | Issues list (type badge replaces the severity stripe, severity and status pills), filters, issue detail (badges, timeline icons by meaning, linked task badges), task issue card, tree sheet rows, map filters and markers on the shared severity ramp. |
 | V3 | Done | Inventory list, filter chips, item header, category picker; stock movements (added green +, used orange −, correction blue ±, undone grey ↺); application methods in the schedule form. Unit tests cover both new sets and the history-row pictures. |
 | V4 | Done (with V2) | Picture tiles (`OptionTile`, `OptionTileGrid`) for issue type and severity on Report issue and in the inspection issue sheet and its severity dialog. Built together with V2 so those pickers were rebuilt once. Golden: `issue_report_tiles_{en,ar}_390.png`. |
-| V5 | — | |
+| V5 | Partly done | Done: full suite (all pass), goldens in English and Arabic (icons guide, report issue tiles), live staging check in headless Chrome at phone size in English and Arabic (icons guide, tasks, issues list with real data; icons render in the web build). **Needs people:** check on the iPhone in daylight; show the Icons guide to 2–3 workers and note pictures they misread, then change those in `app_visuals.dart` only. |
