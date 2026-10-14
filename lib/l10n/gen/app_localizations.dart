@@ -4976,6 +4976,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You are about {meters} m outside the farm map.'**
   String mapLocationOutside(int meters);
+
+  /// No description provided for @iconsGuideTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Icons guide'**
+  String get iconsGuideTitle;
+
+  /// No description provided for @iconsGuideEyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Learn the pictures'**
+  String get iconsGuideEyebrow;
+
+  /// No description provided for @iconsGuideIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Each kind of work, problem and status always has the same picture and colour everywhere in the app.'**
+  String get iconsGuideIntro;
+
+  /// No description provided for @iconsGuideSeverity.
+  ///
+  /// In en, this message translates to:
+  /// **'Severity and priority'**
+  String get iconsGuideSeverity;
+
+  /// No description provided for @iconsGuideTaskStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Task status'**
+  String get iconsGuideTaskStatus;
+
+  /// No description provided for @iconsGuideIssueStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Issue status'**
+  String get iconsGuideIssueStatus;
+
+  /// No description provided for @iconsGuideInventory.
+  ///
+  /// In en, this message translates to:
+  /// **'Inventory categories'**
+  String get iconsGuideInventory;
+
+  /// No description provided for @iconsGuidePlanStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule status'**
+  String get iconsGuidePlanStatus;
+
+  /// No description provided for @iconsGuideReviewDecision.
+  ///
+  /// In en, this message translates to:
+  /// **'Engineer review'**
+  String get iconsGuideReviewDecision;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

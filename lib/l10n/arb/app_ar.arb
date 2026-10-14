@@ -1196,5 +1196,14 @@
   "locationDenied": "الوصول إلى الموقع محظور. اسمح به لهذا التطبيق من إعدادات الهاتف.",
   "locationServiceOff": "شغّل خدمة الموقع (GPS) في الهاتف.",
   "locationFailed": "موقعك غير متاح الآن.",
-  "mapLocationOutside": "أنت على بُعد نحو {meters} م خارج خريطة المزرعة."
+  "mapLocationOutside": "أنت على بُعد نحو {meters} م خارج خريطة المزرعة.",
+  "iconsGuideTitle": "دليل الأيقونات",
+  "iconsGuideEyebrow": "تعلّم الصور",
+  "iconsGuideIntro": "كل نوع عمل ومشكلة وحالة له دائمًا نفس الصورة ونفس اللون في كل مكان في التطبيق.",
+  "iconsGuideSeverity": "الخطورة والأولوية",
+  "iconsGuideTaskStatus": "حالة المهمة",
+  "iconsGuideIssueStatus": "حالة المشكلة",
+  "iconsGuideInventory": "أصناف المخزون",
+  "iconsGuidePlanStatus": "حالة الجدول",
+  "iconsGuideReviewDecision": "مراجعة المهندس"
 }

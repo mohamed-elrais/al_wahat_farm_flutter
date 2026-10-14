@@ -1242,5 +1242,14 @@
   "locationServiceOff": "Turn on location (GPS) on the phone.",
   "locationFailed": "Your location is not available right now.",
   "mapLocationOutside": "You are about {meters} m outside the farm map.",
-  "@mapLocationOutside": {"placeholders": {"meters": {"type": "int"}}}
+  "@mapLocationOutside": {"placeholders": {"meters": {"type": "int"}}},
+  "iconsGuideTitle": "Icons guide",
+  "iconsGuideEyebrow": "Learn the pictures",
+  "iconsGuideIntro": "Each kind of work, problem and status always has the same picture and colour everywhere in the app.",
+  "iconsGuideSeverity": "Severity and priority",
+  "iconsGuideTaskStatus": "Task status",
+  "iconsGuideIssueStatus": "Issue status",
+  "iconsGuideInventory": "Inventory categories",
+  "iconsGuidePlanStatus": "Schedule status",
+  "iconsGuideReviewDecision": "Engineer review"
 }

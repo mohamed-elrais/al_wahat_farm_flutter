@@ -76,6 +76,15 @@ class ProfileScreen extends StatelessWidget {
                     const Divider(height: 32),
                   ],
                   const InstallAppTile(),
+                  ListTile(
+                    key: const Key('icons-guide-tile'),
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.menu_book_outlined,
+                        color: AppColors.green),
+                    title: Text(l10n.iconsGuideTitle),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => context.go('/more/icons'),
+                  ),
                   if (membership?.role.canManageSchedules ?? false) ...<Widget>[
                     ListTile(
                       key: const Key('schedules-entry-tile'),

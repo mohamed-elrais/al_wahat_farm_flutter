@@ -2799,4 +2799,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String mapLocationOutside(int meters) {
     return 'You are about $meters m outside the farm map.';
   }
+
+  @override
+  String get iconsGuideTitle => 'Icons guide';
+
+  @override
+  String get iconsGuideEyebrow => 'Learn the pictures';
+
+  @override
+  String get iconsGuideIntro => 'Each kind of work, problem and status always has the same picture and colour everywhere in the app.';
+
+  @override
+  String get iconsGuideSeverity => 'Severity and priority';
+
+  @override
+  String get iconsGuideTaskStatus => 'Task status';
+
+  @override
+  String get iconsGuideIssueStatus => 'Issue status';
+
+  @override
+  String get iconsGuideInventory => 'Inventory categories';
+
+  @override
+  String get iconsGuidePlanStatus => 'Schedule status';
+
+  @override
+  String get iconsGuideReviewDecision => 'Engineer review';
 }

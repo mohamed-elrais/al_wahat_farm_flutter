@@ -177,19 +177,24 @@ extension InventoryTransactionTypeL10n on InventoryTransactionType {
 extension InventoryCategoryL10n on InventoryCategory {
   /// Localized label for the seeded default categories; custom categories
   /// created by managers show their stored name as-is.
-  String localizedLabel(AppLocalizations l10n) => switch (code) {
-        'pipe' => l10n.categoryPipe,
-        'pipe_joint' => l10n.categoryPipeJoint,
-        'fertilizer' => l10n.categoryFertilizer,
-        'dripper' => l10n.categoryDripper,
-        'insecticide' => l10n.categoryInsecticide,
-        'herbicide' => l10n.categoryHerbicide,
-        'fungicide' => l10n.categoryFungicide,
-        'tool' => l10n.categoryTool,
-        'other' => l10n.categoryOther,
-        _ => name,
-      };
+  String localizedLabel(AppLocalizations l10n) =>
+      inventoryCategoryCodeLabel(l10n, code) ?? name;
 }
+
+/// The label of a seeded inventory category code, or null for custom codes.
+String? inventoryCategoryCodeLabel(AppLocalizations l10n, String code) =>
+    switch (code) {
+      'pipe' => l10n.categoryPipe,
+      'pipe_joint' => l10n.categoryPipeJoint,
+      'fertilizer' => l10n.categoryFertilizer,
+      'dripper' => l10n.categoryDripper,
+      'insecticide' => l10n.categoryInsecticide,
+      'herbicide' => l10n.categoryHerbicide,
+      'fungicide' => l10n.categoryFungicide,
+      'tool' => l10n.categoryTool,
+      'other' => l10n.categoryOther,
+      _ => null,
+    };
 
 extension OperationPlanTypeL10n on OperationPlanType {
   String localizedLabel(AppLocalizations l10n) => switch (this) {

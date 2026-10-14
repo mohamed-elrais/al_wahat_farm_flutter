@@ -4,7 +4,7 @@
 
 This is step 1 of supporting users who can't read or write. Voice, picture pickers and simpler login come later.
 
-Status: **draft — waiting for decisions D1–D5** (end of this file).
+Status: **V0 done (2026-10-14) — waiting for the palette review on a phone** before V1. Decisions D1–D5 accepted.
 
 ---
 
@@ -216,3 +216,15 @@ Each phase ends with: tests and analyze green, a commit, then a staging and prod
 ## Decision log
 | Date | Item | Decision |
 |---|---|---|
+| 2026-10-14 | D1–D5 | All accepted as recommended. |
+| 2026-10-14 | V0 build notes | Inventory "dripper" uses the dripper family (teal plumbing), not the irrigation drop, per D1. Severity bars always rise left to right, in Arabic too (like phone signal bars). The "Returned" ↶ icon mirrors in Arabic (Flutter's RTL icon). |
+
+## Progress
+| Phase | State | Notes |
+|---|---|---|
+| V0 | Done | `lib/app/theme/app_visuals.dart`, `lib/core/widgets/option_visuals.dart`, Profile → Icons guide (`/more/icons`). Tests: `test/unit/theme/app_visuals_test.dart`, `test/widget/icons_guide_test.dart`, goldens `test/goldens/icons_guide_{en,ar}_390.png`. **Gate:** palette review on a phone. |
+| V1 | Waiting for the gate | |
+| V2 | — | |
+| V3 | — | |
+| V4 | — | |
+| V5 | — | |

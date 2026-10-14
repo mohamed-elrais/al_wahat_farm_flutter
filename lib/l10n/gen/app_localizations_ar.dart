@@ -2822,4 +2822,31 @@ class AppLocalizationsAr extends AppLocalizations {
   String mapLocationOutside(int meters) {
     return 'أنت على بُعد نحو $meters م خارج خريطة المزرعة.';
   }
+
+  @override
+  String get iconsGuideTitle => 'دليل الأيقونات';
+
+  @override
+  String get iconsGuideEyebrow => 'تعلّم الصور';
+
+  @override
+  String get iconsGuideIntro => 'كل نوع عمل ومشكلة وحالة له دائمًا نفس الصورة ونفس اللون في كل مكان في التطبيق.';
+
+  @override
+  String get iconsGuideSeverity => 'الخطورة والأولوية';
+
+  @override
+  String get iconsGuideTaskStatus => 'حالة المهمة';
+
+  @override
+  String get iconsGuideIssueStatus => 'حالة المشكلة';
+
+  @override
+  String get iconsGuideInventory => 'أصناف المخزون';
+
+  @override
+  String get iconsGuidePlanStatus => 'حالة الجدول';
+
+  @override
+  String get iconsGuideReviewDecision => 'مراجعة المهندس';
 }

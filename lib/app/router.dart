@@ -16,6 +16,7 @@ import 'package:al_wahat_farm_flutter/features/issues/presentation/issue_report_
 import 'package:al_wahat_farm_flutter/features/issues/presentation/issues_screen.dart';
 import 'package:al_wahat_farm_flutter/features/map/presentation/farm_map_screen.dart';
 import 'package:al_wahat_farm_flutter/features/map/presentation/scanner_screen.dart';
+import 'package:al_wahat_farm_flutter/features/profile/presentation/icons_guide_screen.dart';
 import 'package:al_wahat_farm_flutter/features/profile/presentation/profile_screen.dart';
 import 'package:al_wahat_farm_flutter/features/reviews/presentation/review_detail_screen.dart';
 import 'package:al_wahat_farm_flutter/features/reviews/presentation/review_queue_screen.dart';
@@ -170,6 +171,10 @@ GoRouter createRouter(AppConfig config) {
                   GoRoute(
                     path: 'failed-ops',
                     builder: (_, __) => const FailedOpsScreen(),
+                  ),
+                  GoRoute(
+                    path: 'icons',
+                    builder: (_, __) => const IconsGuideScreen(),
                   ),
                   GoRoute(
                     path: 'schedules',
