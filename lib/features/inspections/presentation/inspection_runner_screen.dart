@@ -302,7 +302,9 @@ class _InspectionRunnerScreenState extends State<InspectionRunnerScreen> {
     final showWalk = walk != null &&
         station != null &&
         walk.stations.contains(station) &&
-        (mode == _Mode.start || mode == _Mode.station);
+        (mode == _Mode.start ||
+            mode == _Mode.station ||
+            mode == _Mode.takeOver);
 
     final list = ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
@@ -327,7 +329,7 @@ class _InspectionRunnerScreenState extends State<InspectionRunnerScreen> {
                   ),
                   if (section != null)
                     Text(
-                      '${section.name} (${section.code})',
+                      section.name,
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                 ],
@@ -365,7 +367,14 @@ class _InspectionRunnerScreenState extends State<InspectionRunnerScreen> {
         ],
         const SizedBox(height: 14),
         ...switch (mode) {
-          _Mode.takeOver => <Widget>[_takeOverCard()],
+          // A manager sees where the assigned inspector has got to.
+          _Mode.takeOver => <Widget>[
+              _takeOverCard(),
+              if (showWalk) ...<Widget>[
+                const SizedBox(height: 12),
+                _walkCard(walk, station, canJump: false),
+              ],
+            ],
           _Mode.start => <Widget>[
               FilledButton.icon(
                 onPressed: _busy ? null : _startOrResume,

@@ -7,6 +7,8 @@ import 'package:al_wahat_farm_flutter/core/cache/local_cache_store.dart';
 import 'package:al_wahat_farm_flutter/core/connectivity/connectivity_service.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/locale_controller.dart';
 import 'package:al_wahat_farm_flutter/core/location/location_service.dart';
+import 'package:al_wahat_farm_flutter/features/auth/domain/operational_context.dart';
+import 'package:al_wahat_farm_flutter/features/auth/presentation/authenticated_gate.dart';
 import 'package:al_wahat_farm_flutter/features/farm/data/farm_hierarchy_repository.dart';
 import 'package:al_wahat_farm_flutter/features/inspections/data/inspection_repository.dart';
 import 'package:al_wahat_farm_flutter/features/inspections/domain/inspection_models.dart';
@@ -20,6 +22,7 @@ import 'package:al_wahat_farm_flutter/features/sync/data/outbox_store.dart';
 import 'package:al_wahat_farm_flutter/features/sync/data/pending_photo_store.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/task_evidence.dart';
 import 'package:al_wahat_farm_flutter/l10n/gen/app_localizations.dart';
+import 'package:al_wahat_farm_flutter/shared/models/farm_role.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -107,6 +110,7 @@ Widget _app(
   _Repository repository, {
   LocationService location = const DeviceLocationService(),
   LocalCacheStore? store,
+  Widget Function(Widget runner)? wrap,
 }) {
   final cache = store ?? InMemoryCacheStore();
   return AppServicesScope(
@@ -124,7 +128,9 @@ Widget _app(
         theme: AppTheme.light,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: InspectionRunnerScreen(taskId: 'task-id', location: location),
+        home: (wrap ?? (runner) => runner)(
+          InspectionRunnerScreen(taskId: 'task-id', location: location),
+        ),
       ),
     ),
   );
@@ -377,5 +383,57 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Inspection map'), findsNothing);
     expect(find.text('Station ${station - 3} of 153'), findsOneWidget);
+  });
+
+  testWidgets('the action bar stays above the floating navigation bar',
+      (tester) async {
+    phone(tester);
+    final repository = _Repository(_detailsAt(aisleThree));
+    await tester.pumpWidget(_app(
+      repository,
+      // Mirrors AppShell: tabs draw under a floating bar (extendBody).
+      wrap: (runner) => Scaffold(
+        extendBody: true,
+        body: runner,
+        bottomNavigationBar: const SizedBox(height: 96),
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    final save = tester.getRect(find.byKey(const Key('inspection-save-next')));
+    expect(save.bottom, lessThanOrEqualTo(932 - 96));
+  });
+
+  testWidgets('a manager watching another inspector sees the walk map',
+      (tester) async {
+    phone(tester);
+    final repository = _Repository(_detailsAt(aisleThree + 3));
+    final operational = OperationalContext(
+      profile:
+          const UserProfile(id: 'manager', fullName: 'Manager', isActive: true),
+      memberships: const <FarmMembership>[
+        FarmMembership(
+          id: 'membership',
+          profileId: 'manager',
+          role: FarmRole.owner,
+          isActive: true,
+          farm: FarmSummary(
+            id: 'farm',
+            name: 'Al Wahat',
+            code: 'AL-WAHAT',
+            timezone: 'Africa/Cairo',
+          ),
+        ),
+      ],
+    );
+    await tester.pumpWidget(OperationalContextScope(
+      contextData: operational,
+      child: _app(repository),
+    ));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('inspection-takeover')), findsOneWidget);
+    expect(find.byKey(const Key('inspection-walk-map')), findsOneWidget);
+    expect(find.byKey(const Key('inspection-save-next')), findsNothing);
   });
 }

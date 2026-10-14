@@ -46,7 +46,10 @@ fi
 
 # Start clean: Flutter lists every file already in build/web in the service
 # worker's RESOURCES, including a _headers copied there by a previous run.
-rm -rf build/web
+# Flutter 3.13 also keeps web_plugin_registrant.dart in .dart_tool/flutter_build
+# and does not regenerate it when a plugin is added, so a new plugin (geolocator
+# on 2026-10-14) fails with MissingPluginException on the web until it is cleared.
+rm -rf build/web .dart_tool/flutter_build
 
 flutter build web --release \
   --web-renderer canvaskit \

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:al_wahat_farm_flutter/core/cache/local_cache_store.dart';
+import 'package:al_wahat_farm_flutter/core/logging/safe_log.dart';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -136,6 +137,12 @@ class LocationWatcher extends ChangeNotifier {
         _error = error is LocationUnavailable
             ? error.reason
             : LocationUnavailableReason.failed;
+        final cause = error is LocationUnavailable ? error.cause : error;
+        SafeLog.event('location_unavailable', data: <String, Object?>{
+          'reason': _error!.name,
+          'cause': cause.runtimeType,
+          'message': '$cause',
+        });
         notifyListeners();
       },
     );
