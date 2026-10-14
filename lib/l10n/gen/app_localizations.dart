@@ -4736,6 +4736,222 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Got it'**
   String get installIosDone;
+
+  /// No description provided for @inspectionAislePosition.
+  ///
+  /// In en, this message translates to:
+  /// **'Aisle {aisle} of {aisles} · station {station} of {stations} in this aisle'**
+  String inspectionAislePosition(int aisle, int aisles, int station, int stations);
+
+  /// No description provided for @inspectionRowTree.
+  ///
+  /// In en, this message translates to:
+  /// **'Row {row} · tree {tree}'**
+  String inspectionRowTree(String row, String tree);
+
+  /// No description provided for @inspectionHealthy.
+  ///
+  /// In en, this message translates to:
+  /// **'Healthy'**
+  String get inspectionHealthy;
+
+  /// No description provided for @inspectionIssueCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 issue} other{{count} issues}}'**
+  String inspectionIssueCount(int count);
+
+  /// No description provided for @inspectionReportIssue.
+  ///
+  /// In en, this message translates to:
+  /// **'Report issue'**
+  String get inspectionReportIssue;
+
+  /// No description provided for @inspectionHideIssues.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide issues'**
+  String get inspectionHideIssues;
+
+  /// No description provided for @inspectionAllHealthyNext.
+  ///
+  /// In en, this message translates to:
+  /// **'All healthy · next'**
+  String get inspectionAllHealthyNext;
+
+  /// No description provided for @inspectionNextTrees.
+  ///
+  /// In en, this message translates to:
+  /// **'Next: {trees}'**
+  String inspectionNextTrees(String trees);
+
+  /// No description provided for @inspectionAisleStart.
+  ///
+  /// In en, this message translates to:
+  /// **'New aisle: turn around and walk the other way, between rows {left} and {right}.'**
+  String inspectionAisleStart(int left, int right);
+
+  /// No description provided for @inspectionAisleStartSingle.
+  ///
+  /// In en, this message translates to:
+  /// **'New aisle: turn around and walk the other way, along row {row}.'**
+  String inspectionAisleStartSingle(int row);
+
+  /// No description provided for @inspectionAisleEnd.
+  ///
+  /// In en, this message translates to:
+  /// **'Last station in this aisle. Then turn into aisle {aisle}.'**
+  String inspectionAisleEnd(int aisle);
+
+  /// No description provided for @inspectionExistingIssueHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Unticking an existing issue does not close it.'**
+  String get inspectionExistingIssueHint;
+
+  /// No description provided for @inspectionOpenMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Open full map'**
+  String get inspectionOpenMap;
+
+  /// No description provided for @inspectionMapTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Inspection map'**
+  String get inspectionMapTitle;
+
+  /// No description provided for @inspectionMapSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Section map. Station {station} of {stations}. Green trees are done, red trees have issues, the orange trees are the current station.'**
+  String inspectionMapSemantics(int station, int stations);
+
+  /// No description provided for @inspectionMapLegendDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get inspectionMapLegendDone;
+
+  /// No description provided for @inspectionMapLegendIssue.
+  ///
+  /// In en, this message translates to:
+  /// **'Issue found'**
+  String get inspectionMapLegendIssue;
+
+  /// No description provided for @inspectionMapLegendCurrent.
+  ///
+  /// In en, this message translates to:
+  /// **'Current station'**
+  String get inspectionMapLegendCurrent;
+
+  /// No description provided for @inspectionMapLegendPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Not yet'**
+  String get inspectionMapLegendPending;
+
+  /// No description provided for @inspectionMapLegendYou.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get inspectionMapLegendYou;
+
+  /// No description provided for @inspectionMapTapHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a tree you already inspected to go back to its station.'**
+  String get inspectionMapTapHint;
+
+  /// No description provided for @inspectionJumpBlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish station {station} first. Stations are saved in walking order.'**
+  String inspectionJumpBlocked(int station);
+
+  /// No description provided for @inspectionLocationHere.
+  ///
+  /// In en, this message translates to:
+  /// **'You are at this station (GPS ±{accuracy} m).'**
+  String inspectionLocationHere(int accuracy);
+
+  /// No description provided for @inspectionLocationAway.
+  ///
+  /// In en, this message translates to:
+  /// **'This station is about {meters} m from you (GPS ±{accuracy} m).'**
+  String inspectionLocationAway(int meters, int accuracy);
+
+  /// No description provided for @inspectionLocationAhead.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{You seem to be 1 station past this one.} other{You seem to be {count} stations past this one.}}'**
+  String inspectionLocationAhead(int count);
+
+  /// No description provided for @inspectionLocationBehind.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{You seem to be 1 station before this one.} other{You seem to be {count} stations before this one.}}'**
+  String inspectionLocationBehind(int count);
+
+  /// No description provided for @inspectionLocationOtherAisle.
+  ///
+  /// In en, this message translates to:
+  /// **'You seem to be in aisle {aisle}; this station is in aisle {current}.'**
+  String inspectionLocationOtherAisle(int aisle, int current);
+
+  /// No description provided for @inspectionLocationOutside.
+  ///
+  /// In en, this message translates to:
+  /// **'You are about {meters} m from this section.'**
+  String inspectionLocationOutside(int meters);
+
+  /// No description provided for @locationShow.
+  ///
+  /// In en, this message translates to:
+  /// **'Show my location'**
+  String get locationShow;
+
+  /// No description provided for @locationHide.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide my location'**
+  String get locationHide;
+
+  /// No description provided for @locationFinding.
+  ///
+  /// In en, this message translates to:
+  /// **'Finding your location…'**
+  String get locationFinding;
+
+  /// No description provided for @locationWeak.
+  ///
+  /// In en, this message translates to:
+  /// **'Weak GPS signal (±{accuracy} m). Use the rows and tree labels to find your place.'**
+  String locationWeak(int accuracy);
+
+  /// No description provided for @locationDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Location is blocked. Allow it for this app in the phone settings.'**
+  String get locationDenied;
+
+  /// No description provided for @locationServiceOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on location (GPS) on the phone.'**
+  String get locationServiceOff;
+
+  /// No description provided for @locationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Your location is not available right now.'**
+  String get locationFailed;
+
+  /// No description provided for @mapLocationOutside.
+  ///
+  /// In en, this message translates to:
+  /// **'You are about {meters} m outside the farm map.'**
+  String mapLocationOutside(int meters);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

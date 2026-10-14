@@ -26,6 +26,8 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>Scan tree QR labels and capture field evidence.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Show where you are on the farm map during tree inspections.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Select field evidence photos for tasks and tree issues.</string>
 	<key>UILaunchStoryboardName</key>

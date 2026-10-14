@@ -2627,4 +2627,164 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get installIosDone => 'Got it';
+
+  @override
+  String inspectionAislePosition(int aisle, int aisles, int station, int stations) {
+    return 'Aisle $aisle of $aisles · station $station of $stations in this aisle';
+  }
+
+  @override
+  String inspectionRowTree(String row, String tree) {
+    return 'Row $row · tree $tree';
+  }
+
+  @override
+  String get inspectionHealthy => 'Healthy';
+
+  @override
+  String inspectionIssueCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count issues',
+      one: '1 issue',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get inspectionReportIssue => 'Report issue';
+
+  @override
+  String get inspectionHideIssues => 'Hide issues';
+
+  @override
+  String get inspectionAllHealthyNext => 'All healthy · next';
+
+  @override
+  String inspectionNextTrees(String trees) {
+    return 'Next: $trees';
+  }
+
+  @override
+  String inspectionAisleStart(int left, int right) {
+    return 'New aisle: turn around and walk the other way, between rows $left and $right.';
+  }
+
+  @override
+  String inspectionAisleStartSingle(int row) {
+    return 'New aisle: turn around and walk the other way, along row $row.';
+  }
+
+  @override
+  String inspectionAisleEnd(int aisle) {
+    return 'Last station in this aisle. Then turn into aisle $aisle.';
+  }
+
+  @override
+  String get inspectionExistingIssueHint => 'Unticking an existing issue does not close it.';
+
+  @override
+  String get inspectionOpenMap => 'Open full map';
+
+  @override
+  String get inspectionMapTitle => 'Inspection map';
+
+  @override
+  String inspectionMapSemantics(int station, int stations) {
+    return 'Section map. Station $station of $stations. Green trees are done, red trees have issues, the orange trees are the current station.';
+  }
+
+  @override
+  String get inspectionMapLegendDone => 'Done';
+
+  @override
+  String get inspectionMapLegendIssue => 'Issue found';
+
+  @override
+  String get inspectionMapLegendCurrent => 'Current station';
+
+  @override
+  String get inspectionMapLegendPending => 'Not yet';
+
+  @override
+  String get inspectionMapLegendYou => 'You';
+
+  @override
+  String get inspectionMapTapHint => 'Tap a tree you already inspected to go back to its station.';
+
+  @override
+  String inspectionJumpBlocked(int station) {
+    return 'Finish station $station first. Stations are saved in walking order.';
+  }
+
+  @override
+  String inspectionLocationHere(int accuracy) {
+    return 'You are at this station (GPS ±$accuracy m).';
+  }
+
+  @override
+  String inspectionLocationAway(int meters, int accuracy) {
+    return 'This station is about $meters m from you (GPS ±$accuracy m).';
+  }
+
+  @override
+  String inspectionLocationAhead(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'You seem to be $count stations past this one.',
+      one: 'You seem to be 1 station past this one.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String inspectionLocationBehind(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'You seem to be $count stations before this one.',
+      one: 'You seem to be 1 station before this one.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String inspectionLocationOtherAisle(int aisle, int current) {
+    return 'You seem to be in aisle $aisle; this station is in aisle $current.';
+  }
+
+  @override
+  String inspectionLocationOutside(int meters) {
+    return 'You are about $meters m from this section.';
+  }
+
+  @override
+  String get locationShow => 'Show my location';
+
+  @override
+  String get locationHide => 'Hide my location';
+
+  @override
+  String get locationFinding => 'Finding your location…';
+
+  @override
+  String locationWeak(int accuracy) {
+    return 'Weak GPS signal (±$accuracy m). Use the rows and tree labels to find your place.';
+  }
+
+  @override
+  String get locationDenied => 'Location is blocked. Allow it for this app in the phone settings.';
+
+  @override
+  String get locationServiceOff => 'Turn on location (GPS) on the phone.';
+
+  @override
+  String get locationFailed => 'Your location is not available right now.';
+
+  @override
+  String mapLocationOutside(int meters) {
+    return 'You are about $meters m outside the farm map.';
+  }
 }

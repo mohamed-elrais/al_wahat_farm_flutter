@@ -1,6 +1,11 @@
+import 'dart:async';
+import 'dart:math' as math;
+
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
+import 'package:al_wahat_farm_flutter/core/app_services.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
+import 'package:al_wahat_farm_flutter/core/location/location_service.dart';
 import 'package:al_wahat_farm_flutter/core/logging/safe_log.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
@@ -31,10 +36,12 @@ class FarmMapScreen extends StatefulWidget {
     this.mapFuture,
     this.focus,
     this.plantingPitRepository,
+    this.location = const DeviceLocationService(),
     super.key,
   });
 
   final Future<ProjectedFarmMap>? mapFuture;
+  final LocationService location;
   final PlantingPitRepository? plantingPitRepository;
 
   /// Deep-link focus request: `tree:<id>`, `zone:<uuid>` or
@@ -76,6 +83,8 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
   bool _needsRefit = false;
   bool _fullScreenOpen = false;
   ValueListenable<bool>? _visibility;
+  late final LocationWatcher _location = LocationWatcher(widget.location);
+  bool _locationPreferenceLoaded = false;
 
   PlantingPitRepository get _plantingPitRepository =>
       widget.plantingPitRepository ??
@@ -104,6 +113,11 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
     // The shell keeps this screen alive in an IndexedStack; TickerMode
     // flips to disabled when the user leaves the tab, which is our signal
     // to drop ephemeral state (selection, highlight, filter, camera).
+    final services = AppServicesScope.maybeOf(context);
+    if (!_locationPreferenceLoaded && services != null) {
+      _locationPreferenceLoaded = true;
+      unawaited(_location.restore(services.cacheStore));
+    }
     final notifier = TickerMode.getNotifier(context);
     if (!identical(notifier, _visibility)) {
       _visibility?.removeListener(_handleVisibilityChanged);
@@ -129,6 +143,7 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
   @override
   void dispose() {
     _visibility?.removeListener(_handleVisibilityChanged);
+    _location.dispose();
     _transformation.dispose();
     super.dispose();
   }
@@ -197,6 +212,7 @@ class _FarmMapScreenState extends State<FarmMapScreen> {
                 final canvas = _MapPanel(
                   map: map,
                   transformation: _transformation,
+                  location: _location,
                   section: _section,
                   selectedTree: _selectedTree,
                   plantingPits: plantingPits,
@@ -1239,10 +1255,14 @@ class _MapPanel extends StatefulWidget {
     required this.onTapPlantingPit,
     required this.onTapValve,
     required this.onTapMiss,
+    this.location,
     this.autoFit = true,
   });
   final ProjectedFarmMap map;
   final TransformationController transformation;
+
+  /// The device location shown as a blue dot; null hides the control.
+  final LocationWatcher? location;
 
   /// The full-screen panel shares the embedded panel's transformation
   /// controller and must not clobber its camera with an initial fit.
@@ -1281,6 +1301,62 @@ class _MapPanelState extends State<_MapPanel> {
   static const _zoomStep = 1.4;
 
   bool _fitted = false;
+  Size? _viewport;
+
+  /// Set when the user turns location on: the first fix centres the map.
+  bool _centerOnNextFix = false;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.location?.fix.addListener(_handleFix);
+  }
+
+  @override
+  void didUpdateWidget(_MapPanel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.location != widget.location) {
+      oldWidget.location?.fix.removeListener(_handleFix);
+      widget.location?.fix.addListener(_handleFix);
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.location?.fix.removeListener(_handleFix);
+    super.dispose();
+  }
+
+  Future<void> _toggleLocation() async {
+    final location = widget.location;
+    if (location == null) return;
+    await location.toggle(AppServicesScope.maybeOf(context)?.cacheStore);
+    _centerOnNextFix = location.isOn;
+    _handleFix();
+  }
+
+  void _handleFix() {
+    final fix = widget.location?.fix.value;
+    final viewport = _viewport;
+    if (!_centerOnNextFix || fix == null || viewport == null || !mounted) {
+      return;
+    }
+    _centerOnNextFix = false;
+    final point = widget.map.projection.project(
+      GeoCoordinate(longitude: fix.longitude, latitude: fix.latitude),
+    );
+    if (!(Offset.zero & MapProjection.canvasSize).contains(point)) return;
+    final scale = math.max(
+      widget.transformation.value.getMaxScaleOnAxis(),
+      1.6,
+    );
+    widget.transformation.value = Matrix4.identity()
+      ..translate(
+        viewport.width / 2 - point.dx * scale,
+        viewport.height / 2 - point.dy * scale,
+      )
+      ..scale(scale);
+  }
 
   void _zoom(double factor, Size viewportSize) {
     final current = widget.transformation.value;
@@ -1338,6 +1414,7 @@ class _MapPanelState extends State<_MapPanel> {
   @override
   Widget build(BuildContext context) => LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
+          _viewport = constraints.biggest;
           if (widget.autoFit && !_fitted) {
             _fitted = true;
             WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -1428,36 +1505,54 @@ class _MapPanelState extends State<_MapPanel> {
                             maxScale: _maxScale,
                             transformationController: widget.transformation,
                             boundaryMargin: const EdgeInsets.all(220),
-                            child: RepaintBoundary(
-                              child: CustomPaint(
-                                size: MapProjection.canvasSize,
-                                painter: FarmMapPainter(
-                                  map: widget.map,
-                                  selectedSection: widget.section,
-                                  selectedTreeId: widget.selectedTree?.id,
-                                  plantingPits: widget.plantingPits,
-                                  selectedPlantingPitId:
-                                      widget.selectedPlantingPit?.id,
-                                  showTrees: widget.showTrees,
-                                  showPlantingPits: widget.showPlantingPits,
-                                  showIrrigation: widget.showIrrigation,
-                                  showUtilities: widget.showUtilities,
-                                  showValves: widget.showValves,
-                                  showFlushValves: widget.showFlushValves,
-                                  showWaterSupply: widget.showWaterSupply,
-                                  selectedValveId: widget.selectedValveId,
-                                  highlightZoneUuids: widget.highlightZones,
-                                  highlightSubmains: widget.highlightSubmains,
-                                  highlightLine: widget.highlightLine,
-                                  issueMarkers: widget.issueMarkers,
-                                  issueSemanticLabels:
-                                      widget.issueSemanticLabels,
-                                  issueSemanticsTextDirection:
-                                      Directionality.of(context),
-                                  showIssueMatchesOnly:
-                                      widget.showIssueMatchesOnly,
+                            child: Stack(
+                              children: <Widget>[
+                                RepaintBoundary(
+                                  child: CustomPaint(
+                                    size: MapProjection.canvasSize,
+                                    painter: FarmMapPainter(
+                                      map: widget.map,
+                                      selectedSection: widget.section,
+                                      selectedTreeId: widget.selectedTree?.id,
+                                      plantingPits: widget.plantingPits,
+                                      selectedPlantingPitId:
+                                          widget.selectedPlantingPit?.id,
+                                      showTrees: widget.showTrees,
+                                      showPlantingPits: widget.showPlantingPits,
+                                      showIrrigation: widget.showIrrigation,
+                                      showUtilities: widget.showUtilities,
+                                      showValves: widget.showValves,
+                                      showFlushValves: widget.showFlushValves,
+                                      showWaterSupply: widget.showWaterSupply,
+                                      selectedValveId: widget.selectedValveId,
+                                      highlightZoneUuids: widget.highlightZones,
+                                      highlightSubmains:
+                                          widget.highlightSubmains,
+                                      highlightLine: widget.highlightLine,
+                                      issueMarkers: widget.issueMarkers,
+                                      issueSemanticLabels:
+                                          widget.issueSemanticLabels,
+                                      issueSemanticsTextDirection:
+                                          Directionality.of(context),
+                                      showIssueMatchesOnly:
+                                          widget.showIssueMatchesOnly,
+                                    ),
+                                  ),
                                 ),
-                              ),
+                                if (widget.location case final location?)
+                                  Positioned.fill(
+                                    child: IgnorePointer(
+                                      child: CustomPaint(
+                                        key: const Key('map-user-location'),
+                                        painter: _UserLocationPainter(
+                                          projection: widget.map.projection,
+                                          fix: location.fix,
+                                          transformation: widget.transformation,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
                             ),
                           ),
                         ),
@@ -1468,11 +1563,23 @@ class _MapPanelState extends State<_MapPanel> {
                     end: 12,
                     bottom: 12,
                     child: _MapZoomControls(
+                      location: widget.location,
+                      onLocate: _toggleLocation,
                       onZoomIn: () => _zoom(_zoomStep, constraints.biggest),
                       onZoomOut: () =>
                           _zoom(1 / _zoomStep, constraints.biggest),
                     ),
                   ),
+                  if (widget.location case final location?)
+                    PositionedDirectional(
+                      start: 12,
+                      end: 72,
+                      bottom: 12,
+                      child: _LocationNotice(
+                        location: location,
+                        bounds: widget.map.data.bounds,
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -1485,10 +1592,14 @@ class _MapZoomControls extends StatelessWidget {
   const _MapZoomControls({
     required this.onZoomIn,
     required this.onZoomOut,
+    this.location,
+    this.onLocate,
   });
 
   final VoidCallback onZoomIn;
   final VoidCallback onZoomOut;
+  final LocationWatcher? location;
+  final VoidCallback? onLocate;
 
   @override
   Widget build(BuildContext context) => Material(
@@ -1499,6 +1610,28 @@ class _MapZoomControls extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
+            if (location case final location?) ...<Widget>[
+              ListenableBuilder(
+                listenable: location,
+                builder: (context, _) => IconButton(
+                  key: const Key('map-locate'),
+                  tooltip: location.isOn
+                      ? context.l10n.locationHide
+                      : context.l10n.locationShow,
+                  isSelected: location.isOn,
+                  onPressed: onLocate,
+                  icon: const Icon(Icons.location_searching),
+                  selectedIcon: const Icon(
+                    Icons.my_location,
+                    color: AppColors.waterMain,
+                  ),
+                ),
+              ),
+              const SizedBox(
+                width: 32,
+                child: Divider(height: 1),
+              ),
+            ],
             IconButton(
               key: const Key('map-zoom-in'),
               tooltip: context.l10n.mapZoomIn,
@@ -1518,6 +1651,114 @@ class _MapZoomControls extends StatelessWidget {
           ],
         ),
       );
+}
+
+/// The device position on the farm canvas. Its own layer, so a new fix
+/// repaints only the dot, not the farm.
+class _UserLocationPainter extends CustomPainter {
+  _UserLocationPainter({
+    required this.projection,
+    required this.fix,
+    required this.transformation,
+  }) : super(repaint: Listenable.merge(<Listenable>[fix, transformation]));
+
+  final MapProjection projection;
+  final ValueListenable<LocationFix?> fix;
+  final TransformationController transformation;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final value = fix.value;
+    if (value == null) return;
+    final point = projection.project(
+      GeoCoordinate(longitude: value.longitude, latitude: value.latitude),
+    );
+    // Keep the dot the same size on screen at every zoom level.
+    final zoom = transformation.value.getMaxScaleOnAxis();
+    const blue = AppColors.waterMain;
+    final accuracy = value.accuracyMeters / 111320 * projection.scale;
+    canvas.drawCircle(
+      point,
+      math.max(accuracy, 9 / zoom),
+      Paint()..color = blue.withOpacity(0.15),
+    );
+    // Zones use blue tree colours too, so the dot gets a dark outline.
+    canvas.drawCircle(point, 11 / zoom, Paint()..color = AppColors.ink);
+    canvas.drawCircle(point, 9.5 / zoom, Paint()..color = Colors.white);
+    canvas.drawCircle(point, 6.5 / zoom, Paint()..color = blue);
+  }
+
+  @override
+  bool shouldRepaint(covariant _UserLocationPainter oldDelegate) =>
+      oldDelegate.projection != projection ||
+      oldDelegate.fix != fix ||
+      oldDelegate.transformation != transformation;
+}
+
+/// Explains why the blue dot is missing or unreliable.
+class _LocationNotice extends StatelessWidget {
+  const _LocationNotice({required this.location, required this.bounds});
+
+  final LocationWatcher location;
+  final FarmBounds bounds;
+
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+        listenable: Listenable.merge(<Listenable>[location, location.fix]),
+        builder: (context, _) {
+          final message = _message(context);
+          if (message == null) return const SizedBox.shrink();
+          return Align(
+            alignment: AlignmentDirectional.bottomStart,
+            child: Material(
+              key: const Key('map-location-notice'),
+              color: AppColors.card.withOpacity(0.94),
+              elevation: 2,
+              borderRadius: BorderRadius.circular(12),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                child: Text(message),
+              ),
+            ),
+          );
+        },
+      );
+
+  String? _message(BuildContext context) {
+    final l10n = context.l10n;
+    if (!location.isOn) return null;
+    final error = location.error;
+    if (error != null) {
+      return switch (error) {
+        LocationUnavailableReason.denied => l10n.locationDenied,
+        LocationUnavailableReason.serviceOff => l10n.locationServiceOff,
+        LocationUnavailableReason.failed => l10n.locationFailed,
+      };
+    }
+    final fix = location.fix.value;
+    if (fix == null) return l10n.locationFinding;
+    final outside = metersOutsideFarm(bounds, fix);
+    if (outside > 30) return l10n.mapLocationOutside(outside.round());
+    if (fix.accuracyMeters > 25) {
+      return l10n.locationWeak(fix.accuracyMeters.round());
+    }
+    return null;
+  }
+}
+
+/// Distance from [fix] to the farm's bounding box; 0 inside it.
+@visibleForTesting
+double metersOutsideFarm(FarmBounds bounds, LocationFix fix) {
+  double gap(double value, double min, double max) =>
+      value < min ? min - value : (value > max ? value - max : 0);
+  final latitude = gap(fix.latitude, bounds.minLatitude, bounds.maxLatitude);
+  final longitude =
+      gap(fix.longitude, bounds.minLongitude, bounds.maxLongitude) *
+          math.cos(fix.latitude * math.pi / 180);
+  return math.sqrt(latitude * latitude + longitude * longitude) * 111320;
 }
 
 /// Root-navigator full-screen map. It renders through the HOST screen's
@@ -1558,6 +1799,7 @@ class _FullScreenMapState extends State<_FullScreenMap> {
               child: _MapPanel(
                 map: widget.map,
                 transformation: host._transformation,
+                location: host._location,
                 section: host._section,
                 selectedTree: host._selectedTree,
                 plantingPits: plantingPits,

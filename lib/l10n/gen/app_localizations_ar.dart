@@ -2641,4 +2641,173 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get installIosDone => 'حسنًا';
+
+  @override
+  String inspectionAislePosition(int aisle, int aisles, int station, int stations) {
+    return 'الممر $aisle من $aisles · المحطة $station من $stations في هذا الممر';
+  }
+
+  @override
+  String inspectionRowTree(String row, String tree) {
+    return 'الصف $row · الشجرة $tree';
+  }
+
+  @override
+  String get inspectionHealthy => 'سليمة';
+
+  @override
+  String inspectionIssueCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count مشكلة',
+      many: '$count مشكلة',
+      few: '$count مشكلات',
+      two: 'مشكلتان',
+      one: 'مشكلة واحدة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get inspectionReportIssue => 'الإبلاغ عن مشكلة';
+
+  @override
+  String get inspectionHideIssues => 'إخفاء المشكلات';
+
+  @override
+  String get inspectionAllHealthyNext => 'كلها سليمة · التالي';
+
+  @override
+  String inspectionNextTrees(String trees) {
+    return 'التالي: $trees';
+  }
+
+  @override
+  String inspectionAisleStart(int left, int right) {
+    return 'ممر جديد: استدر وامشِ في الاتجاه المعاكس بين الصفين $left و$right.';
+  }
+
+  @override
+  String inspectionAisleStartSingle(int row) {
+    return 'ممر جديد: استدر وامشِ في الاتجاه المعاكس بجانب الصف $row.';
+  }
+
+  @override
+  String inspectionAisleEnd(int aisle) {
+    return 'هذه آخر محطة في هذا الممر. بعدها انتقل إلى الممر $aisle.';
+  }
+
+  @override
+  String get inspectionExistingIssueHint => 'إلغاء تحديد مشكلة حالية لا يغلقها.';
+
+  @override
+  String get inspectionOpenMap => 'فتح الخريطة كاملة';
+
+  @override
+  String get inspectionMapTitle => 'خريطة الفحص';
+
+  @override
+  String inspectionMapSemantics(int station, int stations) {
+    return 'خريطة القسم. المحطة $station من $stations. الأشجار الخضراء تم فحصها، والحمراء بها مشكلات، والبرتقالية هي المحطة الحالية.';
+  }
+
+  @override
+  String get inspectionMapLegendDone => 'تم';
+
+  @override
+  String get inspectionMapLegendIssue => 'بها مشكلة';
+
+  @override
+  String get inspectionMapLegendCurrent => 'المحطة الحالية';
+
+  @override
+  String get inspectionMapLegendPending => 'لم تُفحص بعد';
+
+  @override
+  String get inspectionMapLegendYou => 'أنت';
+
+  @override
+  String get inspectionMapTapHint => 'اضغط على شجرة فحصتها لتعود إلى محطتها.';
+
+  @override
+  String inspectionJumpBlocked(int station) {
+    return 'أكمل المحطة $station أولًا. تُحفظ المحطات بترتيب المشي.';
+  }
+
+  @override
+  String inspectionLocationHere(int accuracy) {
+    return 'أنت عند هذه المحطة (دقة الموقع ±$accuracy م).';
+  }
+
+  @override
+  String inspectionLocationAway(int meters, int accuracy) {
+    return 'تبعد هذه المحطة عنك نحو $meters م (دقة الموقع ±$accuracy م).';
+  }
+
+  @override
+  String inspectionLocationAhead(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'يبدو أنك تجاوزت هذه المحطة بـ$count محطة.',
+      many: 'يبدو أنك تجاوزت هذه المحطة بـ$count محطة.',
+      few: 'يبدو أنك تجاوزت هذه المحطة بـ$count محطات.',
+      two: 'يبدو أنك تجاوزت هذه المحطة بمحطتين.',
+      one: 'يبدو أنك تجاوزت هذه المحطة بمحطة واحدة.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String inspectionLocationBehind(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'يبدو أنك قبل هذه المحطة بـ$count محطة.',
+      many: 'يبدو أنك قبل هذه المحطة بـ$count محطة.',
+      few: 'يبدو أنك قبل هذه المحطة بـ$count محطات.',
+      two: 'يبدو أنك قبل هذه المحطة بمحطتين.',
+      one: 'يبدو أنك قبل هذه المحطة بمحطة واحدة.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String inspectionLocationOtherAisle(int aisle, int current) {
+    return 'يبدو أنك في الممر $aisle، وهذه المحطة في الممر $current.';
+  }
+
+  @override
+  String inspectionLocationOutside(int meters) {
+    return 'أنت على بُعد نحو $meters م من هذا القسم.';
+  }
+
+  @override
+  String get locationShow => 'إظهار موقعي';
+
+  @override
+  String get locationHide => 'إخفاء موقعي';
+
+  @override
+  String get locationFinding => 'جارٍ تحديد موقعك…';
+
+  @override
+  String locationWeak(int accuracy) {
+    return 'إشارة الموقع ضعيفة (±$accuracy م). استعن بالصفوف وملصقات الأشجار لتحديد مكانك.';
+  }
+
+  @override
+  String get locationDenied => 'الوصول إلى الموقع محظور. اسمح به لهذا التطبيق من إعدادات الهاتف.';
+
+  @override
+  String get locationServiceOff => 'شغّل خدمة الموقع (GPS) في الهاتف.';
+
+  @override
+  String get locationFailed => 'موقعك غير متاح الآن.';
+
+  @override
+  String mapLocationOutside(int meters) {
+    return 'أنت على بُعد نحو $meters م خارج خريطة المزرعة.';
+  }
 }
