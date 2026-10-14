@@ -1,6 +1,8 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
+import 'package:al_wahat_farm_flutter/app/theme/app_visuals.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
+import 'package:al_wahat_farm_flutter/core/widgets/option_visuals.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
 import 'package:al_wahat_farm_flutter/core/app_services.dart';
@@ -242,7 +244,11 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               _DetailRow(
                 icon: Icons.category_outlined,
                 label: context.l10n.detailType,
-                value: task.type.localizedLabel(context.l10n),
+                content: OptionLabel(
+                  task.type.visual,
+                  task.type.localizedLabel(context.l10n),
+                  size: 24,
+                ),
               ),
               _DetailRow(
                 icon: Icons.place_outlined,
@@ -293,7 +299,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               _DetailRow(
                 icon: Icons.priority_high,
                 label: context.l10n.detailPriority,
-                value: task.priority.localizedLabel(context.l10n),
+                content: TaskPriorityLabel(task.priority, fontSize: 14),
               ),
               if (task.plannedDurationMinutes != null)
                 _DetailRow(
@@ -661,7 +667,7 @@ class _ActivityCard extends StatelessWidget {
               for (final item in activity)
                 ListTile(
                   contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.history),
+                  leading: OptionBadge(item.action.visual, size: 32),
                   title: Text(item.action.localizedLabel(context.l10n)),
                   subtitle: Text(
                     item.note == null || item.note!.isEmpty
@@ -931,12 +937,16 @@ class _DetailRow extends StatelessWidget {
   const _DetailRow({
     required this.icon,
     required this.label,
-    required this.value,
+    this.value = '',
+    this.content,
   });
 
   final IconData icon;
   final String label;
   final String value;
+
+  /// Shown instead of [value] (an option's badge and word).
+  final Widget? content;
 
   @override
   Widget build(BuildContext context) => Padding(
@@ -950,7 +960,11 @@ class _DetailRow extends StatelessWidget {
               width: 105,
               child: Text(label, style: Theme.of(context).textTheme.bodySmall),
             ),
-            Expanded(child: Text(value)),
+            Expanded(
+              child: content == null
+                  ? Text(value)
+                  : Align(alignment: AlignmentDirectional.centerStart, child: content),
+            ),
           ],
         ),
       );

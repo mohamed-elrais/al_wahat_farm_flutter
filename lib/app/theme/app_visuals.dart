@@ -1,3 +1,4 @@
+import 'package:al_wahat_farm_flutter/features/issues/domain/issue_workspace.dart';
 import 'package:al_wahat_farm_flutter/features/issues/domain/tree_issue.dart';
 import 'package:al_wahat_farm_flutter/features/issues/domain/tree_issue_draft.dart';
 import 'package:al_wahat_farm_flutter/features/reviews/domain/engineer_review.dart';
@@ -201,6 +202,49 @@ extension EngineerReviewDecisionVisual on EngineerReviewDecision {
         EngineerReviewDecision.returnedForCorrection => _Family.returned,
         EngineerReviewDecision.followUpRequired =>
           const OptionVisual(Icons.flag, OptionColors.followUp),
+      };
+}
+
+/// Task history rows, by the same meanings as the statuses.
+extension TaskActivityActionVisual on TaskActivityAction {
+  OptionVisual get visual => switch (this) {
+        TaskActivityAction.created =>
+          const OptionVisual(Icons.add_circle, OptionColors.draft),
+        TaskActivityAction.assigned =>
+          const OptionVisual(Icons.assignment_ind, OptionColors.water),
+        TaskActivityAction.unassigned =>
+          const OptionVisual(Icons.person_off, OptionColors.stopped),
+        TaskActivityAction.started =>
+          const OptionVisual(Icons.timelapse, OptionColors.working),
+        TaskActivityAction.completed => _Family.done,
+        TaskActivityAction.flaggedForReview => _Family.waiting,
+        TaskActivityAction.reviewedApproved => _Family.approved,
+        TaskActivityAction.reviewedReturned => _Family.returned,
+        TaskActivityAction.commented =>
+          const OptionVisual(Icons.chat_bubble, OptionColors.general),
+        TaskActivityAction.cancelled => _Family.cancelled,
+        TaskActivityAction.photoAdded =>
+          const OptionVisual(Icons.photo_camera, OptionColors.tool),
+      };
+}
+
+/// Issue history rows, by the same meanings as the issue statuses.
+extension TreeIssueEventTypeVisual on TreeIssueEventType {
+  OptionVisual get visual => switch (this) {
+        TreeIssueEventType.detected =>
+          const OptionVisual(Icons.report, OptionColors.problem),
+        TreeIssueEventType.confirmed =>
+          const OptionVisual(Icons.fact_check, OptionColors.followUp),
+        TreeIssueEventType.notObserved =>
+          const OptionVisual(Icons.visibility_off, OptionColors.draft),
+        TreeIssueEventType.severityChanged =>
+          const OptionVisual(Icons.tune, OptionColors.paused),
+        TreeIssueEventType.resolutionSubmitted => _Family.waiting,
+        TreeIssueEventType.resolved => _Family.done,
+        TreeIssueEventType.unableToFix =>
+          const OptionVisual(Icons.build_circle, OptionColors.water),
+        TreeIssueEventType.dismissed => _Family.cancelled,
+        TreeIssueEventType.reviewReturned => _Family.returned,
       };
 }
 

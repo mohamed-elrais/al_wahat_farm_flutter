@@ -1,5 +1,4 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
-import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
@@ -12,6 +11,7 @@ import 'package:al_wahat_farm_flutter/features/inspections/domain/inspection_rou
 import 'package:al_wahat_farm_flutter/features/inspections/presentation/inspection_repository_scope.dart';
 import 'package:al_wahat_farm_flutter/features/inspections/presentation/inspection_route_preview.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/task_draft.dart';
+import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_widgets.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_workspace_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -171,9 +171,7 @@ class _InspectionCreateScreenState extends State<InspectionCreateScreen> {
                                     (priority) =>
                                         DropdownMenuItem<TaskPriority>(
                                       value: priority,
-                                      child: Text(
-                                        priority.localizedLabel(context.l10n),
-                                      ),
+                                      child: TaskPriorityLabel(priority),
                                     ),
                                   )
                                   .toList(growable: false),

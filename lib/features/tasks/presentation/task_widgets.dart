@@ -1,6 +1,8 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
+import 'package:al_wahat_farm_flutter/app/theme/app_visuals.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
+import 'package:al_wahat_farm_flutter/core/widgets/option_visuals.dart';
 import 'package:al_wahat_farm_flutter/features/farm/domain/farm_hierarchy.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/farm_task.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/task_draft.dart';
@@ -12,23 +14,34 @@ class TaskStatusBadge extends StatelessWidget {
   final TaskStatus status;
 
   @override
-  Widget build(BuildContext context) => DecoratedBox(
-        decoration: BoxDecoration(
-          color: _statusColor(status).withOpacity(0.12),
-          borderRadius: BorderRadius.circular(99),
-          border: Border.all(color: _statusColor(status).withOpacity(0.35)),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-          child: Text(
-            status.localizedLabel(context.l10n),
+  Widget build(BuildContext context) =>
+      StatusPill(status.visual, status.localizedLabel(context.l10n));
+}
+
+/// Priority as rising bars plus its word; urgent is bold.
+class TaskPriorityLabel extends StatelessWidget {
+  const TaskPriorityLabel(this.priority, {this.fontSize = 12, super.key});
+
+  final TaskPriority priority;
+  final double fontSize;
+
+  @override
+  Widget build(BuildContext context) => Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          SeverityBars(priority.visual, height: fontSize + 3),
+          const SizedBox(width: 6),
+          Text(
+            priority.localizedLabel(context.l10n),
             style: TextStyle(
-              color: _statusColor(status),
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
+              color: AppColors.ink,
+              fontSize: fontSize,
+              fontWeight: priority == TaskPriority.urgent
+                  ? FontWeight.w800
+                  : FontWeight.w600,
             ),
           ),
-        ),
+        ],
       );
 }
 
@@ -112,17 +125,6 @@ String taskScheduleLabel(AppLocalizations l10n, FarmTask task) {
 }
 
 String taskDateTimeLabel(DateTime value) => _dateTimeLabel(value.toLocal());
-
-Color _statusColor(TaskStatus status) => switch (status) {
-      TaskStatus.draft => AppColors.muted,
-      TaskStatus.assigned => AppColors.waterMain,
-      TaskStatus.inProgress => AppColors.orange,
-      TaskStatus.completed => AppColors.green,
-      TaskStatus.needsEngineerReview => AppColors.issue,
-      TaskStatus.approved => AppColors.green,
-      TaskStatus.returned => AppColors.issue,
-      TaskStatus.cancelled => AppColors.muted,
-    };
 
 String _dateLabel(DateTime value) => '${value.day.toString().padLeft(2, '0')}/'
     '${value.month.toString().padLeft(2, '0')}/${value.year}';

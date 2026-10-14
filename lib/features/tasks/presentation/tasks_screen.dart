@@ -1,6 +1,8 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
+import 'package:al_wahat_farm_flutter/app/theme/app_visuals.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
+import 'package:al_wahat_farm_flutter/core/widgets/option_visuals.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/section_refresh.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
@@ -8,7 +10,6 @@ import 'package:al_wahat_farm_flutter/features/auth/presentation/authenticated_g
 import 'package:al_wahat_farm_flutter/features/farm/domain/farm_hierarchy.dart';
 import 'package:al_wahat_farm_flutter/features/farm/presentation/farm_hierarchy_gate.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/farm_task.dart';
-import 'package:al_wahat_farm_flutter/features/tasks/domain/task_draft.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_month_calendar.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_widgets.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_workspace_controller.dart';
@@ -418,10 +419,9 @@ class _TaskTile extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child: Row(
               children: <Widget>[
-                CircleAvatar(
-                  backgroundColor: AppColors.softGreen,
-                  foregroundColor: AppColors.green,
-                  child: Icon(_taskIcon(task.type)),
+                OptionBadge(
+                  task.type.visual,
+                  semanticLabel: task.type.localizedLabel(context.l10n),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -446,16 +446,7 @@ class _TaskTile extends StatelessWidget {
                         children: <Widget>[
                           TaskStatusBadge(task.status),
                           if (task.isPendingSync) const _PendingSyncBadge(),
-                          Text(
-                            task.priority.localizedLabel(context.l10n),
-                            style: TextStyle(
-                              color: task.priority == TaskPriority.urgent
-                                  ? AppColors.issue
-                                  : AppColors.muted,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
+                          TaskPriorityLabel(task.priority),
                         ],
                       ),
                     ],
@@ -611,15 +602,3 @@ class _TaskMessage extends StatelessWidget {
         ),
       );
 }
-
-IconData _taskIcon(TaskType type) => switch (type) {
-      TaskType.irrigation => Icons.water_drop_outlined,
-      TaskType.fertilization => Icons.compost_outlined,
-      TaskType.harmfulWeedControl => Icons.grass_outlined,
-      TaskType.pestControl => Icons.pest_control_outlined,
-      TaskType.diseaseControl => Icons.coronavirus_outlined,
-      TaskType.dripperMaintenance => Icons.plumbing_outlined,
-      TaskType.treeInspection => Icons.park_outlined,
-      TaskType.engineerReview => Icons.engineering_outlined,
-      TaskType.general => Icons.assignment_outlined,
-    };

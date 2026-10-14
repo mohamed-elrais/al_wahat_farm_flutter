@@ -1,6 +1,8 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
+import 'package:al_wahat_farm_flutter/app/theme/app_visuals.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
+import 'package:al_wahat_farm_flutter/core/widgets/option_visuals.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/section_refresh.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/storage_status.dart';
@@ -346,13 +348,23 @@ class _TaskPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ListTile(
         contentPadding: EdgeInsets.zero,
-        leading: const CircleAvatar(
-          backgroundColor: AppColors.softGreen,
-          foregroundColor: AppColors.green,
-          child: Icon(Icons.water_drop_outlined),
+        leading: OptionBadge(
+          task.type.visual,
+          semanticLabel: task.type.localizedLabel(context.l10n),
         ),
         title: Text(task.title),
-        subtitle: Text('$target · ${task.status.localizedLabel(context.l10n)}'),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 4,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: <Widget>[
+              Text(target),
+              TaskStatusBadge(task.status),
+            ],
+          ),
+        ),
         trailing: const Icon(Icons.chevron_right),
         onTap: () => context.go('/tasks/${task.id}'),
       );

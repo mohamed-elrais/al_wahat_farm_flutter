@@ -1,6 +1,8 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
+import 'package:al_wahat_farm_flutter/app/theme/app_visuals.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
+import 'package:al_wahat_farm_flutter/core/widgets/option_visuals.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
 import 'package:al_wahat_farm_flutter/features/auth/presentation/authenticated_gate.dart';
@@ -9,6 +11,7 @@ import 'package:al_wahat_farm_flutter/features/farm/presentation/farm_hierarchy_
 import 'package:al_wahat_farm_flutter/features/tasks/domain/farm_task.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/task_draft.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_create_controller.dart';
+import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_widgets.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_workspace_controller.dart';
 import 'package:al_wahat_farm_flutter/shared/models/farm_role.dart';
 import 'package:flutter/material.dart';
@@ -240,7 +243,12 @@ class _TaskCreateScreenState extends State<TaskCreateScreen> {
                       .map(
                         (type) => DropdownMenuItem<TaskType>(
                           value: type,
-                          child: Text(type.localizedLabel(context.l10n)),
+                          child: OptionLabel(
+                            type.visual,
+                            type.localizedLabel(context.l10n),
+                            size: 24,
+                            maxLines: 1,
+                          ),
                         ),
                       )
                       .toList(growable: false),
@@ -440,7 +448,7 @@ class _TaskCreateScreenState extends State<TaskCreateScreen> {
                       .map(
                         (priority) => DropdownMenuItem<TaskPriority>(
                           value: priority,
-                          child: Text(priority.localizedLabel(context.l10n)),
+                          child: TaskPriorityLabel(priority),
                         ),
                       )
                       .toList(growable: false),

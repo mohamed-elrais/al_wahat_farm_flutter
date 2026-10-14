@@ -1,6 +1,8 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
+import 'package:al_wahat_farm_flutter/app/theme/app_visuals.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
+import 'package:al_wahat_farm_flutter/core/widgets/option_visuals.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
 import 'package:al_wahat_farm_flutter/features/farm/domain/farm_hierarchy.dart';
@@ -109,6 +111,8 @@ class _ScheduleDetailScreenState extends State<ScheduleDetailScreen> {
               onPressed: () => context.go('/more/schedules'),
             ),
             const SizedBox(width: 4),
+            OptionBadge(plan.type.visual, size: 44),
+            const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -126,10 +130,20 @@ class _ScheduleDetailScreenState extends State<ScheduleDetailScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text(
-                '${plan.status.localizedLabel(l10n)} · '
-                '${scheduleSummary(context, l10n, plan)}',
-                style: const TextStyle(fontWeight: FontWeight.w700),
+              Wrap(
+                spacing: 8,
+                runSpacing: 6,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: <Widget>[
+                  StatusPill(
+                    plan.status.visual,
+                    plan.status.localizedLabel(l10n),
+                  ),
+                  Text(
+                    scheduleSummary(context, l10n, plan),
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                ],
               ),
               const SizedBox(height: 6),
               Text('${l10n.scheduleStartsOn}: ${_date(plan.startsOn)}'

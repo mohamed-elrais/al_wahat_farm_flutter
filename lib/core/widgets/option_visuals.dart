@@ -85,8 +85,11 @@ class OptionBadge extends StatelessWidget {
   }
 }
 
+/// The unlit bars: darker than the paper line so the count stays readable.
+const _unlitBar = Color(0xFFCBC1AA);
+
 /// Severity or priority bars without the circle, for tight rows: [level] of
-/// four bars in [color], the rest in the paper line colour.
+/// four bars in the option's colour, the rest unlit.
 class SeverityBars extends StatelessWidget {
   /// [visual] must be a severity or priority ([OptionVisual.bars]).
   const SeverityBars(this.visual, {this.height = 14, super.key});
@@ -103,7 +106,7 @@ class SeverityBars extends StatelessWidget {
             painter: _BarsPainter(
               level: visual.bars ?? 0,
               active: visual.color,
-              inactive: AppColors.line,
+              inactive: _unlitBar,
             ),
           ),
         ),

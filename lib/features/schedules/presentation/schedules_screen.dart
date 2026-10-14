@@ -1,6 +1,8 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
+import 'package:al_wahat_farm_flutter/app/theme/app_visuals.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
+import 'package:al_wahat_farm_flutter/core/widgets/option_visuals.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
 import 'package:al_wahat_farm_flutter/features/auth/presentation/authenticated_gate.dart';
@@ -236,11 +238,7 @@ class _PlanTile extends StatelessWidget {
           padding: const EdgeInsets.all(14),
           child: Row(
             children: <Widget>[
-              CircleAvatar(
-                backgroundColor: AppColors.softGreen,
-                foregroundColor: AppColors.green,
-                child: Icon(planTypeIcon(plan.type)),
-              ),
+              OptionBadge(plan.type.visual),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -275,39 +273,6 @@ class _StatusChip extends StatelessWidget {
   final OperationPlanStatus status;
 
   @override
-  Widget build(BuildContext context) {
-    final color = switch (status) {
-      OperationPlanStatus.active => AppColors.green,
-      OperationPlanStatus.paused => AppColors.orange,
-      OperationPlanStatus.draft => AppColors.muted,
-      OperationPlanStatus.completed => AppColors.waterMain,
-      OperationPlanStatus.archived => AppColors.muted,
-    };
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(99),
-        border: Border.all(color: color.withOpacity(0.35)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-        child: Text(
-          status.localizedLabel(context.l10n),
-          style: TextStyle(
-            color: color,
-            fontSize: 11,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) =>
+      StatusPill(status.visual, status.localizedLabel(context.l10n));
 }
-
-IconData planTypeIcon(OperationPlanType type) => switch (type) {
-      OperationPlanType.irrigation => Icons.water_drop_outlined,
-      OperationPlanType.fertilization => Icons.compost_outlined,
-      OperationPlanType.harmfulWeedControl => Icons.grass_outlined,
-      OperationPlanType.pestControl => Icons.pest_control_outlined,
-      OperationPlanType.diseaseControl => Icons.coronavirus_outlined,
-    };

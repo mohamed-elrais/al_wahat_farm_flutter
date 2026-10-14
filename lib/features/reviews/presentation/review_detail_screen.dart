@@ -1,7 +1,9 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
+import 'package:al_wahat_farm_flutter/app/theme/app_visuals.dart';
 import 'package:al_wahat_farm_flutter/core/app_services.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
+import 'package:al_wahat_farm_flutter/core/widgets/option_visuals.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
 import 'package:al_wahat_farm_flutter/features/auth/presentation/authenticated_gate.dart';
@@ -343,7 +345,7 @@ class _DecisionCard extends StatelessWidget {
               onPressed: canDecide
                   ? () => onDecide(EngineerReviewDecision.approved)
                   : null,
-              icon: const Icon(Icons.check_circle_outline),
+              icon: Icon(EngineerReviewDecision.approved.visual.icon),
               label: Text(EngineerReviewDecision.approved
                   .localizedActionLabel(context.l10n)),
             ),
@@ -353,7 +355,10 @@ class _DecisionCard extends StatelessWidget {
               onPressed: canDecide
                   ? () => onDecide(EngineerReviewDecision.returnedForCorrection)
                   : null,
-              icon: const Icon(Icons.undo_outlined),
+              icon: Icon(
+                EngineerReviewDecision.returnedForCorrection.visual.icon,
+                color: EngineerReviewDecision.returnedForCorrection.visual.color,
+              ),
               label: Text(EngineerReviewDecision.returnedForCorrection
                   .localizedActionLabel(context.l10n)),
             ),
@@ -363,7 +368,10 @@ class _DecisionCard extends StatelessWidget {
               onPressed: canDecide
                   ? () => onDecide(EngineerReviewDecision.followUpRequired)
                   : null,
-              icon: const Icon(Icons.flag_outlined),
+              icon: Icon(
+                EngineerReviewDecision.followUpRequired.visual.icon,
+                color: EngineerReviewDecision.followUpRequired.visual.color,
+              ),
               label: Text(EngineerReviewDecision.followUpRequired
                   .localizedActionLabel(context.l10n)),
             ),
@@ -509,7 +517,7 @@ class _ReviewHistoryCard extends StatelessWidget {
               for (final review in reviews)
                 ListTile(
                   contentPadding: EdgeInsets.zero,
-                  leading: Icon(_decisionIcon(review.decision)),
+                  leading: OptionBadge(review.decision.visual, size: 32),
                   title: Text(review.decision.localizedLabel(context.l10n)),
                   subtitle: Text(
                     review.notes == null || review.notes!.isEmpty
@@ -575,7 +583,7 @@ class _ActivityCard extends StatelessWidget {
               for (final item in activity)
                 ListTile(
                   contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.history),
+                  leading: OptionBadge(item.action.visual, size: 32),
                   title: Text(item.action.localizedLabel(context.l10n)),
                   subtitle: Text(
                     item.note == null || item.note!.isEmpty
@@ -643,12 +651,6 @@ class _FailureCard extends StatelessWidget {
         ),
       );
 }
-
-IconData _decisionIcon(EngineerReviewDecision decision) => switch (decision) {
-      EngineerReviewDecision.approved => Icons.check_circle_outline,
-      EngineerReviewDecision.returnedForCorrection => Icons.undo_outlined,
-      EngineerReviewDecision.followUpRequired => Icons.flag_outlined,
-    };
 
 String _stageLabel(AppLocalizations l10n, ReviewStage stage) => switch (stage) {
       ReviewStage.idle => l10n.stageReady,
