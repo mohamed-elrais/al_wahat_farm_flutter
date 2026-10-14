@@ -50,7 +50,7 @@ class OptionVisual {
 abstract final class OptionColors {
   static const water = Color(0xFF2F6E99);
   static const waterLight = Color(0xFF4F7FA0);
-  static const leak = Color(0xFF1A7FA6);
+  static const excessWater = Color(0xFF1A7FA6);
   static const dripper = Color(0xFF1F7A74);
   static const fertilizer = Color(0xFF8A5A32);
   static const weed = Color(0xFF5E7A1F);
@@ -133,9 +133,9 @@ extension TreeIssueTypeVisual on TreeIssueType {
   OptionVisual get visual => switch (this) {
         TreeIssueType.insufficientIrrigation =>
           const OptionVisual(Icons.format_color_reset, OptionColors.water),
-        TreeIssueType.cloggedDripper => _Family.dripper,
-        TreeIssueType.leakOrDripperDamage =>
-          const OptionVisual(Icons.water_damage, OptionColors.leak),
+        TreeIssueType.excessIrrigation =>
+          const OptionVisual(Icons.flood, OptionColors.excessWater),
+        TreeIssueType.dripperProblem => _Family.dripper,
         TreeIssueType.harmfulWeed => _Family.weed,
         TreeIssueType.pestOrDisease => _Family.pest,
         TreeIssueType.treeDamage => const OptionVisual(

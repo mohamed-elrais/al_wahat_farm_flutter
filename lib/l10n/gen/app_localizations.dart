@@ -975,17 +975,17 @@ abstract class AppLocalizations {
   /// **'Insufficient irrigation'**
   String get issueTypeInsufficientIrrigation;
 
-  /// No description provided for @issueTypeCloggedDripper.
+  /// No description provided for @issueTypeExcessIrrigation.
   ///
   /// In en, this message translates to:
-  /// **'Clogged dripper'**
-  String get issueTypeCloggedDripper;
+  /// **'Too much water'**
+  String get issueTypeExcessIrrigation;
 
-  /// No description provided for @issueTypeLeakOrDripperDamage.
+  /// No description provided for @issueTypeDripperProblem.
   ///
   /// In en, this message translates to:
-  /// **'Leak or dripper damage'**
-  String get issueTypeLeakOrDripperDamage;
+  /// **'Dripper problem'**
+  String get issueTypeDripperProblem;
 
   /// No description provided for @issueTypeHarmfulWeed.
   ///

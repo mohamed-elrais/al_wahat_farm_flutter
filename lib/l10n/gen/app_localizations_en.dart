@@ -478,10 +478,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get issueTypeInsufficientIrrigation => 'Insufficient irrigation';
 
   @override
-  String get issueTypeCloggedDripper => 'Clogged dripper';
+  String get issueTypeExcessIrrigation => 'Too much water';
 
   @override
-  String get issueTypeLeakOrDripperDamage => 'Leak or dripper damage';
+  String get issueTypeDripperProblem => 'Dripper problem';
 
   @override
   String get issueTypeHarmfulWeed => 'Harmful weed';

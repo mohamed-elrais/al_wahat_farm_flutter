@@ -481,10 +481,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get issueTypeInsufficientIrrigation => 'ري غير كافٍ';
 
   @override
-  String get issueTypeCloggedDripper => 'نقّاط مسدود';
+  String get issueTypeExcessIrrigation => 'مياه زائدة';
 
   @override
-  String get issueTypeLeakOrDripperDamage => 'تسرّب أو تلف في النقّاط';
+  String get issueTypeDripperProblem => 'مشكلة في النقّاط';
 
   @override
   String get issueTypeHarmfulWeed => 'أعشاب ضارة';

@@ -163,7 +163,7 @@ void main() {
       (tester) async {
     await _pump(tester, FarmRole.owner);
 
-    expect(find.text('Clogged dripper'), findsOneWidget);
+    expect(find.text('Dripper problem'), findsOneWidget);
     expect(find.text('Section A · TREE-A-001'), findsOneWidget);
     expect(find.text('Confirmed during inspection'), findsOneWidget);
     expect(find.text('Replace blocked emitter'), findsOneWidget);
@@ -223,7 +223,7 @@ void main() {
           taskId: 'task-id',
           issueId: 'issue-id',
           treeId: 'tree-id',
-          type: TreeIssueType.cloggedDripper,
+          type: TreeIssueType.dripperProblem,
           severity: IssueSeverity.high,
           issueStatus: TreeIssueStatus.open,
           workState: TaskTreeIssueWorkState.pending,
@@ -338,7 +338,7 @@ Future<void> _pump(
               treeCode: 'TREE-A-001',
               sectionId: 'section-id',
               sectionCode: 'A',
-              type: TreeIssueType.cloggedDripper,
+              type: TreeIssueType.dripperProblem,
               severity: IssueSeverity.high,
               status: TreeIssueStatus.open,
               reportedAt: _now,
@@ -435,7 +435,7 @@ TreeIssueDetails _issueDetails() => TreeIssueDetails(
         id: 'issue-id',
         farmId: 'farm-id',
         treeId: 'tree-id',
-        type: TreeIssueType.cloggedDripper,
+        type: TreeIssueType.dripperProblem,
         severity: IssueSeverity.high,
         status: TreeIssueStatus.open,
         reportedByProfileId: 'worker-id',
@@ -462,7 +462,7 @@ TreeIssueDetails _issueDetails() => TreeIssueDetails(
           sessionId: 'session-id',
           itemId: 'item-id',
           issueId: 'issue-id',
-          type: TreeIssueType.cloggedDripper,
+          type: TreeIssueType.dripperProblem,
           outcome: InspectionObservationOutcome.confirmed,
           observedSeverity: IssueSeverity.high,
           severityChanged: false,

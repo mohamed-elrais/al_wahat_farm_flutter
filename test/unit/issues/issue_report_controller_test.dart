@@ -39,7 +39,7 @@ void main() {
 
     test('reports issue and generated review task without a photo', () async {
       final saved = await controller.submit(
-        type: TreeIssueType.cloggedDripper,
+        type: TreeIssueType.dripperProblem,
         severity: IssueSeverity.high,
         description: '  blocked emitter  ',
       );
@@ -79,7 +79,7 @@ void main() {
 
       expect(
         await confirmed.submit(
-          type: TreeIssueType.cloggedDripper,
+          type: TreeIssueType.dripperProblem,
           severity: IssueSeverity.high,
         ),
         isTrue,

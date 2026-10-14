@@ -26,7 +26,8 @@ void main() {
     for (final label in <String>[
       'Irrigation',
       'Dripper maintenance',
-      'Clogged dripper',
+      'Dripper problem',
+      'Too much water',
       'Tree damage',
       'Urgent',
       'Needs review',

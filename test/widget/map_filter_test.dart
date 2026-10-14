@@ -192,7 +192,7 @@ void main() {
           id: 'issue-1',
           treeId: firstTree.id,
           treeCode: firstTree.code,
-          type: TreeIssueType.cloggedDripper,
+          type: TreeIssueType.dripperProblem,
           severity: IssueSeverity.low,
           status: TreeIssueStatus.open,
         ),
@@ -256,7 +256,7 @@ void main() {
     expect(find.byKey(const Key('map-issue-section-filter')), findsOneWidget);
     await tester.tap(find.byKey(const Key('map-issue-type-filter')));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Clogged dripper').last);
+    await tester.tap(find.text('Dripper problem').last);
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('map-issue-matches-only')));
     await tester.tap(find.byKey(const Key('map-issue-filters-apply')));

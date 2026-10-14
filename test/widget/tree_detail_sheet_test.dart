@@ -90,7 +90,7 @@ void main() {
                 treeCode: tree.code,
                 sectionId: 'section-id',
                 sectionCode: tree.sectionCode,
-                type: TreeIssueType.cloggedDripper,
+                type: TreeIssueType.dripperProblem,
                 severity: IssueSeverity.high,
                 status: TreeIssueStatus.open,
                 reportedAt: now,
@@ -120,7 +120,7 @@ void main() {
 
     expect(find.byKey(const Key('tree-active-issues')), findsOneWidget);
     expect(find.text('Active issues (1)'), findsOneWidget);
-    expect(find.text('Clogged dripper'), findsOneWidget);
+    expect(find.text('Dripper problem'), findsOneWidget);
     expect(find.text('Past issue occurrences'), findsOneWidget);
     await tester.scrollUntilVisible(
       find.text('Pest or disease'),
@@ -129,7 +129,7 @@ void main() {
     );
     expect(find.text('Pest or disease'), findsOneWidget);
 
-    await tester.tap(find.text('Clogged dripper'));
+    await tester.tap(find.text('Dripper problem'));
     expect(openedIssue, 'active-issue');
   });
 

@@ -1,7 +1,11 @@
 enum TreeIssueType {
   insufficientIrrigation,
-  cloggedDripper,
-  leakOrDripperDamage,
+  excessIrrigation,
+
+  /// Clogged, leaking or damaged dripper. "Clogged dripper" and "Leak or
+  /// dripper damage" were merged into it on 2026-10-14; it keeps the
+  /// clogged_dripper wire value, and the retired leak value still reads as it.
+  dripperProblem,
   harmfulWeed,
   pestOrDisease,
   treeDamage,
@@ -9,8 +13,8 @@ enum TreeIssueType {
 
   String get wireValue => switch (this) {
         insufficientIrrigation => 'insufficient_irrigation',
-        cloggedDripper => 'clogged_dripper',
-        leakOrDripperDamage => 'leak_or_dripper_damage',
+        excessIrrigation => 'excess_irrigation',
+        dripperProblem => 'clogged_dripper',
         harmfulWeed => 'harmful_weed',
         pestOrDisease => 'pest_or_disease',
         treeDamage => 'tree_damage',
@@ -19,8 +23,8 @@ enum TreeIssueType {
 
   factory TreeIssueType.fromJson(String value) => switch (value) {
         'insufficient_irrigation' => insufficientIrrigation,
-        'clogged_dripper' => cloggedDripper,
-        'leak_or_dripper_damage' => leakOrDripperDamage,
+        'excess_irrigation' => excessIrrigation,
+        'clogged_dripper' || 'leak_or_dripper_damage' => dripperProblem,
         'harmful_weed' => harmfulWeed,
         'pest_or_disease' => pestOrDisease,
         'tree_damage' => treeDamage,
@@ -30,8 +34,8 @@ enum TreeIssueType {
 
   String get label => switch (this) {
         insufficientIrrigation => 'Insufficient irrigation',
-        cloggedDripper => 'Clogged dripper',
-        leakOrDripperDamage => 'Leak or dripper damage',
+        excessIrrigation => 'Too much water',
+        dripperProblem => 'Dripper problem',
         harmfulWeed => 'Harmful weed',
         pestOrDisease => 'Pest or disease',
         treeDamage => 'Tree damage',

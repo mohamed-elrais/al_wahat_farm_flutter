@@ -87,8 +87,8 @@ extension TreeIssueTypeL10n on TreeIssueType {
   String localizedLabel(AppLocalizations l10n) => switch (this) {
         TreeIssueType.insufficientIrrigation =>
           l10n.issueTypeInsufficientIrrigation,
-        TreeIssueType.cloggedDripper => l10n.issueTypeCloggedDripper,
-        TreeIssueType.leakOrDripperDamage => l10n.issueTypeLeakOrDripperDamage,
+        TreeIssueType.excessIrrigation => l10n.issueTypeExcessIrrigation,
+        TreeIssueType.dripperProblem => l10n.issueTypeDripperProblem,
         TreeIssueType.harmfulWeed => l10n.issueTypeHarmfulWeed,
         TreeIssueType.pestOrDisease => l10n.issueTypePestOrDisease,
         TreeIssueType.treeDamage => l10n.issueTypeTreeDamage,

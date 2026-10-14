@@ -69,7 +69,7 @@ void main() {
     expect(TaskType.harmfulWeedControl.visual,
         inventoryCategoryVisual('herbicide'));
     expect(TaskType.dripperMaintenance.visual,
-        TreeIssueType.cloggedDripper.visual);
+        TreeIssueType.dripperProblem.visual);
     expect(TaskType.dripperMaintenance.visual,
         inventoryCategoryVisual('dripper'));
     expect(TaskType.fertilization.visual, inventoryCategoryVisual('fertilizer'));

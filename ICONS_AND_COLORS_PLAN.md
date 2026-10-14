@@ -74,8 +74,8 @@ Contrast is shown as white-on-colour / against the card (#FFFDF7), from a scratc
 | Value | Icon | Colour | Same family as |
 |---|---|---|---|
 | Insufficient irrigation | `format_color_reset` (drop with slash) | blue `#2F6E99` | Irrigation |
-| Clogged dripper | `plumbing` | teal `#1F7A74` | Dripper maintenance |
-| Leak or dripper damage | `water_damage` | cyan-blue `#1A7FA6` | Irrigation / dripper |
+| Too much water (added 2026-10-14) | `flood` | cyan-blue `#1A7FA6` | Irrigation |
+| Dripper problem (clogged + leak merged 2026-10-14) | `plumbing` | teal `#1F7A74` | Dripper maintenance |
 | Harmful weed | `grass` | olive `#5E7A1F` | Weed control |
 | Pest or disease | `pest_control` | red `#B03A2E` | Pest control |
 | Tree damage | `park` + a red corner badge | plum `#A23B72` | — |
@@ -217,6 +217,7 @@ Each phase ends with: tests and analyze green, a commit, then a staging and prod
 | Date | Item | Decision |
 |---|---|---|
 | 2026-10-14 | D1–D5 | All accepted as recommended. |
+| 2026-10-14 | Issue types | User: merge "Clogged dripper" and "Leak or dripper damage" into one type, and add "Too much water". Done in the database (Al-Wahat-Farm-supabase migrations `20261014160145`, `20261014160148`) and the app: `dripperProblem` keeps wire value `clogged_dripper`; the retired `leak_or_dripper_damage` stays in the Postgres enum and reads as it; new `excess_irrigation` creates irrigation follow-up tasks. One tree had both types active: the leak copy was dismissed with a merge note. |
 | 2026-10-14 | V0 build notes | Inventory "dripper" uses the dripper family (teal plumbing), not the irrigation drop, per D1. Severity bars always rise left to right, in Arabic too (like phone signal bars). The "Returned" ↶ icon mirrors in Arabic (Flutter's RTL icon). |
 
 ## Progress

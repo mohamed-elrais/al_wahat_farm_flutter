@@ -243,7 +243,7 @@ void main() {
       issue(
         id: 'target',
         section: 'section-b',
-        type: TreeIssueType.cloggedDripper,
+        type: TreeIssueType.dripperProblem,
         severity: IssueSeverity.high,
         status: TreeIssueStatus.open,
         ageDays: 40,
@@ -282,7 +282,7 @@ void main() {
     controller.setAge(IssueAgeFilter.thirtyDays);
     controller.setAssignment(IssueAssignmentFilter.assigned);
     controller.setSource(IssueSource.inspection);
-    await controller.setType(TreeIssueType.cloggedDripper);
+    await controller.setType(TreeIssueType.dripperProblem);
     await controller.setSeverity(IssueSeverity.high);
     controller.setStatus(TreeIssueStatus.open);
     expect(controller.issues.single.id, 'target');
@@ -435,7 +435,7 @@ void main() {
         id: 'issue-id',
         farmId: 'farm-id',
         treeId: 'tree-id',
-        type: TreeIssueType.cloggedDripper,
+        type: TreeIssueType.dripperProblem,
         severity: IssueSeverity.high,
         status: TreeIssueStatus.open,
         reportedByProfileId: 'worker-id',
@@ -463,7 +463,7 @@ void main() {
           sessionId: 'session-id',
           itemId: 'item-id',
           issueId: 'issue-id',
-          type: TreeIssueType.cloggedDripper,
+          type: TreeIssueType.dripperProblem,
           outcome: InspectionObservationOutcome.confirmed,
           observedSeverity: IssueSeverity.high,
           severityChanged: false,

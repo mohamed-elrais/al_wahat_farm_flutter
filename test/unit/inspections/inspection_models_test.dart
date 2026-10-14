@@ -20,11 +20,11 @@ void main() {
 
   test('existing issue severity only changes with an explicit flag', () {
     const unchanged = InspectionSelectedIssue(
-      type: TreeIssueType.cloggedDripper,
+      type: TreeIssueType.dripperProblem,
       severity: IssueSeverity.high,
     );
     const changed = InspectionSelectedIssue(
-      type: TreeIssueType.cloggedDripper,
+      type: TreeIssueType.dripperProblem,
       severity: IssueSeverity.urgent,
       severityChanged: true,
     );
