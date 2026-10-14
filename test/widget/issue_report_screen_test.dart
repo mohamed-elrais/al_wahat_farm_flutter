@@ -42,11 +42,17 @@ void main() {
       find.byKey(const Key('issue-description')),
       'Emitter is blocked',
     );
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('issue-submit')),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.ensureVisible(find.byKey(const Key('issue-submit')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('issue-submit')));
     await tester.pumpAndSettle();
 
-    expect(find.text('TREE-B-120'), findsOneWidget);
+    expect(find.text('TREE-B-120', skipOffstage: false), findsOneWidget);
     expect(repository.reportedDraft?.description, 'Emitter is blocked');
     expect(
       find.text('Issue reported and engineer review task created.'),
@@ -80,10 +86,22 @@ void main() {
     addTearDown(controller.dispose);
     await _pumpForm(tester, controller);
 
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('issue-photo-gallery')),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.ensureVisible(find.byKey(const Key('issue-photo-gallery')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('issue-photo-gallery')));
     await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('issue-submit')),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.ensureVisible(find.byKey(const Key('issue-submit')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('issue-submit')));
     await tester.pumpAndSettle();
 

@@ -2,11 +2,13 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
+import 'package:al_wahat_farm_flutter/app/theme/app_visuals.dart';
 import 'package:al_wahat_farm_flutter/core/app_services.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
 import 'package:al_wahat_farm_flutter/core/location/location_service.dart';
 import 'package:al_wahat_farm_flutter/core/logging/safe_log.dart';
+import 'package:al_wahat_farm_flutter/core/widgets/option_visuals.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
 import 'package:al_wahat_farm_flutter/features/auth/presentation/authenticated_gate.dart';
@@ -1122,7 +1124,12 @@ class _MapIssueFiltersSheetState extends State<_MapIssueFiltersSheet> {
                     for (final type in TreeIssueType.values)
                       DropdownMenuItem(
                         value: type,
-                        child: Text(type.localizedLabel(l10n)),
+                        child: OptionLabel(
+                          type.visual,
+                          type.localizedLabel(l10n),
+                          size: 24,
+                          maxLines: 1,
+                        ),
                       ),
                   ],
                   onChanged: (value) => setState(() => _type = value),
@@ -1139,7 +1146,11 @@ class _MapIssueFiltersSheetState extends State<_MapIssueFiltersSheet> {
                     for (final severity in IssueSeverity.values)
                       DropdownMenuItem(
                         value: severity,
-                        child: Text(severity.localizedLabel(l10n)),
+                        child: BarsLabel(
+                          severity.visual,
+                          severity.localizedLabel(l10n),
+                          fontSize: 14,
+                        ),
                       ),
                   ],
                   onChanged: (value) => setState(() => _severity = value),
@@ -1159,7 +1170,12 @@ class _MapIssueFiltersSheetState extends State<_MapIssueFiltersSheet> {
                     ])
                       DropdownMenuItem(
                         value: status,
-                        child: Text(status.localizedLabel(l10n)),
+                        child: OptionLabel(
+                          status.visual,
+                          status.localizedLabel(l10n),
+                          size: 24,
+                          maxLines: 1,
+                        ),
                       ),
                   ],
                   onChanged: (value) => setState(() => _status = value),

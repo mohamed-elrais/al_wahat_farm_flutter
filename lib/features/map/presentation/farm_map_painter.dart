@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'dart:ui' show PointMode;
 
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
+import 'package:al_wahat_farm_flutter/app/theme/app_visuals.dart';
 import 'package:al_wahat_farm_flutter/features/issues/domain/tree_issue_draft.dart';
 import 'package:al_wahat_farm_flutter/features/map/domain/projected_map.dart';
 import 'package:al_wahat_farm_flutter/features/planting_pits/domain/planting_pit.dart';
@@ -612,10 +613,6 @@ class FarmMapIssueMarker {
   final int count;
   final IssueSeverity severity;
 
-  Color get color => switch (severity) {
-        IssueSeverity.low => const Color(0xFFD19A2A),
-        IssueSeverity.medium => const Color(0xFFE06C2E),
-        IssueSeverity.high => const Color(0xFFC33E32),
-        IssueSeverity.urgent => const Color(0xFF7E2033),
-      };
+  /// The app-wide severity colour (one ramp on the map and in lists).
+  Color get color => severity.visual.color;
 }

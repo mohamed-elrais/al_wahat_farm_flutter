@@ -9,6 +9,7 @@ import 'package:al_wahat_farm_flutter/core/cache/local_cache_store.dart';
 import 'package:al_wahat_farm_flutter/core/connectivity/connectivity_service.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/locale_controller.dart';
 import 'package:al_wahat_farm_flutter/core/location/location_service.dart';
+import 'package:al_wahat_farm_flutter/core/widgets/option_visuals.dart';
 import 'package:al_wahat_farm_flutter/features/auth/domain/operational_context.dart';
 import 'package:al_wahat_farm_flutter/features/auth/presentation/authenticated_gate.dart';
 import 'package:al_wahat_farm_flutter/features/farm/data/farm_hierarchy_repository.dart';
@@ -248,7 +249,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(Key('inspection-editor-${left.treeId}')), findsOneWidget);
 
-    final chip = find.widgetWithText(FilterChip, 'Tree damage');
+    final chip = find.widgetWithText(OptionTile, 'Tree damage');
     await tester.ensureVisible(chip);
     await tester.pumpAndSettle();
     await tester.tap(chip);

@@ -1,7 +1,9 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
+import 'package:al_wahat_farm_flutter/app/theme/app_visuals.dart';
 import 'package:al_wahat_farm_flutter/core/errors/operation_failure.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
+import 'package:al_wahat_farm_flutter/core/widgets/option_visuals.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
 import 'package:al_wahat_farm_flutter/features/auth/presentation/authenticated_gate.dart';
@@ -13,6 +15,7 @@ import 'package:al_wahat_farm_flutter/features/issues/domain/tree_issue_draft.da
 import 'package:al_wahat_farm_flutter/features/issues/presentation/issue_workspace_controller.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/farm_task.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_photo_viewer.dart';
+import 'package:al_wahat_farm_flutter/features/tasks/domain/task_draft.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -142,7 +145,10 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
                   style: Theme.of(context).textTheme.headlineMedium,
                 ),
               ),
-              Chip(label: Text(issue.status.localizedLabel(context.l10n))),
+              StatusPill(
+                issue.status.visual,
+                issue.status.localizedLabel(context.l10n),
+              ),
             ],
           ),
           if (_busy) ...<Widget>[
@@ -161,17 +167,17 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
               children: <Widget>[
                 Row(
                   children: <Widget>[
-                    const Icon(Icons.report_problem_outlined,
-                        color: AppColors.issue),
-                    const SizedBox(width: 8),
+                    OptionBadge(issue.type.visual, size: 44),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: Text(
                         issue.type.localizedLabel(context.l10n),
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                     ),
-                    Chip(
-                      label: Text(issue.severity.localizedLabel(context.l10n)),
+                    StatusPill(
+                      issue.severity.visual,
+                      issue.severity.localizedLabel(context.l10n),
                     ),
                   ],
                 ),
@@ -319,7 +325,11 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
                     .map(
                       (severity) => DropdownMenuItem<IssueSeverity>(
                         value: severity,
-                        child: Text(severity.localizedLabel(context.l10n)),
+                        child: BarsLabel(
+                          severity.visual,
+                          severity.localizedLabel(context.l10n),
+                          fontSize: 14,
+                        ),
                       ),
                     )
                     .toList(growable: false),
@@ -436,10 +446,9 @@ class _ObservationCard extends StatelessWidget {
                 ),
                 if (observation.observedSeverity != null) ...<Widget>[
                   const SizedBox(height: 4),
-                  Chip(
-                    visualDensity: VisualDensity.compact,
-                    label: Text(observation.observedSeverity!
-                        .localizedLabel(context.l10n)),
+                  StatusPill(
+                    observation.observedSeverity!.visual,
+                    observation.observedSeverity!.localizedLabel(context.l10n),
                   ),
                 ],
                 if (observation.severityChanged) ...<Widget>[
@@ -483,7 +492,7 @@ class _LinkedTasksCard extends StatelessWidget {
               for (final task in tasks)
                 ListTile(
                   contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.assignment_outlined),
+                  leading: OptionBadge(_taskTypeVisual(task.taskType), size: 32),
                   title: Text(task.title),
                   subtitle: Text(
                     task.canOpen
@@ -567,7 +576,7 @@ class _EventCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Icon(_eventIcon(event.type), color: AppColors.green),
+          OptionBadge(event.type.visual, size: 32),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -584,9 +593,9 @@ class _EventCard extends StatelessWidget {
                 ),
                 if (severity != null) ...<Widget>[
                   const SizedBox(height: 4),
-                  Chip(
-                    visualDensity: VisualDensity.compact,
-                    label: Text(severity.localizedLabel(context.l10n)),
+                  StatusPill(
+                    severity.visual,
+                    severity.localizedLabel(context.l10n),
                   ),
                 ],
                 if (event.notes?.trim().isNotEmpty == true) ...<Widget>[
@@ -643,22 +652,19 @@ class _SeverityChange {
   final String notes;
 }
 
-IconData _eventIcon(TreeIssueEventType type) => switch (type) {
-      TreeIssueEventType.detected => Icons.search,
-      TreeIssueEventType.confirmed => Icons.verified_outlined,
-      TreeIssueEventType.notObserved => Icons.visibility_off_outlined,
-      TreeIssueEventType.severityChanged => Icons.priority_high,
-      TreeIssueEventType.resolutionSubmitted => Icons.rate_review_outlined,
-      TreeIssueEventType.resolved => Icons.check_circle_outline,
-      TreeIssueEventType.unableToFix => Icons.build_circle_outlined,
-      TreeIssueEventType.dismissed => Icons.cancel_outlined,
-      TreeIssueEventType.reviewReturned => Icons.undo_outlined,
-    };
-
 FarmTreeRecord? _treeById(FarmHierarchy? hierarchy, String treeId) {
   if (hierarchy == null) return null;
   for (final tree in hierarchy.trees) {
     if (tree.id == treeId) return tree;
   }
   return null;
+}
+
+/// The linked task's type badge; an unknown wire value shows as general work.
+OptionVisual _taskTypeVisual(String wireValue) {
+  try {
+    return TaskType.fromJson(wireValue).visual;
+  } on FormatException {
+    return TaskType.general.visual;
+  }
 }

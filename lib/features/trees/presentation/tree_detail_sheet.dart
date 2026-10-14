@@ -1,6 +1,8 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
+import 'package:al_wahat_farm_flutter/app/theme/app_visuals.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
+import 'package:al_wahat_farm_flutter/core/widgets/option_visuals.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
 import 'package:al_wahat_farm_flutter/features/issues/domain/issue_workspace.dart';
 import 'package:al_wahat_farm_flutter/features/issues/domain/tree_issue.dart';
@@ -263,9 +265,8 @@ class _IssueOccurrence extends StatelessWidget {
             padding: const EdgeInsets.all(10),
             child: Row(
               children: <Widget>[
-                const Icon(Icons.report_problem_outlined,
-                    color: AppColors.issue),
-                const SizedBox(width: 9),
+                OptionBadge(type.visual, size: 36),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -275,10 +276,19 @@ class _IssueOccurrence extends StatelessWidget {
                         style: const TextStyle(fontWeight: FontWeight.w700),
                       ),
                       const SizedBox(height: 2),
-                      Text(
-                        '${severity.localizedLabel(l10n)} · '
-                        '${status.localizedLabel(l10n)}',
-                        style: Theme.of(context).textTheme.bodySmall,
+                      Wrap(
+                        spacing: 6,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: <Widget>[
+                          BarsLabel(
+                            severity.visual,
+                            severity.localizedLabel(l10n),
+                          ),
+                          Text(
+                            '· ${status.localizedLabel(l10n)}',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ],
                       ),
                       Text(
                         datesLabel,

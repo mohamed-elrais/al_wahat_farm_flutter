@@ -1,11 +1,13 @@
 import 'dart:async';
 
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
+import 'package:al_wahat_farm_flutter/app/theme/app_visuals.dart';
 import 'package:al_wahat_farm_flutter/core/app_services.dart';
 import 'package:al_wahat_farm_flutter/core/errors/operation_failure.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/core/location/location_service.dart';
+import 'package:al_wahat_farm_flutter/core/widgets/option_visuals.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
 import 'package:al_wahat_farm_flutter/features/auth/presentation/authenticated_gate.dart';
@@ -887,14 +889,26 @@ class _InspectionRunnerScreenState extends State<InspectionRunnerScreen> {
         context: context,
         builder: (context) => SimpleDialog(
           title: Text(context.l10n.inspectionSelectSeverity),
-          children: IssueSeverity.values
-              .map(
-                (severity) => SimpleDialogOption(
-                  onPressed: () => Navigator.of(context).pop(severity),
-                  child: Text(severity.localizedLabel(context.l10n)),
-                ),
-              )
-              .toList(growable: false),
+          contentPadding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+          children: <Widget>[
+            SizedBox(
+              width: 320,
+              child: OptionTileGrid(
+                minTileWidth: 130,
+                maxColumns: 2,
+                children: <Widget>[
+                  for (final severity in IssueSeverity.values)
+                    OptionTile(
+                      key: Key('severity-choice-${severity.name}'),
+                      visual: severity.visual,
+                      label: severity.localizedLabel(context.l10n),
+                      selected: false,
+                      onTap: () => Navigator.of(context).pop(severity),
+                    ),
+                ],
+              ),
+            ),
+          ],
         ),
       );
 
@@ -1413,52 +1427,48 @@ class _IssueEditor extends StatelessWidget {
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 8),
-          Wrap(
-            spacing: 6,
-            runSpacing: 6,
-            children: TreeIssueType.values
-                .map(
-                  (type) => FilterChip(
-                    selected: selected.containsKey(type),
-                    avatar: original.containsKey(type)
-                        ? Icon(
-                            Icons.history,
-                            size: 16,
-                            color: selected.containsKey(type)
-                                ? Colors.white
-                                : AppColors.ink,
-                          )
-                        : null,
-                    // The theme fills selected chips dark green.
-                    labelStyle: TextStyle(
-                      color: selected.containsKey(type)
-                          ? Colors.white
-                          : AppColors.ink,
-                    ),
-                    label: Text(type.localizedLabel(l10n)),
-                    onSelected: (value) => onToggle(type, value),
-                  ),
-                )
-                .toList(growable: false),
+          OptionTileGrid(
+            children: <Widget>[
+              for (final type in TreeIssueType.values)
+                OptionTile(
+                  key: Key('inspection-issue-${item.treeId}-${type.wireValue}'),
+                  visual: type.visual,
+                  label: type.localizedLabel(l10n),
+                  selected: selected.containsKey(type),
+                  marker: original.containsKey(type) ? Icons.history : null,
+                  onTap: () => onToggle(type, !selected.containsKey(type)),
+                ),
+            ],
           ),
           for (final entry in selected.entries) ...<Widget>[
             const SizedBox(height: 10),
             Row(
               children: <Widget>[
                 Expanded(
-                  child: Text(
+                  child: OptionLabel(
+                    entry.key.visual,
                     entry.key.localizedLabel(l10n),
+                    size: 28,
                     style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
                 ),
                 const SizedBox(width: 8),
-                OutlinedButton.icon(
+                OutlinedButton(
                   key: Key(
                     'inspection-severity-${item.treeId}-${entry.key.wireValue}',
                   ),
                   onPressed: () => onChangeSeverity(entry.key),
-                  icon: const Icon(Icons.arrow_drop_down),
-                  label: Text(entry.value.localizedLabel(l10n)),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      BarsLabel(
+                        entry.value.visual,
+                        entry.value.localizedLabel(l10n),
+                        fontSize: 14,
+                      ),
+                      const Icon(Icons.arrow_drop_down),
+                    ],
+                  ),
                 ),
               ],
             ),

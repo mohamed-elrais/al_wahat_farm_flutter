@@ -1,4 +1,3 @@
-import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
 import 'package:al_wahat_farm_flutter/app/theme/app_visuals.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
@@ -26,22 +25,10 @@ class TaskPriorityLabel extends StatelessWidget {
   final double fontSize;
 
   @override
-  Widget build(BuildContext context) => Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          SeverityBars(priority.visual, height: fontSize + 3),
-          const SizedBox(width: 6),
-          Text(
-            priority.localizedLabel(context.l10n),
-            style: TextStyle(
-              color: AppColors.ink,
-              fontSize: fontSize,
-              fontWeight: priority == TaskPriority.urgent
-                  ? FontWeight.w800
-                  : FontWeight.w600,
-            ),
-          ),
-        ],
+  Widget build(BuildContext context) => BarsLabel(
+        priority.visual,
+        priority.localizedLabel(context.l10n),
+        fontSize: fontSize,
       );
 }
 

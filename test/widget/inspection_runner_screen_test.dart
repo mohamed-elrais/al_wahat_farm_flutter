@@ -1,4 +1,5 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_theme.dart';
+import 'package:al_wahat_farm_flutter/core/widgets/option_visuals.dart';
 import 'package:al_wahat_farm_flutter/features/auth/domain/operational_context.dart';
 import 'package:al_wahat_farm_flutter/features/auth/presentation/authenticated_gate.dart';
 import 'package:al_wahat_farm_flutter/features/inspections/data/inspection_repository.dart';
@@ -185,8 +186,8 @@ void main() {
     expect(find.text('Edit issues'), findsOneWidget);
     await tester.tap(find.byKey(const Key('inspection-report-tree-2')));
     await tester.pumpAndSettle();
-    final damageChip = tester.widget<FilterChip>(
-      find.widgetWithText(FilterChip, 'Tree damage'),
+    final damageChip = tester.widget<OptionTile>(
+      find.widgetWithText(OptionTile, 'Tree damage'),
     );
     expect(damageChip.selected, isTrue);
     expect(find.text('Issue photo prepared'), findsOneWidget);

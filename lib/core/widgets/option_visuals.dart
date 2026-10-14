@@ -113,6 +113,36 @@ class SeverityBars extends StatelessWidget {
       );
 }
 
+/// Severity or priority: its bars, then its word in ink (bold when urgent).
+class BarsLabel extends StatelessWidget {
+  const BarsLabel(this.visual, this.label, {this.fontSize = 12, super.key});
+
+  final OptionVisual visual;
+  final String label;
+  final double fontSize;
+
+  @override
+  Widget build(BuildContext context) => Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          SeverityBars(visual, height: fontSize + 3),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              label,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: AppColors.ink,
+                fontSize: fontSize,
+                fontWeight:
+                    (visual.bars ?? 0) >= 4 ? FontWeight.w800 : FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      );
+}
+
 class _BarsPainter extends CustomPainter {
   _BarsPainter({required this.level, required this.active, Color? inactive})
       : inactive = inactive ?? active.withOpacity(0.35);
@@ -264,5 +294,145 @@ class OptionChip extends StatelessWidget {
         ),
         label: Text(label),
         onSelected: onSelected,
+      );
+}
+
+/// A large picture button for choosing an option without reading: the badge,
+/// the word under it, and when selected a thick border in the option's
+/// colour, a tint and a ✓ corner (so the choice shows without colour too).
+class OptionTile extends StatelessWidget {
+  const OptionTile({
+    required this.visual,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+    this.marker,
+    super.key,
+  });
+
+  final OptionVisual visual;
+  final String label;
+  final bool selected;
+  final VoidCallback? onTap;
+
+  /// A small icon in the top corner (an issue this tree already has).
+  final IconData? marker;
+
+  @override
+  Widget build(BuildContext context) {
+    final radius = BorderRadius.circular(AppRadii.control + 3);
+    return Semantics(
+      button: true,
+      selected: selected,
+      enabled: onTap != null,
+      label: label,
+      excludeSemantics: true,
+      child: Material(
+        color: selected ? visual.color.withOpacity(0.12) : AppColors.card,
+        shape: RoundedRectangleBorder(
+          borderRadius: radius,
+          side: BorderSide(
+            color: selected ? visual.color : AppColors.line,
+            width: selected ? 3 : 1.2,
+          ),
+        ),
+        child: InkWell(
+          borderRadius: radius,
+          onTap: onTap,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 112),
+            child: Stack(
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(6, 12, 6, 10),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      Center(child: OptionBadge(visual, size: 52)),
+                      const SizedBox(height: 8),
+                      Text(
+                        label,
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: AppColors.ink,
+                          fontSize: 13,
+                          height: 1.2,
+                          fontWeight:
+                              selected ? FontWeight.w800 : FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (selected)
+                  PositionedDirectional(
+                    top: 6,
+                    end: 6,
+                    child: _TileMark(Icons.check, visual.color),
+                  )
+                else if (marker != null)
+                  PositionedDirectional(
+                    top: 6,
+                    end: 6,
+                    child: _TileMark(marker!, AppColors.muted),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TileMark extends StatelessWidget {
+  const _TileMark(this.icon, this.color);
+
+  final IconData icon;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        width: 22,
+        height: 22,
+        decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        child: Icon(icon, size: 15, color: Colors.white),
+      );
+}
+
+/// Lays [OptionTile]s out in equal columns: as many as fit at
+/// [minTileWidth], never fewer than two.
+class OptionTileGrid extends StatelessWidget {
+  const OptionTileGrid({
+    required this.children,
+    this.minTileWidth = 100,
+    this.maxColumns = 4,
+    super.key,
+  });
+
+  final List<Widget> children;
+  final double minTileWidth;
+  final int maxColumns;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+        builder: (context, constraints) {
+          const gap = 8.0;
+          final fit = ((constraints.maxWidth + gap) / (minTileWidth + gap))
+              .floor()
+              .clamp(2, maxColumns);
+          final width = (constraints.maxWidth - gap * (fit - 1)) / fit;
+          return Wrap(
+            spacing: gap,
+            runSpacing: gap,
+            children: <Widget>[
+              for (final child in children)
+                SizedBox(width: width, child: child),
+            ],
+          );
+        },
       );
 }

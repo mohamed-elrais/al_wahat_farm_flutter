@@ -1,6 +1,8 @@
+import 'package:al_wahat_farm_flutter/app/theme/app_visuals.dart';
 import 'package:al_wahat_farm_flutter/core/app_services.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
+import 'package:al_wahat_farm_flutter/core/widgets/option_visuals.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
 import 'package:al_wahat_farm_flutter/features/farm/presentation/farm_hierarchy_gate.dart';
@@ -148,47 +150,41 @@ class _IssueReportScreenState extends State<IssueReportScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
-                  DropdownButtonFormField<TreeIssueType>(
+                  _PickerTitle(context.l10n.issueTypeLabel),
+                  OptionTileGrid(
                     key: const Key('issue-type'),
-                    value: _type,
-                    isExpanded: true,
-                    decoration: InputDecoration(
-                      labelText: context.l10n.issueTypeLabel,
-                    ),
-                    items: TreeIssueType.values
-                        .map(
-                          (value) => DropdownMenuItem<TreeIssueType>(
-                            value: value,
-                            child: Text(value.localizedLabel(context.l10n)),
-                          ),
-                        )
-                        .toList(growable: false),
-                    onChanged: controller.isBusy
-                        ? null
-                        : (value) => setState(() => _type = value ?? _type),
+                    children: <Widget>[
+                      for (final value in TreeIssueType.values)
+                        OptionTile(
+                          key: Key('issue-type-${value.wireValue}'),
+                          visual: value.visual,
+                          label: value.localizedLabel(context.l10n),
+                          selected: _type == value,
+                          onTap: controller.isBusy
+                              ? null
+                              : () => setState(() => _type = value),
+                        ),
+                    ],
                   ),
-                  const SizedBox(height: 12),
-                  DropdownButtonFormField<IssueSeverity>(
+                  const SizedBox(height: 16),
+                  _PickerTitle(context.l10n.issueSeverityLabel),
+                  OptionTileGrid(
                     key: const Key('issue-severity'),
-                    value: _severity,
-                    isExpanded: true,
-                    decoration: InputDecoration(
-                      labelText: context.l10n.issueSeverityLabel,
-                    ),
-                    items: IssueSeverity.values
-                        .map(
-                          (value) => DropdownMenuItem<IssueSeverity>(
-                            value: value,
-                            child: Text(value.localizedLabel(context.l10n)),
-                          ),
-                        )
-                        .toList(growable: false),
-                    onChanged: controller.isBusy
-                        ? null
-                        : (value) =>
-                            setState(() => _severity = value ?? _severity),
+                    minTileWidth: 72,
+                    children: <Widget>[
+                      for (final value in IssueSeverity.values)
+                        OptionTile(
+                          key: Key('issue-severity-${value.name}'),
+                          visual: value.visual,
+                          label: value.localizedLabel(context.l10n),
+                          selected: _severity == value,
+                          onTap: controller.isBusy
+                              ? null
+                              : () => setState(() => _severity = value),
+                        ),
+                    ],
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
                   TextField(
                     key: const Key('issue-description'),
                     controller: _description,
@@ -358,3 +354,18 @@ String _stageLabel(BuildContext context, IssueSubmissionStage stage) =>
         context.l10n.issueStageRegisteringPhoto,
       _ => '',
     };
+
+class _PickerTitle extends StatelessWidget {
+  const _PickerTitle(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: Semantics(
+          header: true,
+          child: Text(text, style: Theme.of(context).textTheme.titleMedium),
+        ),
+      );
+}

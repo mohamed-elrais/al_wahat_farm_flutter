@@ -1,6 +1,8 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
+import 'package:al_wahat_farm_flutter/app/theme/app_visuals.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
+import 'package:al_wahat_farm_flutter/core/widgets/option_visuals.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
 import 'package:al_wahat_farm_flutter/features/auth/presentation/authenticated_gate.dart';
 import 'package:al_wahat_farm_flutter/features/farm/domain/farm_hierarchy.dart';
@@ -94,9 +96,8 @@ class _TaskIssueWorkCardState extends State<TaskIssueWorkCard> {
               const Divider(height: 22),
               Row(
                 children: <Widget>[
-                  const Icon(Icons.report_problem_outlined,
-                      color: AppColors.issue),
-                  const SizedBox(width: 8),
+                  OptionBadge(item.type.visual, size: 40),
+                  const SizedBox(width: 10),
                   Expanded(
                     flex: 2,
                     child: Column(
@@ -108,7 +109,11 @@ class _TaskIssueWorkCardState extends State<TaskIssueWorkCard> {
                           _treeCodeFor(hierarchy, item.treeId),
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
-                        Text(item.severity.localizedLabel(context.l10n)),
+                        const SizedBox(height: 2),
+                        BarsLabel(
+                          item.severity.visual,
+                          item.severity.localizedLabel(context.l10n),
+                        ),
                       ],
                     ),
                   ),

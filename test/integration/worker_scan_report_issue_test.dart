@@ -53,7 +53,13 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('TREE-B-120'), findsOneWidget);
 
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('issue-submit')),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.ensureVisible(find.byKey(const Key('issue-submit')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('issue-submit')));
     await tester.pumpAndSettle();
 

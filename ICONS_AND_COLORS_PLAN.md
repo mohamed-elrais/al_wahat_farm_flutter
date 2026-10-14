@@ -225,7 +225,7 @@ Each phase ends with: tests and analyze green, a commit, then a staging and prod
 |---|---|---|
 | V0 | Done | `lib/app/theme/app_visuals.dart`, `lib/core/widgets/option_visuals.dart`, Profile → Icons guide (`/more/icons`). Tests: `test/unit/theme/app_visuals_test.dart`, `test/widget/icons_guide_test.dart`, goldens `test/goldens/icons_guide_{en,ar}_390.png`. **Gate:** palette review on a phone. |
 | V1 | Done | Task cards and Home preview (type badge; Home used a water drop for every task), status pills with icons, priority bars, type/priority pickers, task and review activity icons, review decisions, schedules list/detail/form. Palette gate waived: user asked to continue through the plan while away (2026-10-14). |
-| V2 | — | |
+| V2 | Done | Issues list (type badge replaces the severity stripe, severity and status pills), filters, issue detail (badges, timeline icons by meaning, linked task badges), task issue card, tree sheet rows, map filters and markers on the shared severity ramp. |
 | V3 | — | |
-| V4 | — | |
+| V4 | Done (with V2) | Picture tiles (`OptionTile`, `OptionTileGrid`) for issue type and severity on Report issue and in the inspection issue sheet and its severity dialog. Built together with V2 so those pickers were rebuilt once. Golden: `issue_report_tiles_{en,ar}_390.png`. |
 | V5 | — | |

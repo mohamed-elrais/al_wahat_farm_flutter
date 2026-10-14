@@ -1,9 +1,11 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
+import 'package:al_wahat_farm_flutter/app/theme/app_visuals.dart';
 import 'package:al_wahat_farm_flutter/core/app_services.dart';
 import 'package:al_wahat_farm_flutter/core/connectivity/connectivity_service.dart';
 import 'package:al_wahat_farm_flutter/core/errors/operation_failure.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
+import 'package:al_wahat_farm_flutter/core/widgets/option_visuals.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
 import 'package:al_wahat_farm_flutter/features/auth/presentation/authenticated_gate.dart';
@@ -310,7 +312,12 @@ class _Filters extends StatelessWidget {
           for (final type in TreeIssueType.values)
             DropdownMenuItem(
               value: type,
-              child: Text(type.localizedLabel(context.l10n)),
+              child: OptionLabel(
+                type.visual,
+                type.localizedLabel(context.l10n),
+                size: 24,
+                maxLines: 1,
+              ),
             ),
         ],
         onChanged: controller.setType,
@@ -329,7 +336,11 @@ class _Filters extends StatelessWidget {
           for (final severity in IssueSeverity.values)
             DropdownMenuItem(
               value: severity,
-              child: Text(severity.localizedLabel(context.l10n)),
+              child: BarsLabel(
+                severity.visual,
+                severity.localizedLabel(context.l10n),
+                fontSize: 14,
+              ),
             ),
         ],
         onChanged: controller.setSeverity,
@@ -357,7 +368,12 @@ class _Filters extends StatelessWidget {
         for (final status in statuses)
           DropdownMenuItem(
             value: status,
-            child: Text(status.localizedLabel(context.l10n)),
+            child: OptionLabel(
+              status.visual,
+              status.localizedLabel(context.l10n),
+              size: 24,
+              maxLines: 1,
+            ),
           ),
       ],
       onChanged: controller.setStatus,
@@ -495,14 +511,7 @@ class _IssueCard extends StatelessWidget {
           children: <Widget>[
             Row(
               children: <Widget>[
-                Container(
-                  width: 10,
-                  height: 54,
-                  decoration: BoxDecoration(
-                    color: _severityColor(issue.severity),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
+                OptionBadge(issue.type.visual, size: 44),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -522,7 +531,10 @@ class _IssueCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                Chip(label: Text(issue.severity.localizedLabel(context.l10n))),
+                StatusPill(
+                  issue.severity.visual,
+                  issue.severity.localizedLabel(context.l10n),
+                ),
               ],
             ),
             const SizedBox(height: 10),
@@ -531,9 +543,9 @@ class _IssueCard extends StatelessWidget {
                 spacing: 8,
                 runSpacing: 6,
                 children: <Widget>[
-                  Chip(
-                    avatar: const Icon(Icons.flag_outlined, size: 16),
-                    label: Text(issue.status.localizedLabel(context.l10n)),
+                  StatusPill(
+                    issue.status.visual,
+                    issue.status.localizedLabel(context.l10n),
                   ),
                   if (issue.source != null)
                     Chip(
@@ -698,13 +710,6 @@ class _Empty extends StatelessWidget {
         ),
       );
 }
-
-Color _severityColor(IssueSeverity severity) => switch (severity) {
-      IssueSeverity.low => AppColors.green,
-      IssueSeverity.medium => const Color(0xFFD39B28),
-      IssueSeverity.high => AppColors.orange,
-      IssueSeverity.urgent => AppColors.issue,
-    };
 
 FarmTreeRecord? _treeById(FarmHierarchy hierarchy, String treeId) {
   for (final tree in hierarchy.trees) {
