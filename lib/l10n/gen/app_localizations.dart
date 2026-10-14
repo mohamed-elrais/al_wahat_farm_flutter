@@ -4767,11 +4767,17 @@ abstract class AppLocalizations {
   /// **'Report issue'**
   String get inspectionReportIssue;
 
-  /// No description provided for @inspectionHideIssues.
+  /// No description provided for @inspectionEditIssues.
   ///
   /// In en, this message translates to:
-  /// **'Hide issues'**
-  String get inspectionHideIssues;
+  /// **'Edit issues'**
+  String get inspectionEditIssues;
+
+  /// No description provided for @inspectionIssuesDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get inspectionIssuesDone;
 
   /// No description provided for @inspectionAllHealthyNext.
   ///

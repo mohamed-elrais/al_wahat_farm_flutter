@@ -2673,7 +2673,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get inspectionReportIssue => 'الإبلاغ عن مشكلة';
 
   @override
-  String get inspectionHideIssues => 'إخفاء المشكلات';
+  String get inspectionEditIssues => 'تعديل المشكلات';
+
+  @override
+  String get inspectionIssuesDone => 'تم';
 
   @override
   String get inspectionAllHealthyNext => 'كلها سليمة · التالي';

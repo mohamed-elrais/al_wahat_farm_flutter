@@ -182,11 +182,16 @@ void main() {
 
     expect(find.text('Station 2 of 2'), findsOneWidget);
     expect(find.text('TREE-A-002'), findsOneWidget);
+    expect(find.text('Edit issues'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('inspection-report-tree-2')));
+    await tester.pumpAndSettle();
     final damageChip = tester.widget<FilterChip>(
       find.widgetWithText(FilterChip, 'Tree damage'),
     );
     expect(damageChip.selected, isTrue);
     expect(find.text('Issue photo prepared'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('inspection-issue-done')));
+    await tester.pumpAndSettle();
 
     await tester.scrollUntilVisible(
       find.byKey(const Key('inspection-save-next')),

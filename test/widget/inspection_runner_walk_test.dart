@@ -225,7 +225,7 @@ void main() {
     expect(x(left), lessThan(x(right)));
   });
 
-  testWidgets('reporting an issue opens the editor and changes the save label',
+  testWidgets('reporting an issue opens a sheet and changes the save label',
       (tester) async {
     phone(tester);
     final station = aisleThree + 2;
@@ -262,6 +262,12 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Low').last);
     await tester.pumpAndSettle();
+
+    // The sheet keeps the choices after closing.
+    await tester.tap(find.byKey(const Key('inspection-issue-done')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(Key('inspection-editor-${left.treeId}')), findsNothing);
+    expect(find.text('Edit issues'), findsOneWidget);
 
     await tester.tap(find.text('Save station and continue'));
     await tester.pumpAndSettle();

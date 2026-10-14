@@ -2656,7 +2656,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inspectionReportIssue => 'Report issue';
 
   @override
-  String get inspectionHideIssues => 'Hide issues';
+  String get inspectionEditIssues => 'Edit issues';
+
+  @override
+  String get inspectionIssuesDone => 'Done';
 
   @override
   String get inspectionAllHealthyNext => 'All healthy · next';

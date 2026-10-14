@@ -59,8 +59,6 @@ class _InspectionRunnerScreenState extends State<InspectionRunnerScreen> {
       <String, PreparedTaskEvidence>{};
   final Map<String, String> _savedPhotoPaths = <String, String>{};
 
-  /// Trees whose issue editor the inspector opened or closed by hand.
-  final Map<String, bool> _expanded = <String, bool>{};
   final TaskEvidencePicker _evidencePicker = DeviceTaskEvidencePicker();
   InspectionDraftStore? _draftStore;
   Timer? _draftDebounce;
@@ -155,7 +153,6 @@ class _InspectionRunnerScreenState extends State<InspectionRunnerScreen> {
     final details = _details;
     final station = _stationIndex;
     if (details == null || station == null) return;
-    _expanded.clear();
     final summaries = IssueWorkspaceScope.maybeOf(context)?.allIssues ??
         const <TreeIssueSummary>[];
     for (final item in details.station(station)) {
@@ -692,9 +689,6 @@ class _InspectionRunnerScreenState extends State<InspectionRunnerScreen> {
       ..sort(
           (a, b) => a.routeItem.side.index.compareTo(b.routeItem.side.index));
     final ambient = Directionality.of(context);
-    bool expanded(String treeId) =>
-        _expanded[treeId] ??
-        (_selected[treeId]!.isNotEmpty || _notes[treeId]!.text.isNotEmpty);
     final tiles = <Widget>[
       for (final item in items)
         Expanded(
@@ -704,11 +698,9 @@ class _InspectionRunnerScreenState extends State<InspectionRunnerScreen> {
               item: item.routeItem,
               selectedCount: _selected[item.routeItem.treeId]!.length,
               originalCount: _original[item.routeItem.treeId]!.length,
-              expanded: expanded(item.routeItem.treeId),
-              onToggle: () => setState(
-                () => _expanded[item.routeItem.treeId] =
-                    !expanded(item.routeItem.treeId),
-              ),
+              hasReport: _selected[item.routeItem.treeId]!.isNotEmpty ||
+                  _notes[item.routeItem.treeId]!.text.isNotEmpty,
+              onReport: () => _openIssueSheet(item.routeItem, session),
             ),
           ),
         ),
@@ -729,37 +721,82 @@ class _InspectionRunnerScreenState extends State<InspectionRunnerScreen> {
           ),
         ),
       ),
-      for (final item in items)
-        if (expanded(item.routeItem.treeId)) ...<Widget>[
-          const SizedBox(height: 10),
-          _IssueEditor(
-            item: item.routeItem,
-            selected: _selected[item.routeItem.treeId]!,
-            original: _original[item.routeItem.treeId]!,
-            notes: _notes[item.routeItem.treeId]!,
-            onToggle: (type, selected) => _toggleIssue(
-              item.routeItem.treeId,
-              type,
-              selected,
-            ),
-            onChangeSeverity: (type) => _changeSeverity(
-              item.routeItem.treeId,
-              type,
-            ),
-            requiresPhoto: session.requiresIssuePhoto,
-            hasPhoto: (type) =>
-                _issuePhotos.containsKey(
-                  _photoKey(item.routeItem.treeId, type),
-                ) ||
-                _savedPhotoPaths.containsKey(
-                  _photoKey(item.routeItem.treeId, type),
-                ),
-            onPhoto: (type) => _pickIssuePhoto(item.routeItem.treeId, type),
-            onNotesChanged: (_) => _scheduleDraftSave(),
-          ),
-        ],
       const SizedBox(height: 10),
     ];
+  }
+
+  /// The issue editor for one tree, in a sheet above the navigation bar. It
+  /// edits the runner's own state, so closing it keeps every choice.
+  Future<void> _openIssueSheet(
+    InspectionRouteItem item,
+    InspectionSession session,
+  ) async {
+    final treeId = item.treeId;
+    await showModalBottomSheet<void>(
+      context: context,
+      useRootNavigator: true,
+      isScrollControlled: true,
+      showDragHandle: true,
+      backgroundColor: AppColors.card,
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (sheetContext, setSheet) {
+          Future<void> refresh(Future<void> action) async {
+            await action;
+            if (sheetContext.mounted) setSheet(() {});
+          }
+
+          final media = MediaQuery.of(sheetContext);
+          return Padding(
+            padding: EdgeInsets.only(bottom: media.viewInsets.bottom),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: media.size.height * 0.85),
+              child: SafeArea(
+                top: false,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    Flexible(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                        child: _IssueEditor(
+                          item: item,
+                          selected: _selected[treeId]!,
+                          original: _original[treeId]!,
+                          notes: _notes[treeId]!,
+                          onToggle: (type, selected) =>
+                              refresh(_toggleIssue(treeId, type, selected)),
+                          onChangeSeverity: (type) =>
+                              refresh(_changeSeverity(treeId, type)),
+                          requiresPhoto: session.requiresIssuePhoto,
+                          hasPhoto: (type) =>
+                              _issuePhotos
+                                  .containsKey(_photoKey(treeId, type)) ||
+                              _savedPhotoPaths
+                                  .containsKey(_photoKey(treeId, type)),
+                          onPhoto: (type) =>
+                              refresh(_pickIssuePhoto(treeId, type)),
+                          onNotesChanged: (_) => _scheduleDraftSave(),
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                      child: FilledButton(
+                        key: const Key('inspection-issue-done'),
+                        onPressed: () => Navigator.of(sheetContext).pop(),
+                        child: Text(sheetContext.l10n.inspectionIssuesDone),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+    if (mounted) setState(() {});
   }
 
   Widget _actionBar(InspectionDetails details) {
@@ -1183,15 +1220,17 @@ class _TreeTile extends StatelessWidget {
     required this.item,
     required this.selectedCount,
     required this.originalCount,
-    required this.expanded,
-    required this.onToggle,
+    required this.hasReport,
+    required this.onReport,
   });
 
   final InspectionRouteItem item;
   final int selectedCount;
   final int originalCount;
-  final bool expanded;
-  final VoidCallback onToggle;
+
+  /// Whether this tree already has issues or a note, so the button edits.
+  final bool hasReport;
+  final VoidCallback onReport;
 
   @override
   Widget build(BuildContext context) {
@@ -1279,14 +1318,14 @@ class _TreeTile extends StatelessWidget {
             const SizedBox(height: 6),
             OutlinedButton.icon(
               key: Key('inspection-report-${item.treeId}'),
-              onPressed: onToggle,
+              onPressed: onReport,
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
               ),
-              icon: Icon(expanded ? Icons.expand_less : Icons.add, size: 18),
+              icon: Icon(hasReport ? Icons.edit_outlined : Icons.add, size: 18),
               label: Text(
-                expanded
-                    ? l10n.inspectionHideIssues
+                hasReport
+                    ? l10n.inspectionEditIssues
                     : l10n.inspectionReportIssue,
               ),
             ),
@@ -1325,7 +1364,7 @@ class _IssueEditor extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return WahatCard(
+    return KeyedSubtree(
       key: Key('inspection-editor-${item.treeId}'),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1343,8 +1382,20 @@ class _IssueEditor extends StatelessWidget {
                   (type) => FilterChip(
                     selected: selected.containsKey(type),
                     avatar: original.containsKey(type)
-                        ? const Icon(Icons.history, size: 16)
+                        ? Icon(
+                            Icons.history,
+                            size: 16,
+                            color: selected.containsKey(type)
+                                ? Colors.white
+                                : AppColors.ink,
+                          )
                         : null,
+                    // The theme fills selected chips dark green.
+                    labelStyle: TextStyle(
+                      color: selected.containsKey(type)
+                          ? Colors.white
+                          : AppColors.ink,
+                    ),
                     label: Text(type.localizedLabel(l10n)),
                     onSelected: (value) => onToggle(type, value),
                   ),
