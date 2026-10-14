@@ -1,7 +1,9 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
+import 'package:al_wahat_farm_flutter/app/theme/app_visuals.dart';
 import 'package:al_wahat_farm_flutter/core/app_services.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
+import 'package:al_wahat_farm_flutter/core/widgets/option_visuals.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
 import 'package:al_wahat_farm_flutter/features/auth/presentation/authenticated_gate.dart';
@@ -124,6 +126,8 @@ class _InventoryItemScreenState extends State<InventoryItemScreen> {
               onPressed: () => context.go('/more/inventory'),
             ),
             const SizedBox(width: 4),
+            OptionBadge(inventoryCategoryVisual(category?.code), size: 44),
+            const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -284,14 +288,7 @@ class _InventoryItemScreenState extends State<InventoryItemScreen> {
                   for (final txn in _transactions!)
                     ListTile(
                       dense: true,
-                      leading: Icon(
-                        txn.quantityDelta >= 0
-                            ? Icons.arrow_upward
-                            : Icons.arrow_downward,
-                        color: txn.quantityDelta >= 0
-                            ? AppColors.green
-                            : AppColors.issue,
-                      ),
+                      leading: OptionBadge(txn.type.visual, size: 32),
                       title: Text(txn.type.localizedLabel(l10n)),
                       subtitle: Text(
                         '${txn.note ?? ''}\n'

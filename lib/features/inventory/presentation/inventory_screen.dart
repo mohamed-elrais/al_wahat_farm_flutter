@@ -1,7 +1,9 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
+import 'package:al_wahat_farm_flutter/app/theme/app_visuals.dart';
 import 'package:al_wahat_farm_flutter/core/app_services.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
+import 'package:al_wahat_farm_flutter/core/widgets/option_visuals.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
 import 'package:al_wahat_farm_flutter/features/auth/presentation/authenticated_gate.dart';
@@ -154,9 +156,10 @@ class _InventoryScreenState extends State<InventoryScreen> {
                 ),
                 for (final category in controller.categories) ...<Widget>[
                   const SizedBox(width: 6),
-                  ChoiceChip(
+                  OptionChip(
                     key: Key('inventory-filter-${category.code}'),
-                    label: Text(category.localizedLabel(l10n)),
+                    visual: inventoryCategoryVisual(category.code),
+                    label: category.localizedLabel(l10n),
                     selected: controller.categoryFilter == category.id,
                     onSelected: (_) =>
                         controller.setCategoryFilter(category.id),
@@ -276,11 +279,7 @@ class _ItemTile extends StatelessWidget {
           padding: const EdgeInsets.all(14),
           child: Row(
             children: <Widget>[
-              CircleAvatar(
-                backgroundColor: AppColors.softGreen,
-                foregroundColor: AppColors.green,
-                child: Icon(_categoryIcon(category?.code)),
-              ),
+              OptionBadge(inventoryCategoryVisual(category?.code)),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -329,15 +328,3 @@ class _ItemTile extends StatelessWidget {
     );
   }
 }
-
-IconData _categoryIcon(String? code) => switch (code) {
-      'pipe' => Icons.horizontal_rule,
-      'pipe_joint' => Icons.call_split,
-      'fertilizer' => Icons.compost_outlined,
-      'dripper' => Icons.water_drop_outlined,
-      'insecticide' => Icons.pest_control_outlined,
-      'herbicide' => Icons.grass_outlined,
-      'fungicide' => Icons.coronavirus_outlined,
-      'tool' => Icons.handyman_outlined,
-      _ => Icons.inventory_2_outlined,
-    };

@@ -1,3 +1,4 @@
+import 'package:al_wahat_farm_flutter/features/inventory/domain/inventory_models.dart';
 import 'package:al_wahat_farm_flutter/features/issues/domain/issue_workspace.dart';
 import 'package:al_wahat_farm_flutter/features/issues/domain/tree_issue.dart';
 import 'package:al_wahat_farm_flutter/features/issues/domain/tree_issue_draft.dart';
@@ -245,6 +246,35 @@ extension TreeIssueEventTypeVisual on TreeIssueEventType {
           const OptionVisual(Icons.build_circle, OptionColors.water),
         TreeIssueEventType.dismissed => _Family.cancelled,
         TreeIssueEventType.reviewReturned => _Family.returned,
+      };
+}
+
+/// Stock movements: added is green +, used is orange −, a correction is
+/// blue ±, an undone movement grey ↺.
+extension InventoryTransactionTypeVisual on InventoryTransactionType {
+  OptionVisual get visual => switch (this) {
+        InventoryTransactionType.addition =>
+          const OptionVisual(Icons.add_circle, OptionColors.good),
+        InventoryTransactionType.consumption =>
+          const OptionVisual(Icons.remove_circle, OptionColors.working),
+        InventoryTransactionType.adjustment =>
+          const OptionVisual(Icons.exposure, OptionColors.water),
+        InventoryTransactionType.reversal =>
+          const OptionVisual(Icons.replay, OptionColors.stopped),
+      };
+}
+
+/// How a product is applied (managers' schedule form).
+extension ApplicationMethodVisual on ApplicationMethod {
+  OptionVisual get visual => switch (this) {
+        ApplicationMethod.fertigation =>
+          const OptionVisual(Icons.opacity, OptionColors.fertilizer),
+        ApplicationMethod.soilApplication =>
+          const OptionVisual(Icons.landscape, OptionColors.tool),
+        ApplicationMethod.foliarSpray =>
+          const OptionVisual(Icons.shower, OptionColors.weed),
+        ApplicationMethod.manualApplication =>
+          const OptionVisual(Icons.pan_tool, OptionColors.general),
       };
 }
 

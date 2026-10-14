@@ -606,7 +606,12 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
                         .map(
                           (method) => DropdownMenuItem<ApplicationMethod>(
                             value: method,
-                            child: Text(method.localizedLabel(l10n)),
+                            child: OptionLabel(
+                              method.visual,
+                              method.localizedLabel(l10n),
+                              size: 24,
+                              maxLines: 1,
+                            ),
                           ),
                         )
                         .toList(growable: false),

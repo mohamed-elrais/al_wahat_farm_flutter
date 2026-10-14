@@ -1,5 +1,7 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
 import 'package:al_wahat_farm_flutter/app/theme/app_visuals.dart';
+import 'package:al_wahat_farm_flutter/features/inventory/domain/inventory_models.dart';
+import 'package:al_wahat_farm_flutter/features/issues/domain/issue_workspace.dart';
 import 'package:al_wahat_farm_flutter/features/issues/domain/tree_issue.dart';
 import 'package:al_wahat_farm_flutter/features/issues/domain/tree_issue_draft.dart';
 import 'package:al_wahat_farm_flutter/features/reviews/domain/engineer_review.dart';
@@ -21,6 +23,12 @@ void main() {
     'plan status': [for (final v in OperationPlanStatus.values) v.visual],
     'review decision': [
       for (final v in EngineerReviewDecision.values) v.visual,
+    ],
+    'stock movements': [
+      for (final v in InventoryTransactionType.values) v.visual,
+    ],
+    'application methods': [
+      for (final v in ApplicationMethod.values) v.visual,
     ],
     'inventory categories': [
       for (final code in inventoryCategoryCodes) inventoryCategoryVisual(code),
@@ -95,5 +103,18 @@ void main() {
   test('categories a manager adds look like "other"', () {
     expect(inventoryCategoryVisual('seeds'), inventoryCategoryVisual('other'));
     expect(inventoryCategoryVisual(null), inventoryCategoryVisual('other'));
+  });
+
+  test('history rows have a distinct picture per event', () {
+    for (final values in <List<OptionVisual>>[
+      [for (final v in TaskActivityAction.values) v.visual],
+      [for (final v in TreeIssueEventType.values) v.visual],
+    ]) {
+      final pictures = values.map((v) => v.icon!.codePoint).toList();
+      expect(pictures.toSet(), hasLength(pictures.length));
+      for (final visual in values) {
+        expect(contrast(visual.color, Colors.white), greaterThanOrEqualTo(3));
+      }
+    }
   });
 }

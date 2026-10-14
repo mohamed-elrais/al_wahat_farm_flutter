@@ -1,7 +1,9 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
+import 'package:al_wahat_farm_flutter/app/theme/app_visuals.dart';
 import 'package:al_wahat_farm_flutter/core/app_services.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
+import 'package:al_wahat_farm_flutter/core/widgets/option_visuals.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
 import 'package:al_wahat_farm_flutter/features/auth/presentation/authenticated_gate.dart';
@@ -169,7 +171,12 @@ class _InventoryItemFormScreenState extends State<InventoryItemFormScreen> {
                       .map(
                         (category) => DropdownMenuItem<String>(
                           value: category.id,
-                          child: Text(category.localizedLabel(l10n)),
+                          child: OptionLabel(
+                            inventoryCategoryVisual(category.code),
+                            category.localizedLabel(l10n),
+                            size: 24,
+                            maxLines: 1,
+                          ),
                         ),
                       )
                       .toList(growable: false),
