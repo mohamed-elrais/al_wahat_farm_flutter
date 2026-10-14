@@ -138,10 +138,10 @@ Each fact below was checked on 2026-10-11. If code changes invalidate one, updat
 | ~~U7~~ | **Resolved 2026-10-11:** Netlify, domain root. The production domain is not chosen yet; use `<site>.netlify.app` until the user names a custom domain. | §5 |
 | U9 | ~~Whether the CLI applies headers~~ **Mostly answered by N7:** the 27.12.0 help says deploy processes headers from `netlify.toml` or `_headers`. The plan still uses `_headers` (works for drag-and-drop too). P8.4 `curl` confirms the live result. | P8 |
 | ~~U10~~ | **Resolved (N10):** `*.wasm` is served as `application/wasm`. No header override needed. | — |
-| U11 | iPhone 11 iOS version (decides which Safari features exist). | P0 👤 |
+| ~~U11~~ | **Answered 2026-10-14 (user): iOS 27.0** on the iPhone 11. | — |
 | ~~U12~~ | **Resolved P0.4b:** Pixel_4 emulator = Android 13 (`sdk_gphone64_x86_64`) with **Chrome 109.0.5414.123** (old, Jan 2023) + WebView. Usable for functional checks only. | P0.4b |
 | U13 | **Cause found 2026-10-11 → see N8/D12.** Original note: this Mac's network can't reach `*.netlify.app` at all (ports 80/443 time out; `netlify.com` works). Whether the iPhone on cellular and on the same Wi-Fi, and **the field workers' networks**, can reach it. If workers' networks block `netlify.app`, a **custom domain** may help only if the block is name-based (it resolved to Netlify IP 63.176.8.218 and the IP itself is unreachable here, so an IP-level block would also affect a custom domain on Netlify). Raise with the user before P8. | P0.7 👤 / P8 |
-| U8 | iOS eviction of IndexedDB for non-installed sites (WebKit policy) and whether `navigator.storage.persist()` is granted. | P2 👤 |
+| ~~U8~~ | **Answered 2026-10-14 (P2.13, iOS 27.0):** the installed home-screen app is granted `persist()` ("Kept by the browser"); Safari is not (best-effort, "The browser may clear it when space is low"). Field workers must use the installed app, as D8 assumed. | — |
 
 ### 1.5 Netlify and local deploy environment (verified 2026-10-11)
 
@@ -188,16 +188,16 @@ Changing any decision requires user approval (rule 9). Record approval in the De
 
 | Phase | Title | Status | Open 👤 checks |
 |---|---|---|---|
-| P0 | Baseline, decisions, measurements, hosting (Cloudflare Pages) | ✅ gate passed 2026-10-11; P0.8-6 confirmed by the user 2026-10-12 | U11 (iOS version, record only) |
+| P0 | Baseline, decisions, measurements, hosting (Cloudflare Pages) | ✅ gate passed 2026-10-11; P0.8-6 confirmed by the user 2026-10-12; U11 answered 2026-10-14 (iOS 27.0) | — |
 | P1 | Branded, CDN-free web shell (manifest, icons, index.html, fonts, vendored JS) | ✅ gate passed 2026-10-11; manifest checked by Page.getInstallabilityErrors = [] and a desktop install (P6.3), iPhone visuals by the user's daily use | — |
-| P2 | Persistent web storage (sqflite on IndexedDB) | ✅ gate passed 2026-10-11 | P2.13 (iPhone "Offline storage" line) |
+| P2 | Persistent web storage (sqflite on IndexedDB) | ✅ gate passed 2026-10-11; P2.13 done 2026-10-14 (installed app persisted, Safari best-effort) | — |
 | P3 | Single-tab guard and web sync triggers | ✅ gate passed 2026-10-11; P3.5 handover verified 2026-10-12 | — |
 | P4 | Camera, photos and QR scanner on web | ✅ gate passed 2026-10-11; P4.4, P4.7, P4.9 done 2026-10-12/13 (P4.10 not needed) | — |
 | P5 | Offline cold start, SW precache and update flow | ✅ gate passed 2026-10-11; P5.4 accepted by the user, P5.5/P5.6 done 2026-10-12, P5.7 done 2026-10-13 | — |
 | P6 | Install UX, responsive/browser UX, accessibility | ✅ gate passed 2026-10-11; P6.3, P6.4, P6.5, P6.10, P6.11 done 2026-10-12/13 | P6.12 screen readers (deferred by the user) |
 | P7 | Security and privacy on web | ✅ gate passed 2026-10-11; CSP enforced 2026-10-12 (connect-src gained blob:) | — |
 | P8 | Cloudflare Pages production hosting, headers and release | ✅ gate passed 2026-10-11; P8.5 done and CSP enforced in production 2026-10-12 | — |
-| P9 | Full feature-parity QA, docs and sign-off | ◐ P9.1–P9.5 done 2026-10-13; P9.6 waits for the user's acceptance | P2.13 iPhone storage line, U11 iOS version, P6.12 (deferred) |
+| P9 | Full feature-parity QA, docs and sign-off | ✅ P9.1–P9.5 done 2026-10-13; P9.6 accepted by the user 2026-10-14 — **plan complete** | P6.12 (deferred by the user) |
 
 ---
 
@@ -463,7 +463,7 @@ Staging deploy: wrangler --branch staging -> https://ffa6d264.al-wahat-farm.page
 - [x] P2.10 👤 *(2026-10-12: user, iPhone 11 installed PWA — offline task/issue with photo queued, uploaded after reconnect, pending badge cleared)* *(automated part done: DB opens in Chrome and creates `al_wahat_farm.db` in IndexedDB; the offline-queue + reload check needs a logged-in user)* Web persistence check. Build, serve and log in. Queue a task status change and an issue photo **offline** (DevTools → Network → Offline), then hard-reload while still offline. The outbox count and failed-ops entries are still present. Go online and the op drains. Close the browser fully, reopen, and the cached hierarchy loads offline. 👤 (or automated in P5.4 if feasible)
 - [x] P2.11 *(2026-10-12: user, iPhone 11 installed PWA — inspection started offline, app closed mid-route, progress restored)* Inspection station transaction (F4) on web: run an inspection route offline, reload mid-route, and the station progress is restored (the web analog of `integration_test/offline_inspection_restart_test.dart`). 👤
 - [x] P2.12 *(2026-10-12: user, iPhone 11 installed PWA — logout test (6 steps: no way back in, reopen and offline show login, fresh data after login) all passed)* Logout on web: after sign-out, DevTools → Application → IndexedDB shows **no private rows** (`awf_private:` cache keys, outbox, pending_photos empty). `clearPrivateData()` already does this through the stores, so this verifies it holds on IndexedDB. 👤
-- [ ] P2.13 👤 iPhone 11 (U8): repeat P2.10 on staging in Safari **and** in the installed home-screen app. Record the `persist()` result for each.
+- [x] P2.13 *(2026-10-14: user, iPhone 11, iOS 27.0, production. Installed home-screen app: "Kept by the browser", 32.9 MB used (persisted). Safari tab: "The browser may clear it when space is low. Install the app to keep it.", 30.3 MB used (not persisted). Both reported a quota of 39321.6 MB; the tile now shows sizes from 1 GB up in GB ("38.4 GB"))* 👤 iPhone 11 (U8): repeat P2.10 on staging in Safari **and** in the installed home-screen app. Record the `persist()` result for each.
 
 **Files:** `pubspec.yaml`, `pubspec.lock`, `web/sqlite3.wasm`, `web/sqflite_sw.js`, `lib/core/database/database_platform*.dart`, `lib/core/database/app_database.dart`, `lib/main.dart`, `lib/core/app_services.dart`, `lib/core/web/web_platform*.dart`, ARB files, new tests.
 
@@ -890,10 +890,10 @@ but not that screen specifically. Writes were not run where they would create re
 - [x] P9.3 Update `README.md` with a **Web / PWA** section: build command (`tool/build_web.sh`), local serve, required secure context, regenerating `sqlite3.wasm`/vendor files, Cloudflare Pages deploy steps (`nvm use`, `npx --yes wrangler@4.149.0 pages deploy build/web --project-name al-wahat-farm --branch staging|main`, `tool/hosting/_headers`, dashboard rollback), the Egypt note (never `*.netlify.app`), known limitations (D7 no background sync, D9 no push, iOS needs install for durable storage, Android single tab).
 - [x] P9.4 Update the memory directory: add a `pwa-architecture` memory summarizing D1–D11 and the key files (`web_platform`, `database_platform`, vendored JS, build script), and link it from `MEMORY.md`.
 - [x] P9.5 Final standard gate plus apk build; record the final web bundle size against the P0 baseline.
-- [ ] P9.6 *(2026-10-13: every phase gate has evidence; no ⛔ items remain (P5.4 accepted by the user). Waiting only for the user to accept the open items below — the plan is complete when they do.)*
+- [x] P9.6 *(2026-10-14: **accepted by the user** ("PWA_IMPLEMENTATION_PLAN accept"). Items 1 and 2 answered the same day; items 3–5 accepted as open. 2026-10-13: every phase gate has evidence; no ⛔ items remain (P5.4 accepted by the user).)*
   Open for the user to accept or do:
-  1. 👤 P2.13 / U8: the iPhone's More → "Offline storage" line, in the installed app and in Safari (whether `persist()` is granted).
-  2. 👤 U11: the iPhone's iOS version (Settings → General → About), record only.
+  1. ~~👤 P2.13 / U8: the iPhone's More → "Offline storage" line, in the installed app and in Safari~~ done 2026-10-14: installed app persisted, Safari best-effort.
+  2. ~~👤 U11: the iPhone's iOS version~~ iOS 27.0 (user, 2026-10-14).
   3. ⏸ P6.12 screen readers — deferred by the user 2026-10-12.
   4. Matrix cells "not run" / "not itemised by the user" (P9.1): writes that would create records in the shared production data (issue submit, task create/status from desktop), emulator scanning (no camera frames), offline tree detail / reviews / schedules / inventory, desktop sync badges.
   5. Accepted risks (§5): no physical Android phone (emulator only, Chrome 109); low-end Android performance untested.
@@ -1069,6 +1069,8 @@ Follow-ups fixed — 2026-10-13 (agent, user away; details in PWA_FOLLOWUPS.md "
 | 2026-10-11 | D4 | Renderer confirmed after P0.4 | **CanvasKit confirmed.** User on iPhone 11: CanvasKit map in 1–3 s and much smoother than HTML. Rough user report, not instrumented. |
 | 2026-10-12 | D11 | Web semantics on/off after P6.11 | **Keep Flutter's default placeholder** (user: "no need for it now"). Screen-reader pass P6.12 deferred. |
 | 2026-10-12 | P5.4 | Accept DevTools-protocol checks instead of `flutter drive` | **Accepted** (user: "yes"). |
+| 2026-10-14 | P6.10 | Hide the browser's right-click menu over the map on desktop (would also remove copy/paste menus in text fields) | **Leave as is** (user: "right-clicking the map leave as it is"). |
+| 2026-10-14 | P9.6 | Sign-off | **Accepted** (user: "PWA_IMPLEMENTATION_PLAN accept"), with P6.12 deferred, the unrun matrix cells and the no-Android-phone risk accepted as open. |
 | 2026-10-12 | P9.1 / D1 | Emulator test (user: "use the pixel 4 emulator to test this") found a 45–59 s map load | **Patched the vendored sqlite worker** (`tool/patches/sqlite3-2.1.0-memory-vfs-growth.patch`, rebuilt by `tool/build_sqflite_worker.sh`) instead of upgrading `sqlite3`, which needs Dart 3.2. Agent decision under the standing "go through all phases with no stop" instruction; evidence in Phase 9. |
 
 ---

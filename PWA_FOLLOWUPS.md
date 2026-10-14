@@ -7,7 +7,7 @@ Started 2026-10-12 after testing on the Pixel_4 emulator and the user's iPhone 1
 updated 2026-10-13 after desktop Chrome, emulator and native runs. "Seen" means observed; "not
 verified" means reasoned from code.
 
-## Fixed (2026-10-13)
+## Fixed (2026-10-13/14)
 
 | # | What was wrong | Fix | Verified |
 |---|---|---|---|
@@ -22,17 +22,21 @@ verified" means reasoned from code.
 | 9 | The first reload after an update ran the old build | `index.html` gives flutter.js 15 s instead of 4 s to activate the new service worker (d189167) | staging: build A → deploy B → one reload ran B |
 | — | Native Android offline start showed "Unable to load farm data" ("Row too big to fit into CursorWindow", the 2.6 MB row) | Large cache values are read in 256K-character slices (de98a48) | Pixel_4 native app offline: Home and Map from cache |
 | — | `lib/core/supabase/auth_repository.dart` was never committed (`.gitignore` `supabase/` matched it), so a clean checkout could not build | Rule anchored to `/supabase/`, file committed (b5bcb4b) | clean worktree analyzes clean and builds for the iOS simulator |
+| — | iPhone Safari's quota showed as "39321.6 MB" in More → Offline storage | Sizes from 1 GB up show in GB ("38.4 GB") | unit test |
 | — | Map tree sheet hidden under the bottom bar on wide, short windows; side panel showed the zone uuid | Sheets on the root navigator; zone code; panel scrolls (eefdd71) | test + desktop Chrome 1280x510 |
 
 ## Still open
 
-1. **Desktop right-click on the map** opens Chrome's own menu (Back, Reload, Inspect…).
-   `BrowserContextMenu.disableContextMenu()` would hide it, but also removes the browser's
-   copy/paste menu in text fields on desktop, so it was left as is. Decide if desktop matters.
-2. **Re-check on a phone:** #1 (no "database has been locked" line on launch), #5 (no uncaught
+1. **Re-check on a phone:** #1 (no "database has been locked" line on launch), #5 (no uncaught
    errors offline with an expired session), #8 on the iPhone (offline start after this update).
-3. **Leaving the shell re-creates the login gate.** Opening an unknown address and coming back
+2. **Leaving the shell re-creates the login gate.** Opening an unknown address and coming back
    re-runs the authenticated bootstrap (a short spinner). Rare, and unchanged by these fixes.
+
+## Decided
+
+- **Desktop right-click on the map** opens Chrome's own menu (Back, Reload, Inspect…). Hiding it
+  with `BrowserContextMenu.disableContextMenu()` would also remove the copy/paste menu in text
+  fields, so it stays as is (user, 2026-10-14).
 
 ## Workarounds to remove when Flutter/Dart is upgraded
 

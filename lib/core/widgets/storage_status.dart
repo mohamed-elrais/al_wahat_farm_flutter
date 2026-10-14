@@ -72,7 +72,8 @@ class _StorageStatusTileState extends State<StorageStatusTile> {
             else
               l10n.storageBestEffort,
             if (usage != null && quota != null)
-              l10n.storageUsage(_megabytes(usage), _megabytes(quota)),
+              l10n.storageUsage(
+                  formatStorageSize(usage), formatStorageSize(quota)),
           ];
           return ListTile(
             key: const Key('storage-status-tile'),
@@ -86,7 +87,14 @@ class _StorageStatusTileState extends State<StorageStatusTile> {
           );
         },
       );
+}
 
-  static String _megabytes(int bytes) =>
-      '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+/// Sizes in MB, switching to GB from 1 GB up (iPhone Safari reports quotas
+/// of tens of GB, which read badly as "39321.6 MB").
+String formatStorageSize(int bytes) {
+  const mb = 1024 * 1024;
+  const gb = 1024 * mb;
+  return bytes >= gb
+      ? '${(bytes / gb).toStringAsFixed(1)} GB'
+      : '${(bytes / mb).toStringAsFixed(1)} MB';
 }

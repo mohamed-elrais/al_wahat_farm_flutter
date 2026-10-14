@@ -89,6 +89,14 @@ void main() {
     );
   });
 
+  test('storage sizes switch from MB to GB at 1 GB', () {
+    expect(formatStorageSize(30 * 1024 * 1024 + 314573), '30.3 MB');
+    expect(formatStorageSize(1023 * 1024 * 1024), '1023.0 MB');
+    expect(formatStorageSize(1024 * 1024 * 1024), '1.0 GB');
+    // The quota iPhone Safari reported (39321.6 MB).
+    expect(formatStorageSize(41231686041), '38.4 GB');
+  });
+
   testWidgets('storage status tile warns when storage is best-effort',
       (tester) async {
     await tester.pumpWidget(
