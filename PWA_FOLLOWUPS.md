@@ -31,6 +31,25 @@ verified" means reasoned from code.
    errors offline with an expired session), #8 on the iPhone (offline start after this update).
 2. **Leaving the shell re-creates the login gate.** Opening an unknown address and coming back
    re-runs the authenticated bootstrap (a short spinner). Rare, and unchanged by these fixes.
+3. **Other `.order()` calls are descending.** postgrest 2.4.1's `order()` defaults to
+   `ascending: false`. Inspections and farm data were fixed on 2026-10-14 (b67fc64). Tasks
+   (`created_at`, `assigned_at`), issues (`created_at`) and memberships
+   (`operational_context_repository.dart`, `created_at`) still load newest first; check whether
+   that is intended. Memberships decide the default farm, so change that one with care.
+4. **Inspection map and GPS on phones (2026-10-14):** verified in widget tests and on staging in
+   desktop Chrome with a simulated position; not yet on the iPhone or a real Android phone. Check
+   that iOS asks for location once, the blue dot follows you in the field, and the aisle hints
+   match where you stand.
+
+## Inspections (2026-10-14)
+
+| What was wrong | Fix | Verified |
+|---|---|---|
+| The runner opened the **last** unsaved station: items arrived newest first (postgrest default), so a real Section A session saved stations 1–7, then 153 down to 147 | Items and observations load ascending; the runner takes the lowest unsaved station whatever the order (b67fc64) | regression test with reversed items; staging shows "Aisle 1 of 8 · station 8 of 22" on that session |
+| No sense of place: raw coordinates, no map, silent aisle turns, ~1,100 px per station, Save below the fold | Section map with done/issue/current trees and route (full screen, tap a saved tree to reopen it); aisle line, turn card, next trees; physical left/right cards, healthy by default; fixed "All healthy · next" bar (40d04dd) | widget tests; screenshots in EN and AR |
+| No way to see your position | Opt-in GPS (geolocator 10.1.1): blue dot plus distance and aisle hints in the inspection, locate button on the Map tab; never moves the walk (40d04dd) | widget tests; staging Map tab and inspection with a simulated position |
+| Location never worked in the web app (MissingPluginException) | `build_web.sh` clears `.dart_tool/flutter_build`; `Permissions-Policy: geolocation=(self)` (2a17d6e) | staging: blocked message when denied, dot and hints when granted |
+| A manager watching someone else's inspection saw only "Take over" | Read-only section map and aisle line under it (2a17d6e) | widget test; staging |
 
 ## Decided
 
@@ -52,6 +71,7 @@ workaround.
 | `fontFamilyFallback: ['Roboto']` on the map painter's labels | CanvasKit 3.13 downloads Noto fonts from Google for text whose style names no family | Flutter's web renderer checks glyphs against the bundled fonts by default |
 | `offlinePrecacheKeys` (`lib/core/web/precache_keys.dart`) mirrors the engine's CanvasKit variant test | Flutter 3.13 lists both variants in the service worker | a Flutter upgrade: re-check `browserSupportsCanvaskitChromium` and the variant file names |
 | `timeoutMillis: 15000` in `web/index.html` | flutter.js 3.13's 4 s default loaded the old build after an update | a newer flutter.js / `flutter_bootstrap.js` handles updates differently |
+| `rm -rf .dart_tool/flutter_build` in `tool/build_web.sh` | Flutter 3.13 reused a stale `web_plugin_registrant.dart`, so a newly added plugin (geolocator) was missing from the web build | a Flutter version that regenerates the registrant when plugins change (add a plugin, build twice, check `main.dart.js`) |
 
 ## Things to re-test on devices
 
@@ -76,6 +96,12 @@ workaround.
 - **DevTools on the emulator:** `adb forward tcp:9333 localabstract:chrome_devtools_remote`. Don't
   attach DevTools (profiler or network emulation) to the sqlite shared worker across a reload; it
   hangs the app's database open.
+- **Location in headless Chrome:** `Emulation.setGeolocationOverride` and
+  `Browser.grantPermissions` last only while that DevTools connection is open, so set both and
+  tap in one script (scratchpad `geotap.mjs` did this). Without the override Chrome asks macOS,
+  which refuses ("User denied Geolocation"). Earlier refusals are remembered per profile and carry
+  into new contexts, so use a fresh `--user-data-dir`. `tool/web_harness/location.dart` checks
+  geolocator_web on its own.
 - **Headless Chrome:** the page reports `visibilityState = hidden`, so route transitions can stay
   frozen mid-animation in screenshots; load the URL directly to check a page.
 - **Deploying from a fresh shell:** `export NVM_DIR="$HOME/.nvm"` and put `/usr/local/bin` first
