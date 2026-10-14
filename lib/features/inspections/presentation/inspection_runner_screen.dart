@@ -16,6 +16,9 @@ import 'package:al_wahat_farm_flutter/features/inspections/domain/inspection_rou
 import 'package:al_wahat_farm_flutter/features/inspections/domain/inspection_walk.dart';
 import 'package:al_wahat_farm_flutter/features/inspections/presentation/inspection_repository_scope.dart';
 import 'package:al_wahat_farm_flutter/features/inspections/presentation/inspection_walk_map.dart';
+import 'package:al_wahat_farm_flutter/features/inspections/domain/walk_network.dart';
+import 'package:al_wahat_farm_flutter/features/map/data/map_asset_repository.dart';
+import 'package:al_wahat_farm_flutter/features/map/domain/farm_map_data.dart';
 import 'package:al_wahat_farm_flutter/features/issues/domain/issue_workspace.dart';
 import 'package:al_wahat_farm_flutter/features/issues/domain/tree_issue_draft.dart';
 import 'package:al_wahat_farm_flutter/features/issues/presentation/issue_workspace_controller.dart';
@@ -30,17 +33,23 @@ class InspectionRunnerScreen extends StatefulWidget {
   const InspectionRunnerScreen({
     required this.taskId,
     this.location = const DeviceLocationService(),
+    this.loadMapData = loadFarmMapAsset,
     super.key,
   });
 
   final String taskId;
   final LocationService location;
 
+  /// The bundled farm map, for the irrigation network under the walk.
+  final Future<FarmMapData> Function() loadMapData;
+
   @override
   State<InspectionRunnerScreen> createState() => _InspectionRunnerScreenState();
 }
 
 enum _Mode { takeOver, start, review, submitted, cancelled, station }
+
+Future<FarmMapData> loadFarmMapAsset() => const MapAssetRepository().load();
 
 class _InspectionRunnerScreenState extends State<InspectionRunnerScreen> {
   InspectionDetails? _details;
@@ -68,6 +77,34 @@ class _InspectionRunnerScreenState extends State<InspectionRunnerScreen> {
   late final LocationWatcher _location = LocationWatcher(widget.location)
     ..addListener(_onLocationChanged);
   bool _locationPreferenceLoaded = false;
+  FarmMapData? _mapData;
+  WalkNetwork? _network;
+  InspectionWalk? _networkWalk;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.loadMapData().then(
+      (data) {
+        if (mounted) setState(() => _mapData = data);
+      },
+      // Without the asset the map simply shows no network.
+      onError: (Object _) {},
+    );
+  }
+
+  /// The walk's irrigation network, recomputed only when the walk changes.
+  WalkNetwork? get _walkNetwork {
+    final data = _mapData;
+    final walk = _walk;
+    if (data == null || walk == null) return null;
+    if (!identical(walk, _networkWalk)) {
+      _networkWalk = walk;
+      final network = WalkNetwork.forWalk(data, walk);
+      _network = network == null || network.isEmpty ? null : network;
+    }
+    return _network;
+  }
 
   @override
   void didChangeDependencies() {
@@ -555,6 +592,7 @@ class _InspectionRunnerScreenState extends State<InspectionRunnerScreen> {
                               key: const Key('inspection-walk-map'),
                               walk: walk,
                               marks: _marks,
+                              network: _walkNetwork,
                               currentStation: station,
                               fix: fix,
                               semanticsLabel: l10n.inspectionMapSemantics(
@@ -1075,6 +1113,7 @@ class _InspectionRunnerScreenState extends State<InspectionRunnerScreen> {
         builder: (_) => InspectionWalkMapPage(
           walk: walk,
           marks: _marks,
+          network: _walkNetwork,
           currentStation: station,
           fix: _location.fix,
           canOpenStation: canJump

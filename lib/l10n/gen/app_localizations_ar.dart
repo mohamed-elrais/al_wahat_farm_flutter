@@ -2731,6 +2731,15 @@ class AppLocalizationsAr extends AppLocalizations {
   String get inspectionMapLegendYou => 'أنت';
 
   @override
+  String get inspectionMapLegendLine => 'خط ري';
+
+  @override
+  String get inspectionMapLegendValve => 'محبس';
+
+  @override
+  String get inspectionMapLegendFlush => 'محبس غسيل';
+
+  @override
   String get inspectionMapTapHint => 'اضغط على شجرة فحصتها لتعود إلى محطتها.';
 
   @override

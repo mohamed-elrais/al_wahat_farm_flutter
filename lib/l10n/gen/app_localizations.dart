@@ -4863,6 +4863,24 @@ abstract class AppLocalizations {
   /// **'You'**
   String get inspectionMapLegendYou;
 
+  /// No description provided for @inspectionMapLegendLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Irrigation line'**
+  String get inspectionMapLegendLine;
+
+  /// No description provided for @inspectionMapLegendValve.
+  ///
+  /// In en, this message translates to:
+  /// **'Valve'**
+  String get inspectionMapLegendValve;
+
+  /// No description provided for @inspectionMapLegendFlush.
+  ///
+  /// In en, this message translates to:
+  /// **'Flush valve'**
+  String get inspectionMapLegendFlush;
+
   /// No description provided for @inspectionMapTapHint.
   ///
   /// In en, this message translates to:

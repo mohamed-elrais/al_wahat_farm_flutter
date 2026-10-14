@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:al_wahat_farm_flutter/app/theme/app_theme.dart';
@@ -18,6 +20,7 @@ import 'package:al_wahat_farm_flutter/features/inspections/domain/inspection_wal
 import 'package:al_wahat_farm_flutter/features/inspections/presentation/inspection_repository_scope.dart';
 import 'package:al_wahat_farm_flutter/features/inspections/presentation/inspection_runner_screen.dart';
 import 'package:al_wahat_farm_flutter/features/issues/domain/tree_issue_draft.dart';
+import 'package:al_wahat_farm_flutter/features/map/domain/farm_map_data.dart';
 import 'package:al_wahat_farm_flutter/features/sync/data/outbox_store.dart';
 import 'package:al_wahat_farm_flutter/features/sync/data/pending_photo_store.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/task_evidence.dart';
@@ -112,6 +115,7 @@ Widget _app(
   LocationService location = const DeviceLocationService(),
   LocalCacheStore? store,
   Widget Function(Widget runner)? wrap,
+  FarmMapData? map,
 }) {
   final cache = store ?? InMemoryCacheStore();
   return AppServicesScope(
@@ -130,7 +134,13 @@ Widget _app(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: (wrap ?? (runner) => runner)(
-          InspectionRunnerScreen(taskId: 'task-id', location: location),
+          InspectionRunnerScreen(
+            taskId: 'task-id',
+            location: location,
+            loadMapData: map == null
+                ? () => Completer<FarmMapData>().future
+                : () async => map,
+          ),
         ),
       ),
     ),
@@ -463,5 +473,34 @@ void main() {
       find.text('Aisle 1 of 8 · station 8 of 22 in this aisle'),
       findsOneWidget,
     );
+  });
+
+  testWidgets('the map shows the section irrigation network with a legend',
+      (tester) async {
+    phone(tester);
+    final map = FarmMapData.fromJson(
+      jsonDecode(File('assets/data/al_wahat_map_data.json').readAsStringSync())
+          as Map<String, Object?>,
+    );
+    await tester.pumpWidget(_app(_Repository(_detailsAt(5)), map: map));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('inspection-open-map')));
+    await tester.pumpAndSettle();
+    expect(find.text('Irrigation line'), findsOneWidget);
+    expect(find.text('Valve'), findsOneWidget);
+    expect(find.text('Flush valve'), findsOneWidget);
+  });
+
+  testWidgets('without the map asset the legend leaves the network out',
+      (tester) async {
+    phone(tester);
+    await tester.pumpWidget(_app(_Repository(_detailsAt(5))));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('inspection-open-map')));
+    await tester.pumpAndSettle();
+    expect(find.text('Irrigation line'), findsNothing);
+    expect(find.text('Current station'), findsOneWidget);
   });
 }

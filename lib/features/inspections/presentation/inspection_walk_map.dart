@@ -5,13 +5,21 @@ import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/core/location/location_service.dart';
 import 'package:al_wahat_farm_flutter/features/inspections/domain/inspection_route.dart';
 import 'package:al_wahat_farm_flutter/features/inspections/domain/inspection_walk.dart';
+import 'package:al_wahat_farm_flutter/features/inspections/domain/walk_network.dart';
+import 'package:al_wahat_farm_flutter/features/map/domain/farm_map_data.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 enum InspectionTreeMark { pending, done, flagged }
 
+const irrigationLineColor = AppColors.waterSubmain;
+const isolationValveColor = Color(0xFF1E3A4F);
+const valveMarkerRadius = 6.0;
+const flushValveMarkerRadius = 4.2;
+
 /// The section's trees and walking route, north up, with inspected trees,
-/// the current station and (when on) the inspector's GPS position.
+/// the current station, the irrigation network as landmarks and (when on)
+/// the inspector's GPS position.
 ///
 /// Geometry never follows [TextDirection]: it is locked to LTR like the farm
 /// map, so physical left and right stay put in Arabic.
@@ -22,11 +30,15 @@ class InspectionWalkMap extends StatelessWidget {
     required this.currentStation,
     required this.semanticsLabel,
     this.fix,
+    this.network,
     this.onTapStation,
     super.key,
   });
 
   final InspectionWalk walk;
+
+  /// Irrigation lines, valves and flush valves; null while it loads.
+  final WalkNetwork? network;
 
   /// Inspection state per tree id; trees not listed are pending.
   final Map<String, InspectionTreeMark> marks;
@@ -55,6 +67,7 @@ class InspectionWalkMap extends StatelessWidget {
                     marks: marks,
                     currentStation: currentStation,
                     fix: fix,
+                    network: network,
                   ),
                 );
                 final onTapStation = this.onTapStation;
@@ -62,7 +75,8 @@ class InspectionWalkMap extends StatelessWidget {
                 return GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTapUp: (details) {
-                    final station = _WalkGeometry(walk, size).stationAt(
+                    final station =
+                        _WalkGeometry(walk, size, network).stationAt(
                       details.localPosition,
                       tolerance: 26 / _viewerScale(context),
                     );
@@ -88,7 +102,11 @@ class InspectionWalkMap extends StatelessWidget {
 /// Projects the route to a canvas of [size] with one uniform scale, so
 /// distances and the GPS accuracy circle stay true.
 class _WalkGeometry {
-  factory _WalkGeometry(InspectionWalk walk, Size size) {
+  factory _WalkGeometry(
+    InspectionWalk walk,
+    Size size, [
+    WalkNetwork? network,
+  ]) {
     final located = walk.items
         .where((item) => item.latitude != null && item.longitude != null)
         .toList(growable: false);
@@ -102,10 +120,15 @@ class _WalkGeometry {
         located.map((item) => item.longitude!).reduce((a, b) => a + b) /
             located.length;
     final cosine = math.cos(latitude0 * math.pi / 180);
-    final points = located
-        .map((item) => _meters(
-            item.latitude!, item.longitude!, latitude0, longitude0, cosine))
-        .toList(growable: false);
+    // The section's valves and lines often sit just past the tree rows.
+    final points = <Offset>[
+      for (final item in located)
+        _meters(item.latitude!, item.longitude!, latitude0, longitude0, cosine),
+      if (network != null)
+        for (final point in network.landmarks)
+          _meters(
+              point.latitude, point.longitude, latitude0, longitude0, cosine),
+    ];
     final minX = points.map((p) => p.dx).reduce(math.min);
     final maxX = points.map((p) => p.dx).reduce(math.max);
     final minY = points.map((p) => p.dy).reduce(math.min);
@@ -200,17 +223,23 @@ class _WalkPainter extends CustomPainter {
     required this.marks,
     required this.currentStation,
     required this.fix,
+    required this.network,
   });
 
   final InspectionWalk walk;
   final Map<String, InspectionTreeMark> marks;
   final int currentStation;
   final LocationFix? fix;
+  final WalkNetwork? network;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final geometry = _WalkGeometry(walk, size);
+    final network = this.network;
+    final geometry = _WalkGeometry(walk, size, network);
     if (geometry.located.isEmpty) return;
+    // Mainline and submains cross the whole farm; keep them in the frame.
+    canvas.clipRect(Offset.zero & size);
+    if (network != null) _lines(canvas, geometry, network);
 
     // Tree rows: one faint line per side of each aisle.
     final rows = <String, List<InspectionRouteItem>>{};
@@ -286,6 +315,8 @@ class _WalkPainter extends CustomPainter {
       canvas.drawCircle(geometry.item(item)!, radius, paint);
     }
 
+    if (network != null) _valves(canvas, geometry, network);
+
     // Arrow from the current station to the next one.
     final current = centers[currentStation];
     final index = walk.stations.indexOf(currentStation);
@@ -309,6 +340,78 @@ class _WalkPainter extends CustomPainter {
 
     final fix = this.fix;
     if (fix != null) _you(canvas, geometry, fix);
+  }
+
+  /// Irrigation lines in blue under the trees: the mainline thickest, then
+  /// submains, then the section's branch lines along the rows.
+  void _lines(Canvas canvas, _WalkGeometry geometry, WalkNetwork network) {
+    void draw(List<List<GeoCoordinate>> lines, Color color, double width) {
+      final paint = Paint()
+        ..color = color
+        ..strokeWidth = width
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round
+        ..style = PaintingStyle.stroke;
+      for (final line in lines) {
+        if (line.length < 2) continue;
+        final path = Path();
+        for (var index = 0; index < line.length; index++) {
+          final point = geometry.project(
+            line[index].latitude,
+            line[index].longitude,
+          );
+          index == 0
+              ? path.moveTo(point.dx, point.dy)
+              : path.lineTo(point.dx, point.dy);
+        }
+        canvas.drawPath(path, paint);
+      }
+    }
+
+    draw(network.branches, irrigationLineColor.withOpacity(0.75), 1.6);
+    draw(network.submains, irrigationLineColor, 2.4);
+    draw(network.mains, AppColors.waterMain, 3.4);
+  }
+
+  /// Valves as blue diamonds (mainline isolation valves dark), flush valves
+  /// as white rings: the hardware an inspector can spot from the aisle.
+  void _valves(Canvas canvas, _WalkGeometry geometry, WalkNetwork network) {
+    final outline = Paint()
+      ..color = Colors.white
+      ..strokeWidth = 1.6
+      ..style = PaintingStyle.stroke;
+    for (final flush in network.flushValves) {
+      final point = geometry.project(flush.latitude, flush.longitude);
+      canvas.drawCircle(
+          point, flushValveMarkerRadius, Paint()..color = Colors.white);
+      canvas.drawCircle(
+        point,
+        flushValveMarkerRadius,
+        Paint()
+          ..color = AppColors.waterMain
+          ..strokeWidth = 2.2
+          ..style = PaintingStyle.stroke,
+      );
+    }
+    void diamond(GeoCoordinate at, Color fill) {
+      final center = geometry.project(at.latitude, at.longitude);
+      const radius = valveMarkerRadius;
+      final path = Path()
+        ..moveTo(center.dx, center.dy - radius)
+        ..lineTo(center.dx + radius, center.dy)
+        ..lineTo(center.dx, center.dy + radius)
+        ..lineTo(center.dx - radius, center.dy)
+        ..close();
+      canvas.drawPath(path, Paint()..color = fill);
+      canvas.drawPath(path, outline);
+    }
+
+    for (final valve in network.zoneValves) {
+      diamond(valve, AppColors.waterMain);
+    }
+    for (final valve in network.isolationValves) {
+      diamond(valve, isolationValveColor);
+    }
   }
 
   void _you(Canvas canvas, _WalkGeometry geometry, LocationFix fix) {
@@ -379,14 +482,20 @@ class _WalkPainter extends CustomPainter {
       oldDelegate.walk != walk ||
       oldDelegate.marks != marks ||
       oldDelegate.currentStation != currentStation ||
-      oldDelegate.fix != fix;
+      oldDelegate.fix != fix ||
+      oldDelegate.network != network;
 }
 
 /// Colour key for [InspectionWalkMap].
 class InspectionWalkMapLegend extends StatelessWidget {
-  const InspectionWalkMapLegend({this.showYou = false, super.key});
+  const InspectionWalkMapLegend({
+    this.showYou = false,
+    this.showNetwork = false,
+    super.key,
+  });
 
   final bool showYou;
+  final bool showNetwork;
 
   @override
   Widget build(BuildContext context) {
@@ -409,9 +518,65 @@ class InspectionWalkMapLegend extends StatelessWidget {
             color: AppColors.waterMain,
             label: l10n.inspectionMapLegendYou,
           ),
+        if (showNetwork) ...<Widget>[
+          _LegendItem(
+            marker: Container(
+              width: 18,
+              height: 4,
+              decoration: BoxDecoration(
+                color: irrigationLineColor,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            label: l10n.inspectionMapLegendLine,
+          ),
+          _LegendItem(
+            marker: Transform.rotate(
+              angle: math.pi / 4,
+              child: Container(
+                width: 9,
+                height: 9,
+                decoration: BoxDecoration(
+                  color: AppColors.waterMain,
+                  border: Border.all(color: Colors.white),
+                ),
+              ),
+            ),
+            label: l10n.inspectionMapLegendValve,
+          ),
+          _LegendItem(
+            marker: Container(
+              width: 10,
+              height: 10,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.waterMain, width: 2),
+              ),
+            ),
+            label: l10n.inspectionMapLegendFlush,
+          ),
+        ],
       ],
     );
   }
+}
+
+class _LegendItem extends StatelessWidget {
+  const _LegendItem({required this.marker, required this.label});
+
+  final Widget marker;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          SizedBox(width: 18, height: 12, child: Center(child: marker)),
+          const SizedBox(width: 6),
+          Text(label, style: Theme.of(context).textTheme.bodySmall),
+        ],
+      );
 }
 
 class _LegendDot extends StatelessWidget {
@@ -445,6 +610,7 @@ class InspectionWalkMapPage extends StatefulWidget {
     required this.fix,
     required this.canOpenStation,
     required this.blockedMessage,
+    this.network,
     super.key,
   });
 
@@ -456,6 +622,7 @@ class InspectionWalkMapPage extends StatefulWidget {
   /// Null when stations cannot be opened from the map (before starting).
   final bool Function(int station)? canOpenStation;
   final String blockedMessage;
+  final WalkNetwork? network;
 
   @override
   State<InspectionWalkMapPage> createState() => _InspectionWalkMapPageState();
@@ -493,6 +660,7 @@ class _InspectionWalkMapPageState extends State<InspectionWalkMapPage> {
                       key: const Key('inspection-walk-map-full'),
                       walk: walk,
                       marks: widget.marks,
+                      network: widget.network,
                       currentStation: currentStation,
                       fix: fix,
                       semanticsLabel: l10n.inspectionMapSemantics(
@@ -525,8 +693,10 @@ class _InspectionWalkMapPageState extends State<InspectionWalkMapPage> {
                 children: <Widget>[
                   ValueListenableBuilder<LocationFix?>(
                     valueListenable: widget.fix,
-                    builder: (context, fix, _) =>
-                        InspectionWalkMapLegend(showYou: fix != null),
+                    builder: (context, fix, _) => InspectionWalkMapLegend(
+                      showYou: fix != null,
+                      showNetwork: widget.network != null,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Text(

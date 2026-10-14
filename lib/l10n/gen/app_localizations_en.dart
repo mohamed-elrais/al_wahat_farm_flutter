@@ -2714,6 +2714,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inspectionMapLegendYou => 'You';
 
   @override
+  String get inspectionMapLegendLine => 'Irrigation line';
+
+  @override
+  String get inspectionMapLegendValve => 'Valve';
+
+  @override
+  String get inspectionMapLegendFlush => 'Flush valve';
+
+  @override
   String get inspectionMapTapHint => 'Tap a tree you already inspected to go back to its station.';
 
   @override
