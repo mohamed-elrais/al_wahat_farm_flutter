@@ -41,7 +41,7 @@ downloads, and the owner has turned R2 on in the farm's Cloudflare account.
 | P1 | Migration: `photo_path_access`; relax the storage check in `add_tree_issue_photo` | Done: Supabase repo 58013ed, applied live after a rolled-back dry run (uploader view+write, other manager view only, stranger refused, signed out refused) |
 | P2 | Pages Function plus tests, `wrangler.toml` R2 binding, bucket, secrets; live check on staging with the test account (an R2 test file only, no database records) | Done: `server/photos.mjs` (11 tests: `node --test server/photos.test.mjs`); bucket `al-wahat-farm-photos`; secrets set for production and preview; staging live check 14/14, including an older Supabase photo loading through the fallback; test file deleted |
 | P3 | App: `PhotoApi` client, R2 upload storage for evidence and issue photos, R2 link provider; wiring and tests | Done: `lib/core/media/photo_api.dart`, `R2TaskEvidenceStorage`, `R2IssuePhotoStorage`, `R2PhotoUrlProvider` (one link request per batch of thumbnails); `test/unit/media/photo_api_test.dart`; full suite 488 passed |
-| P4 | Deploy staging and production, then check that an old photo still opens | Done (see the commit after this one) |
+| P4 | Deploy staging and production, then check that an old photo still opens | Done 2026-10-15: both sites deployed and verified; the old-photo fallback passed on staging. Still to check with people: take a photo on a phone and open it again |
 
 ## Free-tier limits to watch
 
