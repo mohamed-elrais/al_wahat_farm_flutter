@@ -1231,5 +1231,10 @@
   "scheduleSkippedStock": "تم التخطي: المخزون غير كافٍ",
   "scheduleArchiveConfirmTitle": "أرشفة هذا الجدول؟",
   "scheduleArchiveConfirmBody": "يتوقف عن إنشاء المهام ويختفي من القائمة. تبقى المهام التي أنشأها.",
-  "scheduleDose": "{amount} {unit} · {basis}"
+  "scheduleDose": "{amount} {unit} · {basis}",
+  "scheduleShowArchived": "إظهار المؤرشفة",
+  "scheduleRestore": "استعادة",
+  "scheduleSkippedWarning": "تم تخطي تنفيذات: المخزون غير كافٍ. أضف مخزوناً للمتابعة.",
+  "scheduleZonesAll": "كل المناطق",
+  "scheduleZonesClear": "إلغاء الاختيار"
 }

@@ -21,12 +21,25 @@ class SchedulesController extends ChangeNotifier {
 
   SchedulesStatus _status = SchedulesStatus.idle;
   List<OperationPlan> _plans = const <OperationPlan>[];
+  Set<String> _skippedForStock = const <String>{};
+  bool _showArchived = false;
   Object? _error;
   bool _busy = false;
   String Function(AppLocalizations)? _message;
 
   SchedulesStatus get status => _status;
   List<OperationPlan> get plans => _plans;
+
+  /// Plans whose recent runs were skipped because stock ran out.
+  Set<String> get skippedForStock => _skippedForStock;
+  bool get showArchived => _showArchived;
+
+  Future<void> setShowArchived(bool value) async {
+    if (_showArchived == value) return;
+    _showArchived = value;
+    await load();
+  }
+
   Object? get error => _error;
   bool get isBusy => _busy;
   String Function(AppLocalizations)? get message => _message;
@@ -43,8 +56,19 @@ class SchedulesController extends ChangeNotifier {
     _error = null;
     notifyListeners();
     try {
-      _plans = await _repository.listPlans(farmId);
+      _plans = await _repository.listPlans(
+        farmId,
+        includeArchived: _showArchived,
+      );
       _status = SchedulesStatus.ready;
+      try {
+        _skippedForStock = await _repository.plansSkippedForStock(
+          _plans.map((plan) => plan.id).toList(growable: false),
+        );
+      } catch (_) {
+        // The warning is advisory; the list stays usable without it.
+        _skippedForStock = const <String>{};
+      }
     } catch (error) {
       _error = error;
       _status = SchedulesStatus.failure;

@@ -596,28 +596,12 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
                 if (_targetMode == _TargetMode.zones &&
                     hierarchy != null) ...<Widget>[
                   const SizedBox(height: 8),
-                  SizedBox(
-                    height: 160,
-                    child: ListView(
-                      children: hierarchy.zones
-                          .map(
-                            (zone) => CheckboxListTile(
-                              key: Key('schedule-zone-${zone.code}'),
-                              dense: true,
-                              title: Text(zone.code),
-                              value: _zoneIds.contains(zone.id),
-                              onChanged: (selected) => setState(() {
-                                if (selected ?? false) {
-                                  _zoneIds.add(zone.id);
-                                } else {
-                                  _zoneIds.remove(zone.id);
-                                }
-                              }),
-                            ),
-                          )
-                          .toList(growable: false),
-                    ),
-                  ),
+                  // Zones grouped under their section, each with a one-tap
+                  // "all zones in this section".
+                  for (final section in hierarchy.sections)
+                    if (hierarchy.zones
+                        .any((zone) => zone.sectionId == section.id))
+                      _zoneSection(context, hierarchy, section),
                 ],
                 // Task-creation mode: only meaningful when several targets
                 // of one kind are selected.
@@ -912,6 +896,68 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
                       ? l10n.scheduleSaveChanges
                       : l10n.scheduleCreate,
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _zoneSection(
+    BuildContext context,
+    FarmHierarchy hierarchy,
+    FarmSection section,
+  ) {
+    final l10n = context.l10n;
+    final zones = hierarchy.zones
+        .where((zone) => zone.sectionId == section.id)
+        .toList(growable: false);
+    final allChosen = zones.every((zone) => _zoneIds.contains(zone.id));
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              Expanded(
+                child: Text(
+                  l10n.mapSectionName(section.code),
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+              ),
+              TextButton(
+                key: Key('schedule-zone-section-${section.code}'),
+                onPressed: () => setState(() {
+                  if (allChosen) {
+                    _zoneIds.removeAll(zones.map((zone) => zone.id));
+                  } else {
+                    _zoneIds.addAll(zones.map((zone) => zone.id));
+                  }
+                }),
+                child: Text(
+                  allChosen ? l10n.scheduleZonesClear : l10n.scheduleZonesAll,
+                ),
+              ),
+            ],
+          ),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: <Widget>[
+              for (final zone in zones)
+                FilterChip(
+                  key: Key('schedule-zone-${zone.code}'),
+                  label: Text(zone.code),
+                  selected: _zoneIds.contains(zone.id),
+                  onSelected: (selected) => setState(() {
+                    if (selected) {
+                      _zoneIds.add(zone.id);
+                    } else {
+                      _zoneIds.remove(zone.id);
+                    }
+                  }),
+                ),
+            ],
           ),
         ],
       ),

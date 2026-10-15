@@ -8,9 +8,21 @@ class FakeScheduleRepository implements ScheduleRepository {
   final List<Map<String, Object?>> editCalls = <Map<String, Object?>>[];
   int generateCalls = 0;
 
+  final Set<String> skippedForStock = <String>{};
+
   @override
-  Future<List<OperationPlan>> listPlans(String farmId) async =>
-      List<OperationPlan>.of(plans);
+  Future<List<OperationPlan>> listPlans(
+    String farmId, {
+    bool includeArchived = false,
+  }) async =>
+      plans
+          .where((plan) =>
+              includeArchived || plan.status != OperationPlanStatus.archived)
+          .toList();
+
+  @override
+  Future<Set<String>> plansSkippedForStock(List<String> planIds) async =>
+      skippedForStock.intersection(planIds.toSet());
 
   @override
   Future<String> createPlan(OperationPlanDraft draft) async {

@@ -2951,4 +2951,19 @@ class AppLocalizationsAr extends AppLocalizations {
   String scheduleDose(String amount, String unit, String basis) {
     return '$amount $unit · $basis';
   }
+
+  @override
+  String get scheduleShowArchived => 'إظهار المؤرشفة';
+
+  @override
+  String get scheduleRestore => 'استعادة';
+
+  @override
+  String get scheduleSkippedWarning => 'تم تخطي تنفيذات: المخزون غير كافٍ. أضف مخزوناً للمتابعة.';
+
+  @override
+  String get scheduleZonesAll => 'كل المناطق';
+
+  @override
+  String get scheduleZonesClear => 'إلغاء الاختيار';
 }

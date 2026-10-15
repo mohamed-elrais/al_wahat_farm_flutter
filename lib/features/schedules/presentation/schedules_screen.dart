@@ -156,7 +156,17 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: FilterChip(
+              key: const Key('schedules-show-archived'),
+              label: Text(l10n.scheduleShowArchived),
+              selected: controller.showArchived,
+              onSelected: controller.setShowArchived,
+            ),
+          ),
+          const SizedBox(height: 8),
           if (controller.message != null) ...<Widget>[
             Text(
               controller.message!.call(l10n),
@@ -211,6 +221,7 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
             for (final plan in controller.plans) ...<Widget>[
               _PlanTile(
                 plan: plan,
+                skippedForStock: controller.skippedForStock.contains(plan.id),
                 onTap: () => context.go('/more/schedules/${plan.id}'),
               ),
               const SizedBox(height: 10),
@@ -222,9 +233,14 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
 }
 
 class _PlanTile extends StatelessWidget {
-  const _PlanTile({required this.plan, required this.onTap});
+  const _PlanTile({
+    required this.plan,
+    required this.skippedForStock,
+    required this.onTap,
+  });
 
   final OperationPlan plan;
+  final bool skippedForStock;
   final VoidCallback onTap;
 
   @override
@@ -255,6 +271,30 @@ class _PlanTile extends StatelessWidget {
                       '${l10n.scheduleTargetCount(plan.targets.length)}',
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
+                    if (skippedForStock) ...<Widget>[
+                      const SizedBox(height: 6),
+                      Row(
+                        key: Key('schedule-skipped-${plan.id}'),
+                        children: <Widget>[
+                          const Icon(
+                            Icons.inventory_2,
+                            size: 16,
+                            color: AppColors.issue,
+                          ),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              l10n.scheduleSkippedWarning,
+                              style: const TextStyle(
+                                color: AppColors.issue,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ],
                 ),
               ),

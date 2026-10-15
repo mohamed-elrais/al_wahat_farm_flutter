@@ -54,7 +54,8 @@ class _ScheduleDetailScreenState extends State<ScheduleDetailScreen> {
     } else {
       _controller = buildSchedulesController(context);
       _owns = true;
-      _controller?.load();
+      // Archived schedules open from the list's "Show archived" too.
+      _controller?.setShowArchived(true);
     }
     _inventory =
         widget.inventoryController ?? buildInventoryController(context);
@@ -357,7 +358,20 @@ class _ScheduleDetailScreenState extends State<ScheduleDetailScreen> {
           spacing: 8,
           runSpacing: 8,
           children: <Widget>[
-            if (plan.status != OperationPlanStatus.completed)
+            if (plan.status == OperationPlanStatus.archived)
+              FilledButton.icon(
+                key: const Key('schedule-restore'),
+                onPressed: controller.isBusy
+                    ? null
+                    : () => controller.setStatus(
+                          plan.id,
+                          OperationPlanStatus.paused,
+                        ),
+                icon: const Icon(Icons.unarchive_outlined, size: 18),
+                label: Text(l10n.scheduleRestore),
+              ),
+            if (plan.status != OperationPlanStatus.completed &&
+                plan.status != OperationPlanStatus.archived)
               FilledButton.icon(
                 key: const Key('schedule-edit'),
                 onPressed: controller.isBusy
@@ -395,14 +409,15 @@ class _ScheduleDetailScreenState extends State<ScheduleDetailScreen> {
                 icon: const Icon(Icons.play_arrow, size: 18),
                 label: Text(l10n.scheduleActivate),
               ),
-            OutlinedButton.icon(
-              key: const Key('schedule-archive'),
-              onPressed: controller.isBusy
-                  ? null
-                  : () => _confirmArchive(context, controller, plan),
-              icon: const Icon(Icons.archive_outlined, size: 18),
-              label: Text(l10n.scheduleArchive),
-            ),
+            if (plan.status != OperationPlanStatus.archived)
+              OutlinedButton.icon(
+                key: const Key('schedule-archive'),
+                onPressed: controller.isBusy
+                    ? null
+                    : () => _confirmArchive(context, controller, plan),
+                icon: const Icon(Icons.archive_outlined, size: 18),
+                label: Text(l10n.scheduleArchive),
+              ),
             if (plan.status == OperationPlanStatus.active)
               TextButton.icon(
                 key: const Key('schedule-generate-now'),

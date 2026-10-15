@@ -2922,4 +2922,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String scheduleDose(String amount, String unit, String basis) {
     return '$amount $unit · $basis';
   }
+
+  @override
+  String get scheduleShowArchived => 'Show archived';
+
+  @override
+  String get scheduleRestore => 'Restore';
+
+  @override
+  String get scheduleSkippedWarning => 'Runs skipped: not enough stock. Add stock to continue.';
+
+  @override
+  String get scheduleZonesAll => 'All zones';
+
+  @override
+  String get scheduleZonesClear => 'Clear';
 }

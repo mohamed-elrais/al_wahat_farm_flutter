@@ -1,8 +1,11 @@
 import 'package:al_wahat_farm_flutter/app/theme/app_theme.dart';
+import 'package:al_wahat_farm_flutter/features/auth/domain/operational_context.dart';
+import 'package:al_wahat_farm_flutter/features/auth/presentation/authenticated_gate.dart';
 import 'package:al_wahat_farm_flutter/features/schedules/domain/schedule_models.dart';
 import 'package:al_wahat_farm_flutter/features/schedules/presentation/schedules_controller.dart';
 import 'package:al_wahat_farm_flutter/features/schedules/presentation/schedules_screen.dart';
 import 'package:al_wahat_farm_flutter/l10n/gen/app_localizations_en.dart';
+import 'package:al_wahat_farm_flutter/shared/models/farm_role.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -93,5 +96,68 @@ void main() {
       controller.planById('plan-1')?.status,
       OperationPlanStatus.paused,
     );
+  });
+
+  testWidgets('a schedule short of stock is flagged; archived ones can show',
+      (tester) async {
+    final repo = FakeScheduleRepository();
+    await repo.createPlan(OperationPlanDraft(
+      farmId: 'farm-id',
+      type: OperationPlanType.fertilization,
+      title: 'Friday calcium',
+      scheduleType: PlanScheduleType.weekly,
+      startsOn: DateTime(2026, 8, 1),
+      daysOfWeek: const <int>[5],
+      status: OperationPlanStatus.active,
+    ));
+    await repo.createPlan(OperationPlanDraft(
+      farmId: 'farm-id',
+      type: OperationPlanType.irrigation,
+      title: 'Old watering',
+      scheduleType: PlanScheduleType.daily,
+      startsOn: DateTime(2026, 8, 1),
+      status: OperationPlanStatus.archived,
+    ));
+    repo.skippedForStock.add('plan-1');
+    final controller = SchedulesController(repository: repo, farmId: 'farm-id');
+    addTearDown(controller.dispose);
+
+    await tester.pumpWidget(
+      OperationalContextScope(
+        contextData: OperationalContext(
+          profile: const UserProfile(
+            id: 'manager-id',
+            fullName: 'Manager',
+            isActive: true,
+          ),
+          memberships: const <FarmMembership>[
+            FarmMembership(
+              id: 'membership',
+              profileId: 'manager-id',
+              role: FarmRole.owner,
+              isActive: true,
+              farm: FarmSummary(
+                id: 'farm-id',
+                name: 'Al Wahat',
+                code: 'AL-WAHAT',
+                timezone: 'Africa/Cairo',
+              ),
+            ),
+          ],
+        ),
+        child: MaterialApp(
+          theme: AppTheme.light,
+          home: Scaffold(body: SchedulesScreen(controller: controller)),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('schedule-skipped-plan-1')), findsOneWidget);
+    expect(find.text('Old watering'), findsNothing);
+
+    await tester.tap(find.byKey(const Key('schedules-show-archived')));
+    await tester.pumpAndSettle();
+    expect(find.text('Old watering'), findsOneWidget);
   });
 }

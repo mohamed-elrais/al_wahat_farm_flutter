@@ -5186,6 +5186,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{amount} {unit} · {basis}'**
   String scheduleDose(String amount, String unit, String basis);
+
+  /// No description provided for @scheduleShowArchived.
+  ///
+  /// In en, this message translates to:
+  /// **'Show archived'**
+  String get scheduleShowArchived;
+
+  /// No description provided for @scheduleRestore.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore'**
+  String get scheduleRestore;
+
+  /// No description provided for @scheduleSkippedWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Runs skipped: not enough stock. Add stock to continue.'**
+  String get scheduleSkippedWarning;
+
+  /// No description provided for @scheduleZonesAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All zones'**
+  String get scheduleZonesAll;
+
+  /// No description provided for @scheduleZonesClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get scheduleZonesClear;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -1280,5 +1280,10 @@
   "scheduleArchiveConfirmTitle": "Archive this schedule?",
   "scheduleArchiveConfirmBody": "It stops creating tasks and leaves the list. Tasks it already created stay.",
   "scheduleDose": "{amount} {unit} · {basis}",
-  "@scheduleDose": {"placeholders": {"amount": {"type": "String"}, "unit": {"type": "String"}, "basis": {"type": "String"}}}
+  "@scheduleDose": {"placeholders": {"amount": {"type": "String"}, "unit": {"type": "String"}, "basis": {"type": "String"}}},
+  "scheduleShowArchived": "Show archived",
+  "scheduleRestore": "Restore",
+  "scheduleSkippedWarning": "Runs skipped: not enough stock. Add stock to continue.",
+  "scheduleZonesAll": "All zones",
+  "scheduleZonesClear": "Clear"
 }

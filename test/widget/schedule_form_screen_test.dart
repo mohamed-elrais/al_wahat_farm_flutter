@@ -355,9 +355,62 @@ void main() {
     );
     expect(repeat.data, startsWith('Every 2 weeks · '));
     expect(
-      tester.widget<Text>(find.byKey(const Key('schedule-review-workers'))).data,
+      tester
+          .widget<Text>(find.byKey(const Key('schedule-review-workers')))
+          .data,
       'All workers',
     );
     expect(find.byKey(const Key('schedule-all-workers-hint')), findsOneWidget);
+  });
+
+  testWidgets('zones are grouped by section with "all zones"', (tester) async {
+    tester.view.physicalSize = const Size(430, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final controller = SchedulesController(
+      repository: FakeScheduleRepository(),
+      farmId: 'farm-id',
+    );
+    addTearDown(controller.dispose);
+    final inventory = InventoryController(
+      repository: FakeInventoryRepository(),
+      farmId: 'farm-id',
+    );
+    addTearDown(inventory.dispose);
+
+    await tester.pumpWidget(
+      _app(controller: controller, inventory: inventory),
+    );
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('schedule-target-zones')),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.byKey(const Key('schedule-target-zones')));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('schedule-zone-section-S1')));
+    await tester.pumpAndSettle();
+    for (final code in <String>['Z1', 'Z2']) {
+      expect(
+        tester
+            .widget<FilterChip>(find.byKey(Key('schedule-zone-$code')))
+            .selected,
+        isTrue,
+      );
+    }
+    expect(find.text('Clear'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('schedule-zone-section-S1')));
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<FilterChip>(find.byKey(const Key('schedule-zone-Z1')))
+          .selected,
+      isFalse,
+    );
   });
 }

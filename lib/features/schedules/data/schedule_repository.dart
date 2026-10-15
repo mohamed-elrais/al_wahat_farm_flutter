@@ -5,7 +5,15 @@ import 'package:al_wahat_farm_flutter/features/tasks/domain/farm_task.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 abstract interface class ScheduleRepository {
-  Future<List<OperationPlan>> listPlans(String farmId);
+  /// Archived schedules are left out unless [includeArchived].
+  Future<List<OperationPlan>> listPlans(
+    String farmId, {
+    bool includeArchived = false,
+  });
+
+  /// Plans with a run skipped for low stock in the last week or the next
+  /// day (still waiting for stock).
+  Future<Set<String>> plansSkippedForStock(List<String> planIds);
   Future<String> createPlan(OperationPlanDraft draft);
   Future<void> updatePlan(
     String planId, {
@@ -47,13 +55,17 @@ class SupabaseScheduleRepository implements ScheduleRepository {
   final SupabaseClient _client;
 
   @override
-  Future<List<OperationPlan>> listPlans(String farmId) => _guard(() async {
-        final planRows = await _client
+  Future<List<OperationPlan>> listPlans(
+    String farmId, {
+    bool includeArchived = false,
+  }) =>
+      _guard(() async {
+        var query = _client
             .from('operation_plans')
             .select(planColumns)
-            .eq('farm_id', farmId)
-            .neq('status', 'archived')
-            .order('created_at', ascending: false);
+            .eq('farm_id', farmId);
+        if (!includeArchived) query = query.neq('status', 'archived');
+        final planRows = await query.order('created_at', ascending: false);
         if (planRows.isEmpty) return const <OperationPlan>[];
         final planIds =
             planRows.map((row) => row['id']! as String).toList(growable: false);
@@ -77,6 +89,27 @@ class SupabaseScheduleRepository implements ScheduleRepository {
               ),
             )
             .toList(growable: false);
+      });
+
+  @override
+  Future<Set<String>> plansSkippedForStock(List<String> planIds) =>
+      _guard(() async {
+        if (planIds.isEmpty) return const <String>{};
+        final now = DateTime.now();
+        final since = DateTime(now.year, now.month, now.day - 7);
+        final rows = await _client
+            .from('operation_plan_runs')
+            .select('operation_plan_id')
+            .inFilter('operation_plan_id', planIds)
+            .isFilter('generated_task_id', null)
+            .eq('blocked_reason', 'insufficient_stock')
+            .gte(
+              'operation_date',
+              '${since.year.toString().padLeft(4, '0')}-'
+                  '${since.month.toString().padLeft(2, '0')}-'
+                  '${since.day.toString().padLeft(2, '0')}',
+            );
+        return rows.map((row) => row['operation_plan_id']! as String).toSet();
       });
 
   @override
