@@ -2193,12 +2193,6 @@ abstract class AppLocalizations {
   /// **'Choose an end date — schedules need one'**
   String get scheduleEndRequiredMessage;
 
-  /// No description provided for @scheduleDateWithinMonth.
-  ///
-  /// In en, this message translates to:
-  /// **'A schedule starts today or later and runs for at most one month.'**
-  String get scheduleDateWithinMonth;
-
   /// No description provided for @scheduleRepetitions.
   ///
   /// In en, this message translates to:
@@ -3360,7 +3354,7 @@ abstract class AppLocalizations {
   /// No description provided for @scheduleEndsOn.
   ///
   /// In en, this message translates to:
-  /// **'Ends on (optional)'**
+  /// **'Ends on'**
   String get scheduleEndsOn;
 
   /// No description provided for @scheduleTimeField.
@@ -5030,6 +5024,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Engineer review'**
   String get iconsGuideReviewDecision;
+
+  /// No description provided for @scheduleRepeatField.
+  ///
+  /// In en, this message translates to:
+  /// **'How often'**
+  String get scheduleRepeatField;
+
+  /// No description provided for @scheduleEveryDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Every day} other{Every {count} days}}'**
+  String scheduleEveryDays(int count);
+
+  /// No description provided for @scheduleEveryWeeks.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Every week} other{Every {count} weeks}}'**
+  String scheduleEveryWeeks(int count);
+
+  /// No description provided for @scheduleDateWithinYear.
+  ///
+  /// In en, this message translates to:
+  /// **'A schedule starts today or later and can run for up to one year.'**
+  String get scheduleDateWithinYear;
+
+  /// No description provided for @scheduleAllWorkers.
+  ///
+  /// In en, this message translates to:
+  /// **'All workers'**
+  String get scheduleAllWorkers;
+
+  /// No description provided for @scheduleAllWorkersHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose nobody to give the tasks to every worker.'**
+  String get scheduleAllWorkersHint;
+
+  /// No description provided for @scheduleErrRepeat.
+  ///
+  /// In en, this message translates to:
+  /// **'A schedule repeats every 1 to 12 days or weeks.'**
+  String get scheduleErrRepeat;
+
+  /// No description provided for @scheduleErrStartPast.
+  ///
+  /// In en, this message translates to:
+  /// **'The start date cannot be in the past.'**
+  String get scheduleErrStartPast;
+
+  /// No description provided for @scheduleErrEndBeforeStart.
+  ///
+  /// In en, this message translates to:
+  /// **'The end date must be on or after the start date.'**
+  String get scheduleErrEndBeforeStart;
+
+  /// No description provided for @scheduleErrEndTooLate.
+  ///
+  /// In en, this message translates to:
+  /// **'The end date can be at most one year after the start date.'**
+  String get scheduleErrEndTooLate;
+
+  /// No description provided for @scheduleErrRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a dose above zero.'**
+  String get scheduleErrRate;
+
+  /// No description provided for @scheduleErrRateDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose how the dose is measured.'**
+  String get scheduleErrRateDetails;
+
+  /// No description provided for @scheduleErrIrrigationProduct.
+  ///
+  /// In en, this message translates to:
+  /// **'Irrigation schedules cannot use a product.'**
+  String get scheduleErrIrrigationProduct;
+
+  /// No description provided for @scheduleErrTargets.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose at least one place.'**
+  String get scheduleErrTargets;
+
+  /// No description provided for @scheduleErrCombinedTargets.
+  ///
+  /// In en, this message translates to:
+  /// **'One combined task needs specific sections or zones, not the whole farm.'**
+  String get scheduleErrCombinedTargets;
+
+  /// No description provided for @scheduleErrCombinedKind.
+  ///
+  /// In en, this message translates to:
+  /// **'One combined task can only group places of the same kind.'**
+  String get scheduleErrCombinedKind;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -93,11 +93,19 @@ abstract final class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(99),
         ),
-        labelStyle: const TextStyle(
+        // Selected chips are filled dark green, so their text turns white;
+        // a fixed ink colour left selected weekday chips unreadable.
+        labelStyle: TextStyle(
           fontFamily: 'Inter',
           fontFamilyFallback: _arabicFallback,
           fontWeight: FontWeight.w700,
-          color: AppColors.ink,
+          color: MaterialStateColor.resolveWith(
+            (states) => states.contains(MaterialState.selected)
+                ? Colors.white
+                : states.contains(MaterialState.disabled)
+                    ? AppColors.muted
+                    : AppColors.ink,
+          ),
         ),
         secondaryLabelStyle: const TextStyle(
           fontFamily: 'Inter',

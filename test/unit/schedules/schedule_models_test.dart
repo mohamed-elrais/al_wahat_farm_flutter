@@ -38,7 +38,7 @@ void main() {
     expect(draft().validate(today: today), isNull);
     expect(
       draft(schedule: PlanScheduleType.weekly).validate(today: today),
-      contains('weekday'),
+      ScheduleDraftError.weekdaysRequired,
     );
     expect(
       draft(schedule: PlanScheduleType.weekly, days: const <int>[5])
@@ -47,11 +47,11 @@ void main() {
     );
     expect(
       draft(item: 'item-1', rate: 0).validate(today: today),
-      contains('positive'),
+      ScheduleDraftError.ratePositive,
     );
     expect(
       draft(item: 'item-1', rate: 100).validate(today: today),
-      contains('basis'),
+      ScheduleDraftError.rateDetailsRequired,
     );
     expect(
       draft(
@@ -65,7 +65,7 @@ void main() {
     expect(
       draft(type: OperationPlanType.irrigation, item: 'item-1')
           .validate(today: today),
-      contains('Irrigation'),
+      ScheduleDraftError.irrigationProduct,
     );
   });
 
@@ -78,28 +78,35 @@ void main() {
         scheduleType: PlanScheduleType.daily,
         startsOn: today,
       ).validate(today: today),
-      contains('end date'),
+      ScheduleDraftError.endRequired,
     );
     expect(
       draft(startsOn: today.subtract(const Duration(days: 1)))
           .validate(today: today),
-      contains('past'),
+      ScheduleDraftError.startInPast,
     );
     expect(
       draft(
         startsOn: today.add(const Duration(days: 5)),
         endsOn: today.add(const Duration(days: 2)),
       ).validate(today: today),
-      contains('on or after'),
+      ScheduleDraftError.endBeforeStart,
     );
+    // The one-month cap is gone (owner, 2026-10-15): 45 days is fine, and
+    // up to one year is allowed; more is treated as a typo.
     expect(
       draft(endsOn: today.add(const Duration(days: 45))).validate(today: today),
-      contains('one month'),
-    );
-    // Exactly one month is allowed; a one-day schedule is allowed.
-    expect(
-      draft(endsOn: DateTime(2026, 9, 1)).validate(today: today),
       isNull,
+    );
+    expect(
+      draft(endsOn: DateTime(today.year + 1, today.month, today.day))
+          .validate(today: today),
+      isNull,
+    );
+    expect(
+      draft(endsOn: DateTime(today.year + 1, today.month, today.day + 1))
+          .validate(today: today),
+      ScheduleDraftError.endTooLate,
     );
     expect(draft(endsOn: today).validate(today: today), isNull);
   });
@@ -123,11 +130,11 @@ void main() {
           PlanTarget(irrigationZoneId: 'z1'),
         ],
       ).validate(today: today),
-      contains('same kind'),
+      ScheduleDraftError.combinedSameKind,
     );
     expect(
       draft(grouping: TaskGrouping.combined).validate(today: today),
-      contains('specific targets'),
+      ScheduleDraftError.combinedNeedsTargets,
     );
   });
 

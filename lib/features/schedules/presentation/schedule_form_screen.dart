@@ -49,6 +49,7 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
 
   OperationPlanType _type = OperationPlanType.irrigation;
   PlanScheduleType _recurrence = PlanScheduleType.daily;
+  int _repeatEvery = 1;
   final Set<int> _weekdays = <int>{};
   DateTime _startsOn = DateUtils.dateOnly(DateTime.now());
   DateTime? _endsOn;
@@ -122,7 +123,12 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
         daysOfWeek: _recurrence == PlanScheduleType.weekly
             ? (_weekdays.toList()..sort())
             : null,
+        repeatEvery: _effectiveRepeat,
       );
+
+  /// "Every N" only applies to daily and weekly schedules.
+  int get _effectiveRepeat =>
+      _recurrence == PlanScheduleType.once ? 1 : _repeatEvery;
 
   int get _repetitions =>
       _endsOn == null && _recurrence != PlanScheduleType.once
@@ -146,8 +152,7 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
       (_effectiveGrouping == TaskGrouping.combined ? 1 : _selectedTargetCount);
 
   /// The latest end date the rules allow for the current start date.
-  DateTime get _monthCap =>
-      DateTime(_startsOn.year, _startsOn.month + 1, _startsOn.day);
+  DateTime get _latestEnd => scheduleLatestEnd(_startsOn);
 
   /// Client-side preview of the per-run quantity for the current selection
   /// (display only — the backend computation is authoritative).
@@ -328,6 +333,28 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
                     ],
                   ),
                 ],
+                if (_recurrence != PlanScheduleType.once) ...<Widget>[
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<int>(
+                    key: const Key('schedule-repeat-every'),
+                    value: _repeatEvery,
+                    isExpanded: true,
+                    decoration:
+                        InputDecoration(labelText: l10n.scheduleRepeatField),
+                    items: <DropdownMenuItem<int>>[
+                      for (var count = 1; count <= 12; count++)
+                        DropdownMenuItem<int>(
+                          value: count,
+                          child: Text(
+                            scheduleRepeatLabel(l10n, _recurrence, count),
+                          ),
+                        ),
+                    ],
+                    onChanged: controller.isBusy
+                        ? null
+                        : (value) => setState(() => _repeatEvery = value ?? 1),
+                  ),
+                ],
                 const SizedBox(height: 10),
                 Wrap(
                   spacing: 10,
@@ -360,7 +387,7 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  l10n.scheduleDateWithinMonth,
+                  l10n.scheduleDateWithinYear,
                   style: Theme.of(context)
                       .textTheme
                       .bodySmall
@@ -711,7 +738,16 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
               children: <Widget>[
                 Text(l10n.scheduleAssigneesTitle,
                     style: Theme.of(context).textTheme.titleLarge),
-                const SizedBox(height: 6),
+                const SizedBox(height: 2),
+                Text(
+                  l10n.scheduleAllWorkersHint,
+                  key: const Key('schedule-all-workers-hint'),
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(color: AppColors.muted),
+                ),
+                const SizedBox(height: 8),
                 if (members.isEmpty)
                   Text(l10n.noOperationalMembers)
                 else
@@ -849,9 +885,10 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
           row(
             l10n.scheduleRecurrenceField,
             _recurrence == PlanScheduleType.weekly
-                ? '${_recurrence.localizedLabel(l10n)} · '
+                ? '${scheduleRepeatLabel(l10n, _recurrence, _effectiveRepeat)} · '
                     '${(_weekdays.toList()..sort()).map((day) => weekdayShortLabel(context, day)).join('، ')}'
-                : _recurrence.localizedLabel(l10n),
+                : scheduleRepeatLabel(l10n, _recurrence, _effectiveRepeat),
+            key: const Key('schedule-review-repeat'),
           ),
           row(
             l10n.scheduleExecutionDates,
@@ -921,7 +958,10 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
           ],
           row(
             l10n.scheduleAssigneesTitle,
-            workerNames.isEmpty ? l10n.commonNotSet : workerNames.join('، '),
+            workerNames.isEmpty
+                ? l10n.scheduleAllWorkers
+                : workerNames.join('، '),
+            key: const Key('schedule-review-workers'),
           ),
           row(
             l10n.inventoryDescriptionField,
@@ -962,7 +1002,7 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
   }
 
   /// Date rules (mirrored by the backend): start today or later, end
-  /// required, start <= end <= start + one month. The pickers only offer
+  /// required, start <= end <= start + one year. The pickers only offer
   /// valid days.
   Future<void> _pickDate({required bool isEnd}) async {
     final now = DateTime.now();
@@ -972,7 +1012,7 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
     DateTime initial;
     if (isEnd) {
       firstDate = _startsOn.isBefore(today) ? today : _startsOn;
-      lastDate = _monthCap;
+      lastDate = _latestEnd;
       initial = _endsOn ?? firstDate;
     } else {
       firstDate = today;
@@ -993,13 +1033,13 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
         _endsOn = selected;
       } else {
         _startsOn = selected;
-        // Keep the end date inside the new [start, start + 1 month] window.
+        // Keep the end date inside the new [start, start + 1 year] window.
         final end = _endsOn;
         if (end != null) {
           if (end.isBefore(_startsOn)) {
             _endsOn = _startsOn;
-          } else if (end.isAfter(_monthCap)) {
-            _endsOn = _monthCap;
+          } else if (end.isAfter(_latestEnd)) {
+            _endsOn = _latestEnd;
           }
         }
       }
@@ -1076,11 +1116,12 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
       rateBasis: _productItemId == null ? null : _basis,
       rateUnit: _productItemId == null ? null : product?.unit,
       taskGrouping: _effectiveGrouping,
+      repeatEvery: _effectiveRepeat,
     );
     final validation = draft.validate();
     if (validation != null) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(validation)));
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(validation.localizedLabel(l10n))));
       return;
     }
     final id = await controller.createPlan(draft);

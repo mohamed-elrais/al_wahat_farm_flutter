@@ -1141,9 +1141,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get scheduleEndRequiredMessage => 'Choose an end date — schedules need one';
 
   @override
-  String get scheduleDateWithinMonth => 'A schedule starts today or later and runs for at most one month.';
-
-  @override
   String scheduleRepetitions(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -1828,7 +1825,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get scheduleStartsOn => 'Starts on';
 
   @override
-  String get scheduleEndsOn => 'Ends on (optional)';
+  String get scheduleEndsOn => 'Ends on';
 
   @override
   String get scheduleTimeField => 'Execution time';
@@ -2826,4 +2823,68 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get iconsGuideReviewDecision => 'Engineer review';
+
+  @override
+  String get scheduleRepeatField => 'How often';
+
+  @override
+  String scheduleEveryDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Every $count days',
+      one: 'Every day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleEveryWeeks(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Every $count weeks',
+      one: 'Every week',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get scheduleDateWithinYear => 'A schedule starts today or later and can run for up to one year.';
+
+  @override
+  String get scheduleAllWorkers => 'All workers';
+
+  @override
+  String get scheduleAllWorkersHint => 'Choose nobody to give the tasks to every worker.';
+
+  @override
+  String get scheduleErrRepeat => 'A schedule repeats every 1 to 12 days or weeks.';
+
+  @override
+  String get scheduleErrStartPast => 'The start date cannot be in the past.';
+
+  @override
+  String get scheduleErrEndBeforeStart => 'The end date must be on or after the start date.';
+
+  @override
+  String get scheduleErrEndTooLate => 'The end date can be at most one year after the start date.';
+
+  @override
+  String get scheduleErrRate => 'Enter a dose above zero.';
+
+  @override
+  String get scheduleErrRateDetails => 'Choose how the dose is measured.';
+
+  @override
+  String get scheduleErrIrrigationProduct => 'Irrigation schedules cannot use a product.';
+
+  @override
+  String get scheduleErrTargets => 'Choose at least one place.';
+
+  @override
+  String get scheduleErrCombinedTargets => 'One combined task needs specific sections or zones, not the whole farm.';
+
+  @override
+  String get scheduleErrCombinedKind => 'One combined task can only group places of the same kind.';
 }

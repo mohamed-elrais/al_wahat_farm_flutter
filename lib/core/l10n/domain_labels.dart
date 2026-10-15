@@ -240,3 +240,37 @@ extension ApplicationMethodL10n on ApplicationMethod {
         ApplicationMethod.manualApplication => l10n.methodManualApplication,
       };
 }
+
+extension ScheduleDraftErrorL10n on ScheduleDraftError {
+  String localizedLabel(AppLocalizations l10n) => switch (this) {
+        ScheduleDraftError.titleRequired => l10n.scheduleTitleRequired,
+        ScheduleDraftError.weekdaysRequired => l10n.scheduleWeekdaysRequired,
+        ScheduleDraftError.repeatOutOfRange => l10n.scheduleErrRepeat,
+        ScheduleDraftError.endRequired => l10n.scheduleEndRequiredMessage,
+        ScheduleDraftError.startInPast => l10n.scheduleErrStartPast,
+        ScheduleDraftError.endBeforeStart => l10n.scheduleErrEndBeforeStart,
+        ScheduleDraftError.endTooLate => l10n.scheduleErrEndTooLate,
+        ScheduleDraftError.ratePositive => l10n.scheduleErrRate,
+        ScheduleDraftError.rateDetailsRequired => l10n.scheduleErrRateDetails,
+        ScheduleDraftError.irrigationProduct =>
+          l10n.scheduleErrIrrigationProduct,
+        ScheduleDraftError.targetsRequired => l10n.scheduleErrTargets,
+        ScheduleDraftError.combinedNeedsTargets =>
+          l10n.scheduleErrCombinedTargets,
+        ScheduleDraftError.combinedSameKind => l10n.scheduleErrCombinedKind,
+      };
+}
+
+/// "Daily", "Every 3 days", "Weekly", "Every 2 weeks", "Once".
+String scheduleRepeatLabel(
+  AppLocalizations l10n,
+  PlanScheduleType type,
+  int repeatEvery,
+) =>
+    switch (type) {
+      PlanScheduleType.daily when repeatEvery > 1 =>
+        l10n.scheduleEveryDays(repeatEvery),
+      PlanScheduleType.weekly when repeatEvery > 1 =>
+        l10n.scheduleEveryWeeks(repeatEvery),
+      _ => type.localizedLabel(l10n),
+    };

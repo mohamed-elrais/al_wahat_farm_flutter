@@ -304,4 +304,60 @@ void main() {
     );
     expect(scheduleRepo.plans, isEmpty);
   });
+
+  testWidgets('weekly every 2 weeks: readable days, pattern and all workers',
+      (tester) async {
+    tester.view.physicalSize = const Size(430, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final controller = SchedulesController(
+      repository: FakeScheduleRepository(),
+      farmId: 'farm-id',
+    );
+    addTearDown(controller.dispose);
+    final inventory = InventoryController(
+      repository: FakeInventoryRepository(),
+      farmId: 'farm-id',
+    );
+    addTearDown(inventory.dispose);
+
+    await tester.pumpWidget(
+      _app(controller: controller, inventory: inventory),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('schedule-recurrence-weekly')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('schedule-weekday-3')));
+    await tester.pumpAndSettle();
+
+    // A selected day is filled dark green, so its word must be white.
+    final dayText = tester.widget<RichText>(find.descendant(
+      of: find.byKey(const Key('schedule-weekday-3')),
+      matching: find.byType(RichText),
+    ));
+    expect(dayText.text.style?.color, Colors.white);
+
+    await tester.tap(find.byKey(const Key('schedule-repeat-every')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Every 2 weeks').last);
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('schedule-review')),
+      400,
+      scrollable: find.byType(Scrollable).first,
+    );
+    final repeat = tester.widget<Text>(
+      find.byKey(const Key('schedule-review-repeat')),
+    );
+    expect(repeat.data, startsWith('Every 2 weeks · '));
+    expect(
+      tester.widget<Text>(find.byKey(const Key('schedule-review-workers'))).data,
+      'All workers',
+    );
+    expect(find.byKey(const Key('schedule-all-workers-hint')), findsOneWidget);
+  });
 }

@@ -23,13 +23,15 @@ SchedulesController? buildSchedulesController(BuildContext context) {
   );
 }
 
-/// "Weekly · Mon, Fri · 08:00" style summary for a plan.
+/// "Every 2 weeks · Mon, Fri · 08:00" style summary for a plan.
 String scheduleSummary(
   BuildContext context,
   AppLocalizations l10n,
   OperationPlan plan,
 ) {
-  final parts = <String>[plan.scheduleType.localizedLabel(l10n)];
+  final parts = <String>[
+    scheduleRepeatLabel(l10n, plan.scheduleType, plan.repeatEvery),
+  ];
   if (plan.scheduleType == PlanScheduleType.weekly &&
       (plan.daysOfWeek?.isNotEmpty ?? false)) {
     parts.add(

@@ -1147,9 +1147,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get scheduleEndRequiredMessage => 'اختر تاريخ النهاية — الجداول تحتاج إليه';
 
   @override
-  String get scheduleDateWithinMonth => 'يبدأ الجدول اليوم أو لاحقاً ويستمر لمدة شهر كحد أقصى.';
-
-  @override
   String scheduleRepetitions(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -1842,7 +1839,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get scheduleStartsOn => 'يبدأ في';
 
   @override
-  String get scheduleEndsOn => 'ينتهي في (اختياري)';
+  String get scheduleEndsOn => 'ينتهي في';
 
   @override
   String get scheduleTimeField => 'وقت التنفيذ';
@@ -2849,4 +2846,74 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get iconsGuideReviewDecision => 'مراجعة المهندس';
+
+  @override
+  String get scheduleRepeatField => 'يتكرر';
+
+  @override
+  String scheduleEveryDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'كل $count يوم',
+      many: 'كل $count يومًا',
+      few: 'كل $count أيام',
+      two: 'كل يومين',
+      one: 'كل يوم',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String scheduleEveryWeeks(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'كل $count أسبوع',
+      many: 'كل $count أسبوعًا',
+      few: 'كل $count أسابيع',
+      two: 'كل أسبوعين',
+      one: 'كل أسبوع',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get scheduleDateWithinYear => 'يبدأ الجدول اليوم أو لاحقاً ويمكن أن يستمر حتى سنة.';
+
+  @override
+  String get scheduleAllWorkers => 'كل العمال';
+
+  @override
+  String get scheduleAllWorkersHint => 'إذا لم تختر أحداً، تُسند المهام لكل العمال.';
+
+  @override
+  String get scheduleErrRepeat => 'يتكرر الجدول كل 1 إلى 12 يوماً أو أسبوعاً.';
+
+  @override
+  String get scheduleErrStartPast => 'لا يمكن أن يكون تاريخ البدء في الماضي.';
+
+  @override
+  String get scheduleErrEndBeforeStart => 'يجب أن يكون تاريخ الانتهاء في يوم البدء أو بعده.';
+
+  @override
+  String get scheduleErrEndTooLate => 'يمكن أن يكون تاريخ الانتهاء بعد البدء بسنة على الأكثر.';
+
+  @override
+  String get scheduleErrRate => 'أدخل جرعة أكبر من صفر.';
+
+  @override
+  String get scheduleErrRateDetails => 'اختر طريقة حساب الجرعة.';
+
+  @override
+  String get scheduleErrIrrigationProduct => 'جداول الري لا تستخدم منتجاً.';
+
+  @override
+  String get scheduleErrTargets => 'اختر مكاناً واحداً على الأقل.';
+
+  @override
+  String get scheduleErrCombinedTargets => 'المهمة المجمّعة تحتاج أقساماً أو مناطق محددة، وليس المزرعة كلها.';
+
+  @override
+  String get scheduleErrCombinedKind => 'المهمة المجمّعة تجمع أماكن من نوع واحد فقط.';
 }
