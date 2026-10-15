@@ -7,9 +7,13 @@ import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
 import 'package:al_wahat_farm_flutter/features/farm/domain/farm_hierarchy.dart';
 import 'package:al_wahat_farm_flutter/features/farm/presentation/farm_hierarchy_gate.dart';
+import 'package:al_wahat_farm_flutter/features/inventory/presentation/inventory_controller.dart';
+import 'package:al_wahat_farm_flutter/features/inventory/presentation/inventory_screen.dart';
+import 'package:al_wahat_farm_flutter/features/schedules/domain/plan_run.dart';
 import 'package:al_wahat_farm_flutter/features/schedules/domain/schedule_models.dart';
 import 'package:al_wahat_farm_flutter/features/schedules/presentation/schedules_controller.dart';
 import 'package:al_wahat_farm_flutter/features/schedules/presentation/schedules_screen.dart';
+import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_workspace_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -17,11 +21,13 @@ class ScheduleDetailScreen extends StatefulWidget {
   const ScheduleDetailScreen({
     required this.planId,
     this.controller,
+    this.inventoryController,
     super.key,
   });
 
   final String planId;
   final SchedulesController? controller;
+  final InventoryController? inventoryController;
 
   @override
   State<ScheduleDetailScreen> createState() => _ScheduleDetailScreenState();
@@ -29,9 +35,13 @@ class ScheduleDetailScreen extends StatefulWidget {
 
 class _ScheduleDetailScreenState extends State<ScheduleDetailScreen> {
   SchedulesController? _controller;
+  InventoryController? _inventory;
   bool _owns = false;
+  bool _ownsInventory = false;
   List<PlanInventoryCheck>? _checks;
   bool _checksRequested = false;
+  List<PlanRunDay>? _runs;
+  bool _runsRequested = false;
 
   @override
   void didChangeDependencies() {
@@ -46,27 +56,41 @@ class _ScheduleDetailScreenState extends State<ScheduleDetailScreen> {
       _owns = true;
       _controller?.load();
     }
-    _controller?.addListener(_maybeLoadChecks);
-    _maybeLoadChecks();
+    _inventory =
+        widget.inventoryController ?? buildInventoryController(context);
+    _ownsInventory = widget.inventoryController == null;
+    if (_inventory?.status == InventoryStatus.idle) _inventory?.load();
+    TaskWorkspaceScope.maybeOf(context)?.loadAssignableMembers();
+    _controller?.addListener(_loadExtras);
+    _loadExtras();
   }
 
-  Future<void> _maybeLoadChecks() async {
-    if (_checksRequested) return;
+  /// Stock coverage and run history, once the plan is known. Both are
+  /// advisory: the page stays usable without them.
+  Future<void> _loadExtras() async {
     final plan = _controller?.planById(widget.planId);
-    if (plan == null || plan.inventoryItemId == null) return;
-    _checksRequested = true;
-    try {
-      final rows = await _controller!.checkInventory(widget.planId);
-      if (mounted) setState(() => _checks = rows);
-    } catch (_) {
-      // Coverage is advisory; the detail stays usable without it.
+    if (plan == null) return;
+    if (!_runsRequested) {
+      _runsRequested = true;
+      try {
+        final runs = await _controller!.listRuns(widget.planId);
+        if (mounted) setState(() => _runs = runs);
+      } catch (_) {}
+    }
+    if (!_checksRequested && plan.inventoryItemId != null) {
+      _checksRequested = true;
+      try {
+        final rows = await _controller!.checkInventory(widget.planId);
+        if (mounted) setState(() => _checks = rows);
+      } catch (_) {}
     }
   }
 
   @override
   void dispose() {
-    _controller?.removeListener(_maybeLoadChecks);
+    _controller?.removeListener(_loadExtras);
     if (_owns) _controller?.dispose();
+    if (_ownsInventory) _inventory?.dispose();
     super.dispose();
   }
 
@@ -81,7 +105,9 @@ class _ScheduleDetailScreenState extends State<ScheduleDetailScreen> {
         child: controller == null
             ? Center(child: Text(context.l10n.schedulesLoadFailed))
             : ListenableBuilder(
-                listenable: controller,
+                listenable: Listenable.merge(
+                  <Listenable?>[controller, _inventory],
+                ),
                 builder: (context, _) => _body(context, controller),
               ),
       ),
@@ -100,6 +126,39 @@ class _ScheduleDetailScreenState extends State<ScheduleDetailScreen> {
     final hierarchy = FarmHierarchyScope.maybeOf(context)?.hierarchy;
     final occurrences = plan.nextOccurrences(DateTime.now());
     final firstCheck = _checks?.isEmpty ?? true ? null : _checks!.first;
+    final members =
+        TaskWorkspaceScope.maybeOf(context)?.assignableMembers ?? const [];
+    final workerNames = members
+        .where(
+          (member) => plan.defaultAssigneeProfileIds.contains(member.profileId),
+        )
+        .map((member) => member.fullName)
+        .toList(growable: false);
+    final product = plan.inventoryItemId == null
+        ? null
+        : _inventory?.itemById(plan.inventoryItemId!);
+    final muted =
+        Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.muted);
+
+    Widget line(String label, String value, {Key? key}) => Padding(
+          padding: const EdgeInsets.symmetric(vertical: 2),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Expanded(flex: 2, child: Text(label, style: muted)),
+              const SizedBox(width: 8),
+              Expanded(
+                flex: 3,
+                child: Text(
+                  value,
+                  key: key,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
+        );
+
     return ListView(
       key: const Key('schedule-detail'),
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 110),
@@ -141,23 +200,39 @@ class _ScheduleDetailScreenState extends State<ScheduleDetailScreen> {
                   ),
                   Text(
                     scheduleSummary(context, l10n, plan),
+                    key: const Key('schedule-detail-summary'),
                     style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
                 ],
               ),
-              const SizedBox(height: 6),
-              Text('${l10n.scheduleStartsOn}: ${_date(plan.startsOn)}'
-                  '${plan.endsOn == null ? '' : ' → ${_date(plan.endsOn!)}'}'),
+              const SizedBox(height: 8),
+              line(
+                l10n.scheduleStartsOn,
+                '${_date(plan.startsOn)}'
+                '${plan.endsOn == null ? '' : ' → ${_date(plan.endsOn!)}'}',
+              ),
+              if (plan.plannedDurationMinutes != null)
+                line(
+                  l10n.scheduleDurationField,
+                  l10n.durationMinutes(plan.plannedDurationMinutes!),
+                  key: const Key('schedule-detail-duration'),
+                ),
+              line(
+                l10n.scheduleAssigneesTitle,
+                plan.defaultAssigneeProfileIds.isEmpty
+                    ? l10n.scheduleAllWorkers
+                    : workerNames.isEmpty
+                        ? '${plan.defaultAssigneeProfileIds.length}'
+                        : workerNames.join('، '),
+                key: const Key('schedule-detail-workers'),
+              ),
               if (plan.taskGrouping == TaskGrouping.combined &&
                   plan.targets.length > 1)
-                Text(
-                  '${l10n.scheduleGroupingTitle}: '
-                  '${l10n.scheduleGroupingCombined}',
+                line(
+                  l10n.scheduleGroupingTitle,
+                  l10n.scheduleGroupingCombined,
                   key: const Key('schedule-detail-grouping'),
                 ),
-              if (plan.plannedDurationMinutes != null)
-                Text('${l10n.scheduleDurationField}: '
-                    '${plan.plannedDurationMinutes}'),
               if (plan.description != null &&
                   plan.description!.isNotEmpty) ...<Widget>[
                 const SizedBox(height: 8),
@@ -197,15 +272,23 @@ class _ScheduleDetailScreenState extends State<ScheduleDetailScreen> {
                 Text(l10n.scheduleProductTitle,
                     style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: 6),
+                if (product != null)
+                  Text(
+                    product.name,
+                    key: const Key('schedule-detail-product'),
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
                 Text(
-                  '${formatRate(plan)}'
-                  '${plan.applicationMethod == null ? '' : ' · ${plan.applicationMethod!.localizedLabel(l10n)}'}',
+                  formatDose(l10n, plan),
+                  key: const Key('schedule-detail-dose'),
                 ),
+                if (plan.applicationMethod != null)
+                  Text(plan.applicationMethod!.localizedLabel(l10n)),
                 if (firstCheck != null) ...<Widget>[
                   const SizedBox(height: 6),
                   Text(
                     l10n.schedulePerOccurrence(
-                      _quantity(firstCheck.requiredTotal),
+                      formatQuantity(firstCheck.requiredTotal),
                       plan.rateUnit?.localizedLabel(l10n) ?? '',
                     ),
                   ),
@@ -231,7 +314,8 @@ class _ScheduleDetailScreenState extends State<ScheduleDetailScreen> {
             ),
           ),
         ],
-        if (occurrences.isNotEmpty) ...<Widget>[
+        if (occurrences.isNotEmpty &&
+            plan.status != OperationPlanStatus.completed) ...<Widget>[
           const SizedBox(height: 10),
           WahatCard(
             child: Column(
@@ -240,11 +324,23 @@ class _ScheduleDetailScreenState extends State<ScheduleDetailScreen> {
                 Text(l10n.scheduleNextOccurrences,
                     style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: 6),
-                for (final date in occurrences) Text('• ${_date(date)}'),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: <Widget>[
+                    for (final date in occurrences)
+                      Chip(
+                        visualDensity: VisualDensity.compact,
+                        label: Text(_date(date)),
+                      ),
+                  ],
+                ),
               ],
             ),
           ),
         ],
+        const SizedBox(height: 10),
+        _History(runs: _runs),
         if (controller.message != null) ...<Widget>[
           const SizedBox(height: 10),
           Text(
@@ -261,6 +357,23 @@ class _ScheduleDetailScreenState extends State<ScheduleDetailScreen> {
           spacing: 8,
           runSpacing: 8,
           children: <Widget>[
+            if (plan.status != OperationPlanStatus.completed)
+              FilledButton.icon(
+                key: const Key('schedule-edit'),
+                onPressed: controller.isBusy
+                    ? null
+                    : () => context.go('/more/schedules/${plan.id}/edit'),
+                icon: const Icon(Icons.edit_outlined, size: 18),
+                label: Text(l10n.scheduleEdit),
+              ),
+            OutlinedButton.icon(
+              key: const Key('schedule-copy'),
+              onPressed: controller.isBusy
+                  ? null
+                  : () => context.go('/more/schedules/new?copy=${plan.id}'),
+              icon: const Icon(Icons.copy_outlined, size: 18),
+              label: Text(l10n.scheduleCopy),
+            ),
             if (plan.status == OperationPlanStatus.active)
               OutlinedButton.icon(
                 key: const Key('schedule-pause'),
@@ -273,7 +386,7 @@ class _ScheduleDetailScreenState extends State<ScheduleDetailScreen> {
               )
             else if (plan.status == OperationPlanStatus.paused ||
                 plan.status == OperationPlanStatus.draft)
-              FilledButton.icon(
+              OutlinedButton.icon(
                 key: const Key('schedule-activate'),
                 onPressed: controller.isBusy
                     ? null
@@ -286,16 +399,12 @@ class _ScheduleDetailScreenState extends State<ScheduleDetailScreen> {
               key: const Key('schedule-archive'),
               onPressed: controller.isBusy
                   ? null
-                  : () async {
-                      await controller.setStatus(
-                          plan.id, OperationPlanStatus.archived);
-                      if (context.mounted) context.go('/more/schedules');
-                    },
+                  : () => _confirmArchive(context, controller, plan),
               icon: const Icon(Icons.archive_outlined, size: 18),
               label: Text(l10n.scheduleArchive),
             ),
             if (plan.status == OperationPlanStatus.active)
-              OutlinedButton.icon(
+              TextButton.icon(
                 key: const Key('schedule-generate-now'),
                 onPressed: controller.isBusy
                     ? null
@@ -317,6 +426,35 @@ class _ScheduleDetailScreenState extends State<ScheduleDetailScreen> {
         ),
       ],
     );
+  }
+
+  Future<void> _confirmArchive(
+    BuildContext context,
+    SchedulesController controller,
+    OperationPlan plan,
+  ) async {
+    final l10n = context.l10n;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.scheduleArchiveConfirmTitle),
+        content: Text(l10n.scheduleArchiveConfirmBody),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            key: const Key('schedule-archive-confirm'),
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(l10n.scheduleArchive),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    await controller.setStatus(plan.id, OperationPlanStatus.archived);
+    if (context.mounted) context.go('/more/schedules');
   }
 
   String _targetLabel(
@@ -341,21 +479,108 @@ class _ScheduleDetailScreenState extends State<ScheduleDetailScreen> {
       }
       return code ?? l10n.scheduleTargetZones;
     }
-    return l10n.targetTreeGeneric;
+    String? treeCode;
+    if (hierarchy != null) {
+      for (final tree in hierarchy.trees) {
+        if (tree.id == target.treeId) {
+          treeCode = tree.treeCode;
+          break;
+        }
+      }
+    }
+    return treeCode == null
+        ? l10n.targetTreeGeneric
+        : l10n.targetTree(treeCode);
   }
 }
 
-String formatRate(OperationPlan plan) {
-  final rate = plan.applicationRate;
-  if (rate == null) return '';
-  final basisText = plan.rateBasis?.wireValue ?? '';
-  return '${_quantity(rate)} / $basisText';
+/// The schedule's past run dates: each date's task status (tap to open the
+/// task) or why no task was created.
+class _History extends StatelessWidget {
+  const _History({required this.runs});
+
+  final List<PlanRunDay>? runs;
+
+  static const _shown = 12;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final days = runs;
+    return WahatCard(
+      child: Column(
+        key: const Key('schedule-history'),
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          Text(l10n.scheduleHistoryTitle,
+              style: Theme.of(context).textTheme.titleLarge),
+          const SizedBox(height: 6),
+          if (days == null)
+            const Padding(
+              padding: EdgeInsets.all(8),
+              child: Center(child: CircularProgressIndicator()),
+            )
+          else if (days.isEmpty)
+            Text(l10n.scheduleHistoryEmpty)
+          else
+            for (final day in days.take(_shown))
+              Padding(
+                key: Key('schedule-history-${_date(day.date)}'),
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    SizedBox(
+                      width: 96,
+                      child: Text(
+                        _date(day.date),
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                    Expanded(
+                      child: Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: <Widget>[
+                          for (final task in day.tasks)
+                            InkWell(
+                              borderRadius: BorderRadius.circular(99),
+                              onTap: () => context.go('/tasks/${task.taskId}'),
+                              child: StatusPill(
+                                task.status.visual,
+                                task.status.localizedLabel(l10n),
+                              ),
+                            ),
+                          if (day.blockedForStock)
+                            StatusPill(
+                              const OptionVisual(
+                                Icons.inventory_2,
+                                OptionColors.problem,
+                              ),
+                              l10n.scheduleSkippedStock,
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+        ],
+      ),
+    );
+  }
 }
 
-String _quantity(double value) => value
-    .toStringAsFixed(3)
-    .replaceFirst(RegExp(r'0+$'), '')
-    .replaceFirst(RegExp(r'\.$'), '');
+/// "100 Grams · Per feddan" for a plan's dose.
+String formatDose(AppLocalizations l10n, OperationPlan plan) {
+  final rate = plan.applicationRate;
+  if (rate == null) return '';
+  return l10n.scheduleDose(
+    formatQuantity(rate),
+    plan.rateUnit?.localizedLabel(l10n) ?? '',
+    plan.rateBasis?.localizedLabel(l10n) ?? '',
+  );
+}
 
 String _date(DateTime value) => '${value.day.toString().padLeft(2, '0')}/'
     '${value.month.toString().padLeft(2, '0')}/${value.year}';

@@ -862,7 +862,7 @@
   "scheduleMsgUpdated": "Schedule updated.",
   "scheduleErrGeneric": "The schedule could not be saved.",
   "scheduleNextOccurrences": "Next dates",
-  "scheduleGenerateNow": "Generate today's tasks",
+  "scheduleGenerateNow": "Create today's tasks for all schedules",
   "scheduleGenerated": "{count, plural, =0{No new tasks to generate} =1{1 task generated} other{{count} tasks generated}}",
   "@scheduleGenerated": {
     "placeholders": {
@@ -1268,5 +1268,17 @@
   "scheduleErrIrrigationProduct": "Irrigation schedules cannot use a product.",
   "scheduleErrTargets": "Choose at least one place.",
   "scheduleErrCombinedTargets": "One combined task needs specific sections or zones, not the whole farm.",
-  "scheduleErrCombinedKind": "One combined task can only group places of the same kind."
+  "scheduleErrCombinedKind": "One combined task can only group places of the same kind.",
+  "scheduleEdit": "Edit",
+  "scheduleEditTitle": "Edit schedule",
+  "scheduleSaveChanges": "Save changes",
+  "scheduleCopy": "Copy",
+  "scheduleCopyTitle": "Copy schedule",
+  "scheduleHistoryTitle": "Past runs",
+  "scheduleHistoryEmpty": "No tasks yet. Each run's tasks are created the day before.",
+  "scheduleSkippedStock": "Skipped: not enough stock",
+  "scheduleArchiveConfirmTitle": "Archive this schedule?",
+  "scheduleArchiveConfirmBody": "It stops creating tasks and leaves the list. Tasks it already created stay.",
+  "scheduleDose": "{amount} {unit} · {basis}",
+  "@scheduleDose": {"placeholders": {"amount": {"type": "String"}, "unit": {"type": "String"}, "basis": {"type": "String"}}}
 }

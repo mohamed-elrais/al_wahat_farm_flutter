@@ -1,5 +1,7 @@
 import 'package:al_wahat_farm_flutter/core/errors/operation_failure.dart';
+import 'package:al_wahat_farm_flutter/features/schedules/domain/plan_run.dart';
 import 'package:al_wahat_farm_flutter/features/schedules/domain/schedule_models.dart';
+import 'package:al_wahat_farm_flutter/features/tasks/domain/farm_task.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 abstract interface class ScheduleRepository {
@@ -17,11 +19,17 @@ abstract interface class ScheduleRepository {
     List<String>? assigneeProfileIds,
     double? applicationRate,
   });
+
+  /// Saves an edited schedule (the changes from [before] to [after]).
+  Future<void> editPlan(OperationPlan before, OperationPlanDraft after);
   Future<List<PlanInventoryCheck>> checkInventory(
     String planId, {
     int horizonDays = 30,
   });
   Future<int> generateNow(String farmId);
+
+  /// The schedule's run dates so far (newest first) with their tasks.
+  Future<List<PlanRunDay>> listRuns(String planId);
 }
 
 class SupabaseScheduleRepository implements ScheduleRepository {
@@ -117,6 +125,49 @@ class SupabaseScheduleRepository implements ScheduleRepository {
           'p_application_rate': applicationRate,
           'p_default_assignee_profile_ids': assigneeProfileIds,
         });
+      });
+
+  @override
+  Future<void> editPlan(OperationPlan before, OperationPlanDraft after) {
+    final validation = after.validate(keepStart: before.startsOn);
+    if (validation != null) {
+      return Future<void>.error(
+        OperationFailure(OperationFailureKind.invalidInput, validation.message),
+      );
+    }
+    return _guard(() async {
+      await _client.rpc<Object?>(
+        'update_operation_plan',
+        params: planUpdateParameters(before, after),
+      );
+    });
+  }
+
+  @override
+  Future<List<PlanRunDay>> listRuns(String planId) => _guard(() async {
+        final runs = await _client
+            .from('operation_plan_runs')
+            .select('operation_date, generated_task_id, blocked_reason')
+            .eq('operation_plan_id', planId)
+            .order('operation_date', ascending: false)
+            .limit(200);
+        final taskIds = runs
+            .map((run) => run['generated_task_id'] as String?)
+            .whereType<String>()
+            .toSet()
+            .toList(growable: false);
+        final statuses = <String, TaskStatus>{};
+        if (taskIds.isNotEmpty) {
+          final tasks = await _client
+              .from('tasks')
+              .select('id, status')
+              .inFilter('id', taskIds);
+          for (final task in tasks) {
+            statuses[task['id']! as String] =
+                TaskStatus.fromJson(task['status']! as String);
+          }
+        }
+        return PlanRunDay.fromRows(runs, statuses);
       });
 
   @override

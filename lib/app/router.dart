@@ -182,13 +182,24 @@ GoRouter createRouter(AppConfig config) {
                     routes: <RouteBase>[
                       GoRoute(
                         path: 'new',
-                        builder: (_, __) => const ScheduleFormScreen(),
+                        // ?copy=<planId> starts from an existing schedule.
+                        builder: (_, state) => ScheduleFormScreen(
+                          copyFromId: state.uri.queryParameters['copy'],
+                        ),
                       ),
                       GoRoute(
                         path: ':planId',
                         builder: (_, state) => ScheduleDetailScreen(
                           planId: state.pathParameters['planId']!,
                         ),
+                        routes: <RouteBase>[
+                          GoRoute(
+                            path: 'edit',
+                            builder: (_, state) => ScheduleFormScreen(
+                              planId: state.pathParameters['planId'],
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),

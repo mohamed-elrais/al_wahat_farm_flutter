@@ -422,7 +422,9 @@ class OperationPlanDraft {
       repetitionCount *
       (taskGrouping == TaskGrouping.combined ? 1 : targets.length);
 
-  ScheduleDraftError? validate({DateTime? today}) {
+  /// [keepStart] is the saved start date when editing: an unchanged start
+  /// date may be in the past (the schedule is already running).
+  ScheduleDraftError? validate({DateTime? today, DateTime? keepStart}) {
     final now = today ?? DateTime.now();
     final floorToday = DateTime(now.year, now.month, now.day);
     if (title.trim().isEmpty) return ScheduleDraftError.titleRequired;
@@ -434,7 +436,10 @@ class OperationPlanDraft {
       return ScheduleDraftError.repeatOutOfRange;
     }
     if (endsOn == null) return ScheduleDraftError.endRequired;
-    if (startsOn.isBefore(floorToday)) return ScheduleDraftError.startInPast;
+    if (startsOn.isBefore(floorToday) &&
+        !(keepStart != null && _sameDay(startsOn, keepStart))) {
+      return ScheduleDraftError.startInPast;
+    }
     if (endsOn!.isBefore(startsOn)) return ScheduleDraftError.endBeforeStart;
     if (endsOn!.isAfter(scheduleLatestEnd(startsOn))) {
       return ScheduleDraftError.endTooLate;
@@ -492,6 +497,61 @@ class OperationPlanDraft {
             scheduleType == PlanScheduleType.once ? 1 : repeatEvery,
       };
 }
+
+/// The changes from [before] to [after] as `update_operation_plan`
+/// parameters. Dates and targets are sent only when they change: an
+/// unchanged past start date must not trip the "not in the past" rule, and
+/// unchanged targets keep their rows (and the generated-task history).
+Map<String, Object?> planUpdateParameters(
+  OperationPlan before,
+  OperationPlanDraft after,
+) {
+  String scope(PlanTarget target) => '${target.sectionId}|'
+      '${target.irrigationZoneId}|${target.treeId}';
+  final targetsChanged = before.targets.map(scope).toSet().length !=
+          after.targets.length ||
+      !after.targets.map(scope).toSet().containsAll(before.targets.map(scope));
+  final weekly = after.scheduleType == PlanScheduleType.weekly;
+  final description = after.description?.trim();
+  return <String, Object?>{
+    'p_operation_plan_id': before.id,
+    'p_title': after.title.trim(),
+    'p_description':
+        description == null || description.isEmpty ? null : description,
+    'p_clear_description': description == null || description.isEmpty,
+    'p_schedule_type': after.scheduleType.wireValue,
+    'p_starts_on': _sameDay(after.startsOn, before.startsOn)
+        ? null
+        : _date(after.startsOn),
+    'p_ends_on': after.endsOn == null ||
+            (before.endsOn != null && _sameDay(after.endsOn!, before.endsOn!))
+        ? null
+        : _date(after.endsOn!),
+    'p_scheduled_start_time': after.scheduledStartTime,
+    'p_clear_scheduled_start_time': after.scheduledStartTime == null,
+    'p_planned_duration_minutes': after.plannedDurationMinutes,
+    'p_clear_planned_duration_minutes': after.plannedDurationMinutes == null,
+    'p_days_of_week': weekly ? after.daysOfWeek : null,
+    'p_clear_days_of_week': !weekly,
+    'p_replace_targets': targetsChanged,
+    'p_targets': targetsChanged
+        ? after.targets.map((target) => target.toRpcJson()).toList()
+        : null,
+    'p_inventory_item_id': after.inventoryItemId,
+    'p_application_method': after.applicationMethod?.wireValue,
+    'p_application_rate': after.applicationRate,
+    'p_rate_basis': after.rateBasis?.wireValue,
+    'p_rate_unit': after.rateUnit?.wireValue,
+    'p_clear_product': after.inventoryItemId == null,
+    'p_default_assignee_profile_ids': after.assigneeProfileIds,
+    'p_task_grouping': after.taskGrouping.wireValue,
+    'p_repeat_every':
+        after.scheduleType == PlanScheduleType.once ? 1 : after.repeatEvery,
+  };
+}
+
+bool _sameDay(DateTime a, DateTime b) =>
+    a.year == b.year && a.month == b.month && a.day == b.day;
 
 /// One row of `check_operation_plan_inventory`.
 class PlanInventoryCheck {

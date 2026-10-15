@@ -104,15 +104,15 @@ void main() {
         );
 
     test('a season-long schedule is allowed (no one-month cap)', () {
-      expect(draft(endsOn: DateTime(2027, 1, 31)).validate(today: today),
-          isNull);
+      expect(
+          draft(endsOn: DateTime(2027, 1, 31)).validate(today: today), isNull);
     });
 
     test('more than a year is a typo', () {
       expect(draft(endsOn: DateTime(2027, 10, 16)).validate(today: today),
           ScheduleDraftError.endTooLate);
-      expect(draft(endsOn: DateTime(2027, 10, 15)).validate(today: today),
-          isNull);
+      expect(
+          draft(endsOn: DateTime(2027, 10, 15)).validate(today: today), isNull);
     });
 
     test('repeat every is 1 to 12', () {

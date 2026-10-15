@@ -1,6 +1,7 @@
 import 'package:al_wahat_farm_flutter/core/errors/operation_failure.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/features/schedules/data/schedule_repository.dart';
+import 'package:al_wahat_farm_flutter/features/schedules/domain/plan_run.dart';
 import 'package:al_wahat_farm_flutter/features/schedules/domain/schedule_models.dart';
 import 'package:flutter/foundation.dart';
 
@@ -63,6 +64,16 @@ class SchedulesController extends ChangeNotifier {
         _message = (l10n) => l10n.scheduleMsgUpdated;
         return planId;
       });
+
+  Future<String?> editPlan(OperationPlan before, OperationPlanDraft after) =>
+      _mutate(() async {
+        await _repository.editPlan(before, after);
+        _message = (l10n) => l10n.scheduleMsgUpdated;
+        return before.id;
+      });
+
+  Future<List<PlanRunDay>> listRuns(String planId) =>
+      _repository.listRuns(planId);
 
   Future<List<PlanInventoryCheck>> checkInventory(String planId) =>
       _repository.checkInventory(planId);

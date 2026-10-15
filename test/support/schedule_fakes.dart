@@ -1,8 +1,11 @@
 import 'package:al_wahat_farm_flutter/features/schedules/data/schedule_repository.dart';
+import 'package:al_wahat_farm_flutter/features/schedules/domain/plan_run.dart';
 import 'package:al_wahat_farm_flutter/features/schedules/domain/schedule_models.dart';
 
 class FakeScheduleRepository implements ScheduleRepository {
   final List<OperationPlan> plans = <OperationPlan>[];
+  final Map<String, List<PlanRunDay>> runs = <String, List<PlanRunDay>>{};
+  final List<Map<String, Object?>> editCalls = <Map<String, Object?>>[];
   int generateCalls = 0;
 
   @override
@@ -71,6 +74,39 @@ class FakeScheduleRepository implements ScheduleRepository {
       rateUnit: old.rateUnit,
     );
   }
+
+  @override
+  Future<void> editPlan(OperationPlan before, OperationPlanDraft after) async {
+    editCalls.add(planUpdateParameters(before, after));
+    final index = plans.indexWhere((plan) => plan.id == before.id);
+    plans[index] = OperationPlan(
+      id: before.id,
+      farmId: before.farmId,
+      type: before.type,
+      title: after.title.trim(),
+      description: after.description,
+      status: before.status,
+      scheduleType: after.scheduleType,
+      startsOn: after.startsOn,
+      endsOn: after.endsOn,
+      scheduledStartTime: after.scheduledStartTime,
+      plannedDurationMinutes: after.plannedDurationMinutes,
+      daysOfWeek: after.daysOfWeek,
+      targets: after.targets,
+      defaultAssigneeProfileIds: after.assigneeProfileIds,
+      inventoryItemId: after.inventoryItemId,
+      applicationMethod: after.applicationMethod,
+      applicationRate: after.applicationRate,
+      rateBasis: after.rateBasis,
+      rateUnit: after.rateUnit,
+      taskGrouping: after.taskGrouping,
+      repeatEvery: after.repeatEvery,
+    );
+  }
+
+  @override
+  Future<List<PlanRunDay>> listRuns(String planId) async =>
+      runs[planId] ?? const <PlanRunDay>[];
 
   @override
   Future<List<PlanInventoryCheck>> checkInventory(

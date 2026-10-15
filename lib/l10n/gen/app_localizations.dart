@@ -3486,7 +3486,7 @@ abstract class AppLocalizations {
   /// No description provided for @scheduleGenerateNow.
   ///
   /// In en, this message translates to:
-  /// **'Generate today\'s tasks'**
+  /// **'Create today\'s tasks for all schedules'**
   String get scheduleGenerateNow;
 
   /// No description provided for @scheduleGenerated.
@@ -5120,6 +5120,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'One combined task can only group places of the same kind.'**
   String get scheduleErrCombinedKind;
+
+  /// No description provided for @scheduleEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get scheduleEdit;
+
+  /// No description provided for @scheduleEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit schedule'**
+  String get scheduleEditTitle;
+
+  /// No description provided for @scheduleSaveChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Save changes'**
+  String get scheduleSaveChanges;
+
+  /// No description provided for @scheduleCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get scheduleCopy;
+
+  /// No description provided for @scheduleCopyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy schedule'**
+  String get scheduleCopyTitle;
+
+  /// No description provided for @scheduleHistoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Past runs'**
+  String get scheduleHistoryTitle;
+
+  /// No description provided for @scheduleHistoryEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No tasks yet. Each run\'s tasks are created the day before.'**
+  String get scheduleHistoryEmpty;
+
+  /// No description provided for @scheduleSkippedStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Skipped: not enough stock'**
+  String get scheduleSkippedStock;
+
+  /// No description provided for @scheduleArchiveConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Archive this schedule?'**
+  String get scheduleArchiveConfirmTitle;
+
+  /// No description provided for @scheduleArchiveConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'It stops creating tasks and leaves the list. Tasks it already created stay.'**
+  String get scheduleArchiveConfirmBody;
+
+  /// No description provided for @scheduleDose.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} {unit} · {basis}'**
+  String scheduleDose(String amount, String unit, String basis);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

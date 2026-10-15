@@ -1902,7 +1902,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get scheduleNextOccurrences => 'Next dates';
 
   @override
-  String get scheduleGenerateNow => 'Generate today\'s tasks';
+  String get scheduleGenerateNow => 'Create today\'s tasks for all schedules';
 
   @override
   String scheduleGenerated(int count) {
@@ -2887,4 +2887,39 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get scheduleErrCombinedKind => 'One combined task can only group places of the same kind.';
+
+  @override
+  String get scheduleEdit => 'Edit';
+
+  @override
+  String get scheduleEditTitle => 'Edit schedule';
+
+  @override
+  String get scheduleSaveChanges => 'Save changes';
+
+  @override
+  String get scheduleCopy => 'Copy';
+
+  @override
+  String get scheduleCopyTitle => 'Copy schedule';
+
+  @override
+  String get scheduleHistoryTitle => 'Past runs';
+
+  @override
+  String get scheduleHistoryEmpty => 'No tasks yet. Each run\'s tasks are created the day before.';
+
+  @override
+  String get scheduleSkippedStock => 'Skipped: not enough stock';
+
+  @override
+  String get scheduleArchiveConfirmTitle => 'Archive this schedule?';
+
+  @override
+  String get scheduleArchiveConfirmBody => 'It stops creating tasks and leaves the list. Tasks it already created stay.';
+
+  @override
+  String scheduleDose(String amount, String unit, String basis) {
+    return '$amount $unit · $basis';
+  }
 }

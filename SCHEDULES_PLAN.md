@@ -88,6 +88,6 @@ Each phase: tests and analyze green, commit, deploy staging and production. Data
 |---|---|---|
 | S1 | Done | Al-Wahat-Farm-supabase `a900ef5`, migration `20261015103812`, applied after a rolled-back dry run on live data (every 2/3 weeks on Wed, Mon+Thu every 2 weeks, every 3 days, 3-month accepted / 13-month rejected, no-worker schedule assigned to both workers, expired schedule completed). pgTAP `schedule_rules` updated (not run: no Docker). |
 | S2 | Done | `planOccurrences` mirrors `plan_runs_on` (unit tests reuse the live dry-run cases; dates step by calendar day across DST). Form: how-often picker, one-year limit, "Ends on" label, all-workers hint and review line, Arabic/English validation errors. Theme: selected chips get white text app-wide (the unreadable "Wed"). |
-| S3 | — | |
+| S3 | Done | Edit (same form, prefilled; type fixed; unchanged start date and targets are not resent, so running schedules keep their history), Copy (same length, from today), history of past runs with task status or "Skipped: not enough stock" (tap opens the task), product name, dose in words, duration in minutes, workers or "All workers", archive confirmation, "Create today's tasks for all schedules". |
 | S4 | — | |
 | S5 | — | |

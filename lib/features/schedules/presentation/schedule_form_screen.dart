@@ -25,11 +25,19 @@ class ScheduleFormScreen extends StatefulWidget {
   const ScheduleFormScreen({
     this.controller,
     this.inventoryController,
+    this.planId,
+    this.copyFromId,
     super.key,
   });
 
   final SchedulesController? controller;
   final InventoryController? inventoryController;
+
+  /// Edits this schedule (prefilled; its operation type stays fixed).
+  final String? planId;
+
+  /// Starts a new schedule from this one, with new dates.
+  final String? copyFromId;
 
   @override
   State<ScheduleFormScreen> createState() => _ScheduleFormScreenState();
@@ -46,6 +54,13 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
   bool _ownsController = false;
   bool _ownsInventory = false;
   bool _membersRequested = false;
+  bool _prefilled = false;
+  bool _inDependencies = false;
+
+  /// The saved schedule being edited, once loaded.
+  OperationPlan? _editing;
+
+  bool get _isEdit => widget.planId != null;
 
   OperationPlanType _type = OperationPlanType.irrigation;
   PlanScheduleType _recurrence = PlanScheduleType.daily;
@@ -69,6 +84,14 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
     if (_controller == null) {
       _controller = widget.controller ?? buildSchedulesController(context);
       _ownsController = widget.controller == null;
+      final source = widget.planId ?? widget.copyFromId;
+      if (source != null) {
+        _controller?.addListener(_prefill);
+        if (_controller?.status == SchedulesStatus.idle) _controller?.load();
+      }
+      _inDependencies = true;
+      _prefill();
+      _inDependencies = false;
     }
     if (_inventory == null) {
       final injected = widget.inventoryController;
@@ -83,8 +106,88 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
     }
   }
 
+  /// Fills the form from the schedule being edited or copied, once the
+  /// controller has it.
+  void _prefill() {
+    if (_prefilled) return;
+    final source = widget.planId ?? widget.copyFromId;
+    if (source == null) {
+      _prefilled = true;
+      return;
+    }
+    final plan = _controller?.planById(source);
+    if (plan == null) return;
+    _prefilled = true;
+    _controller?.removeListener(_prefill);
+    void apply() {
+      _type = plan.type;
+      _title.text = plan.title;
+      _description.text = plan.description ?? '';
+      _recurrence = plan.scheduleType;
+      _repeatEvery = plan.repeatEvery;
+      _weekdays
+        ..clear()
+        ..addAll(plan.daysOfWeek ?? const <int>[]);
+      if (_isEdit) {
+        _editing = plan;
+        _startsOn = DateUtils.dateOnly(plan.startsOn);
+        _endsOn = plan.endsOn;
+      } else {
+        // A copy keeps the length of the original, starting today.
+        final today = DateUtils.dateOnly(DateTime.now());
+        final days = plan.endsOn == null
+            ? 0
+            : DateUtils.dateOnly(plan.endsOn!)
+                .difference(DateUtils.dateOnly(plan.startsOn))
+                .inDays;
+        _startsOn = today;
+        _endsOn = DateTime(today.year, today.month, today.day + days);
+      }
+      final time = plan.scheduledStartTime;
+      _time = time == null || time.length < 5
+          ? null
+          : TimeOfDay(
+              hour: int.parse(time.substring(0, 2)),
+              minute: int.parse(time.substring(3, 5)),
+            );
+      _duration.text = plan.plannedDurationMinutes?.toString() ?? '';
+      _sectionIds
+        ..clear()
+        ..addAll(
+            plan.targets.map((target) => target.sectionId).whereType<String>());
+      _zoneIds
+        ..clear()
+        ..addAll(plan.targets
+            .map((target) => target.irrigationZoneId)
+            .whereType<String>());
+      _targetMode = _sectionIds.isNotEmpty
+          ? _TargetMode.sections
+          : _zoneIds.isNotEmpty
+              ? _TargetMode.zones
+              : _TargetMode.farm;
+      _assigneeIds
+        ..clear()
+        ..addAll(plan.defaultAssigneeProfileIds);
+      _productItemId = plan.inventoryItemId;
+      _rate.text = plan.applicationRate == null
+          ? ''
+          : formatQuantity(plan.applicationRate!);
+      _basis = plan.rateBasis ?? RateBasis.perFeddan;
+      _method = plan.applicationMethod;
+      _grouping = plan.taskGrouping;
+    }
+
+    // The first call comes from didChangeDependencies, before any build.
+    if (_inDependencies) {
+      apply();
+    } else {
+      setState(apply);
+    }
+  }
+
   @override
   void dispose() {
+    _controller?.removeListener(_prefill);
     if (_ownsController) _controller?.dispose();
     if (_ownsInventory) _inventory?.dispose();
     _title.dispose();
@@ -228,7 +331,11 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
               const SizedBox(width: 4),
               Expanded(
                 child: Text(
-                  l10n.scheduleNew,
+                  _isEdit
+                      ? l10n.scheduleEditTitle
+                      : widget.copyFromId != null
+                          ? l10n.scheduleCopyTitle
+                          : l10n.scheduleNew,
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
               ),
@@ -258,7 +365,8 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
                         ),
                       )
                       .toList(growable: false),
-                  onChanged: controller.isBusy
+                  // The database cannot change a saved schedule's type.
+                  onChanged: controller.isBusy || _isEdit
                       ? null
                       : (value) => setState(() {
                             _type = value ?? _type;
@@ -798,7 +906,11 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
                   )
                 : const Icon(Icons.event_repeat_outlined),
             label: Text(
-              controller.isBusy ? l10n.scheduleSaving : l10n.scheduleCreate,
+              controller.isBusy
+                  ? l10n.scheduleSaving
+                  : _isEdit
+                      ? l10n.scheduleSaveChanges
+                      : l10n.scheduleCreate,
             ),
           ),
         ],
@@ -1015,7 +1127,11 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
       lastDate = _latestEnd;
       initial = _endsOn ?? firstDate;
     } else {
-      firstDate = today;
+      // A running schedule keeps its past start date unless it is changed.
+      final saved = _editing?.startsOn;
+      firstDate = saved != null && saved.isBefore(today)
+          ? DateUtils.dateOnly(saved)
+          : today;
       lastDate = DateTime(today.year + 2, today.month, today.day);
       initial = _startsOn;
     }
@@ -1118,13 +1234,17 @@ class _ScheduleFormScreenState extends State<ScheduleFormScreen> {
       taskGrouping: _effectiveGrouping,
       repeatEvery: _effectiveRepeat,
     );
-    final validation = draft.validate();
+    final editing = _editing;
+    if (_isEdit && editing == null) return;
+    final validation = draft.validate(keepStart: editing?.startsOn);
     if (validation != null) {
       ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(validation.localizedLabel(l10n))));
       return;
     }
-    final id = await controller.createPlan(draft);
+    final id = editing == null
+        ? await controller.createPlan(draft)
+        : await controller.editPlan(editing, draft);
     if (!mounted) return;
     if (id != null) context.go('/more/schedules/$id');
   }

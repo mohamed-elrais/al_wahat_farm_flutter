@@ -1916,7 +1916,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get scheduleNextOccurrences => 'المواعيد القادمة';
 
   @override
-  String get scheduleGenerateNow => 'إنشاء مهام اليوم';
+  String get scheduleGenerateNow => 'إنشاء مهام اليوم لكل الجداول';
 
   @override
   String scheduleGenerated(int count) {
@@ -2916,4 +2916,39 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get scheduleErrCombinedKind => 'المهمة المجمّعة تجمع أماكن من نوع واحد فقط.';
+
+  @override
+  String get scheduleEdit => 'تعديل';
+
+  @override
+  String get scheduleEditTitle => 'تعديل الجدول';
+
+  @override
+  String get scheduleSaveChanges => 'حفظ التغييرات';
+
+  @override
+  String get scheduleCopy => 'نسخ';
+
+  @override
+  String get scheduleCopyTitle => 'نسخ الجدول';
+
+  @override
+  String get scheduleHistoryTitle => 'التنفيذات السابقة';
+
+  @override
+  String get scheduleHistoryEmpty => 'لا توجد مهام بعد. تُنشأ مهام كل تنفيذ قبله بيوم.';
+
+  @override
+  String get scheduleSkippedStock => 'تم التخطي: المخزون غير كافٍ';
+
+  @override
+  String get scheduleArchiveConfirmTitle => 'أرشفة هذا الجدول؟';
+
+  @override
+  String get scheduleArchiveConfirmBody => 'يتوقف عن إنشاء المهام ويختفي من القائمة. تبقى المهام التي أنشأها.';
+
+  @override
+  String scheduleDose(String amount, String unit, String basis) {
+    return '$amount $unit · $basis';
+  }
 }

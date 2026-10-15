@@ -834,7 +834,7 @@
   "scheduleMsgUpdated": "تم تحديث الجدول.",
   "scheduleErrGeneric": "تعذر حفظ الجدول.",
   "scheduleNextOccurrences": "المواعيد القادمة",
-  "scheduleGenerateNow": "إنشاء مهام اليوم",
+  "scheduleGenerateNow": "إنشاء مهام اليوم لكل الجداول",
   "scheduleGenerated": "{count, plural, =0{لا توجد مهام جديدة للإنشاء} =1{تم إنشاء مهمة واحدة} other{تم إنشاء {count} مهام}}",
   "@scheduleGenerated": {
     "placeholders": {
@@ -1220,5 +1220,16 @@
   "scheduleErrIrrigationProduct": "جداول الري لا تستخدم منتجاً.",
   "scheduleErrTargets": "اختر مكاناً واحداً على الأقل.",
   "scheduleErrCombinedTargets": "المهمة المجمّعة تحتاج أقساماً أو مناطق محددة، وليس المزرعة كلها.",
-  "scheduleErrCombinedKind": "المهمة المجمّعة تجمع أماكن من نوع واحد فقط."
+  "scheduleErrCombinedKind": "المهمة المجمّعة تجمع أماكن من نوع واحد فقط.",
+  "scheduleEdit": "تعديل",
+  "scheduleEditTitle": "تعديل الجدول",
+  "scheduleSaveChanges": "حفظ التغييرات",
+  "scheduleCopy": "نسخ",
+  "scheduleCopyTitle": "نسخ الجدول",
+  "scheduleHistoryTitle": "التنفيذات السابقة",
+  "scheduleHistoryEmpty": "لا توجد مهام بعد. تُنشأ مهام كل تنفيذ قبله بيوم.",
+  "scheduleSkippedStock": "تم التخطي: المخزون غير كافٍ",
+  "scheduleArchiveConfirmTitle": "أرشفة هذا الجدول؟",
+  "scheduleArchiveConfirmBody": "يتوقف عن إنشاء المهام ويختفي من القائمة. تبقى المهام التي أنشأها.",
+  "scheduleDose": "{amount} {unit} · {basis}"
 }
