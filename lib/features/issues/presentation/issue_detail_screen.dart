@@ -3,6 +3,7 @@ import 'package:al_wahat_farm_flutter/app/theme/app_visuals.dart';
 import 'package:al_wahat_farm_flutter/core/errors/operation_failure.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
+import 'package:al_wahat_farm_flutter/core/media/photo_api.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/option_visuals.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
@@ -47,7 +48,7 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
       _photoUrlsResolved = true;
       try {
         _photoUrls = widget.photoUrls ??
-            SupabaseTaskPhotoUrlProvider(Supabase.instance.client);
+            R2PhotoUrlProvider(PhotoApi.forSupabase(Supabase.instance.client));
       } catch (_) {
         _photoUrls = widget.photoUrls;
       }

@@ -1,10 +1,10 @@
 import 'dart:typed_data';
 
 import 'package:al_wahat_farm_flutter/core/errors/operation_failure.dart';
+import 'package:al_wahat_farm_flutter/core/media/photo_api.dart';
 import 'package:al_wahat_farm_flutter/core/media/photo_compression.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/task_evidence.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class DeviceTaskEvidencePicker implements TaskEvidencePicker {
   DeviceTaskEvidencePicker({ImagePicker? picker, PhotoCompressor? compressor})
@@ -59,16 +59,17 @@ class DeviceTaskEvidencePicker implements TaskEvidencePicker {
   }
 }
 
-class SupabaseTaskEvidenceStorage implements TaskEvidenceStorage {
-  SupabaseTaskEvidenceStorage(
-    this._client, {
+/// Stores evidence photos in R2 through the app's photo service
+/// (R2_PHOTOS_PLAN.md). The path is the same as when photos were in the
+/// Supabase farm-evidence bucket.
+class R2TaskEvidenceStorage implements TaskEvidenceStorage {
+  R2TaskEvidenceStorage(
+    this._api, {
     int Function()? timestamp,
   }) : _timestamp =
             timestamp ?? (() => DateTime.now().toUtc().microsecondsSinceEpoch);
 
-  static const bucket = 'farm-evidence';
-
-  final SupabaseClient _client;
+  final PhotoApi _api;
   final int Function() _timestamp;
 
   @override
@@ -85,23 +86,8 @@ class SupabaseTaskEvidenceStorage implements TaskEvidenceStorage {
       filename: evidence.filename,
       timestamp: _timestamp(),
     );
-    try {
-      await _client.storage.from(bucket).uploadBinary(
-            path,
-            evidence.bytes,
-            fileOptions: FileOptions(
-              contentType: evidence.contentType,
-              upsert: false,
-            ),
-          );
-      return path;
-    } on StorageException catch (error) {
-      throw OperationFailure(
-        OperationFailureKind.unexpected,
-        'The private task evidence could not be uploaded.',
-        cause: error,
-      );
-    }
+    await _api.upload(path, evidence.bytes, evidence.contentType);
+    return path;
   }
 }
 

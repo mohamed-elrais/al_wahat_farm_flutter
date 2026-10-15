@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:al_wahat_farm_flutter/core/media/photo_api.dart';
 import 'package:al_wahat_farm_flutter/features/auth/data/operational_context_repository.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/data/task_evidence_service.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/data/task_repository.dart';
@@ -106,7 +107,7 @@ void main() {
       }
 
       if (!details.photos.any((photo) => photo.caption == _evidenceCaption)) {
-        final storagePath = await SupabaseTaskEvidenceStorage(client).upload(
+        final storagePath = await R2TaskEvidenceStorage(PhotoApi.forSupabase(client)).upload(
           userId: user.id,
           farmId: membership.farm.id,
           taskId: taskId,

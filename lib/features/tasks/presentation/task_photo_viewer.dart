@@ -1,44 +1,84 @@
+import 'dart:async';
+
 import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
+import 'package:al_wahat_farm_flutter/core/errors/operation_failure.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
+import 'package:al_wahat_farm_flutter/core/media/photo_api.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/domain/farm_task.dart';
 import 'package:al_wahat_farm_flutter/features/tasks/presentation/task_widgets.dart';
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// Resolves a viewable URL for a task evidence photo. The farm-evidence
-/// bucket is private, so display goes through short-lived signed URLs.
+/// Resolves a viewable URL for a task evidence photo. Photos are private, so
+/// display goes through short-lived signed URLs.
 abstract interface class TaskPhotoUrlProvider {
   /// A URL that can be fetched right now. [refresh] discards any cached
   /// URL first (used when a cached one has expired).
   Future<String> urlFor(TaskPhoto photo, {bool refresh = false});
 }
 
-class SupabaseTaskPhotoUrlProvider implements TaskPhotoUrlProvider {
-  SupabaseTaskPhotoUrlProvider(this._client);
+/// Links from the app's photo service (R2_PHOTOS_PLAN.md). Photos still in
+/// the Supabase bucket get a Supabase signed link from the same service.
+class R2PhotoUrlProvider implements TaskPhotoUrlProvider {
+  R2PhotoUrlProvider(this._api);
 
-  static const _expirySeconds = 60 * 60;
+  /// The service signs at most this many paths per request.
+  static const _maxBatch = 100;
 
-  final SupabaseClient _client;
+  final PhotoApi _api;
 
   /// One in-flight/settled future per path so the list thumbnail and the
   /// full-screen viewer share a URL (and therefore the image cache).
   final Map<String, Future<String>> _cache = <String, Future<String>>{};
 
+  /// Paths asked for in the same frame (a list of thumbnails) go out together.
+  final Map<String, Completer<String>> _waiting = <String, Completer<String>>{};
+  Timer? _flush;
+
   @override
   Future<String> urlFor(TaskPhoto photo, {bool refresh = false}) {
-    if (refresh) _cache.remove(photo.storagePath);
-    return _cache.putIfAbsent(
-      photo.storagePath,
-      () => _client.storage
-          .from(photo.storageBucketId)
-          .createSignedUrl(photo.storagePath, _expirySeconds)
-          .catchError((Object error) {
+    final path = photo.storagePath;
+    if (refresh) _cache.remove(path);
+    return _cache.putIfAbsent(path, () {
+      final completer = _waiting.putIfAbsent(path, Completer<String>.new);
+      _flush ??= Timer(Duration.zero, _send);
+      return completer.future.catchError((Object error) {
         // Never cache a failure: the next attempt should retry.
-        _cache.remove(photo.storagePath);
+        _cache.remove(path);
         throw error; // ignore: only_throw_errors
-      }),
-    );
+      });
+    });
+  }
+
+  Future<void> _send() async {
+    _flush = null;
+    final batch = Map<String, Completer<String>>.of(_waiting);
+    _waiting.clear();
+    final paths = batch.keys.toList(growable: false);
+    for (var start = 0; start < paths.length; start += _maxBatch) {
+      final chunk = paths.sublist(
+        start,
+        start + _maxBatch > paths.length ? paths.length : start + _maxBatch,
+      );
+      try {
+        final urls = await _api.sign(chunk);
+        for (final path in chunk) {
+          final url = urls[path];
+          if (url == null) {
+            batch[path]!.completeError(const OperationFailure(
+              OperationFailureKind.notFound,
+              'The photo is not available.',
+            ));
+          } else {
+            batch[path]!.complete(url);
+          }
+        }
+      } catch (error) {
+        for (final path in chunk) {
+          batch[path]!.completeError(error);
+        }
+      }
+    }
   }
 }
 

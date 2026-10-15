@@ -1,10 +1,10 @@
 import 'dart:typed_data';
 
 import 'package:al_wahat_farm_flutter/core/errors/operation_failure.dart';
+import 'package:al_wahat_farm_flutter/core/media/photo_api.dart';
 import 'package:al_wahat_farm_flutter/core/media/photo_compression.dart';
 import 'package:al_wahat_farm_flutter/features/issues/domain/issue_photo.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class DeviceIssuePhotoPicker implements IssuePhotoPicker {
   DeviceIssuePhotoPicker({ImagePicker? picker, PhotoCompressor? compressor})
@@ -59,16 +59,17 @@ class DeviceIssuePhotoPicker implements IssuePhotoPicker {
   }
 }
 
-class SupabaseIssuePhotoStorage implements IssuePhotoStorage {
-  SupabaseIssuePhotoStorage(
-    this._client, {
+/// Stores issue photos in R2 through the app's photo service
+/// (R2_PHOTOS_PLAN.md). The path is the same as when photos were in the
+/// Supabase farm-evidence bucket.
+class R2IssuePhotoStorage implements IssuePhotoStorage {
+  R2IssuePhotoStorage(
+    this._api, {
     int Function()? timestamp,
   }) : _timestamp =
             timestamp ?? (() => DateTime.now().toUtc().microsecondsSinceEpoch);
 
-  static const bucket = 'farm-evidence';
-
-  final SupabaseClient _client;
+  final PhotoApi _api;
   final int Function() _timestamp;
 
   @override
@@ -85,21 +86,12 @@ class SupabaseIssuePhotoStorage implements IssuePhotoStorage {
       filename: photo.filename,
       timestamp: _timestamp(),
     );
-    await _client.storage.from(bucket).uploadBinary(
-          path,
-          photo.bytes,
-          fileOptions: FileOptions(
-            contentType: photo.contentType,
-            upsert: false,
-          ),
-        );
+    await _api.upload(path, photo.bytes, photo.contentType);
     return path;
   }
 
   @override
-  Future<void> delete(String storagePath) async {
-    await _client.storage.from(bucket).remove(<String>[storagePath]);
-  }
+  Future<void> delete(String storagePath) => _api.delete(storagePath);
 }
 
 class IssuePhotoPath {

@@ -2,6 +2,7 @@ import 'package:al_wahat_farm_flutter/app/theme/app_tokens.dart';
 import 'package:al_wahat_farm_flutter/app/theme/app_visuals.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
+import 'package:al_wahat_farm_flutter/core/media/photo_api.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/option_visuals.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
@@ -74,7 +75,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
       _photoUrlsResolved = true;
       try {
         _photoUrls = widget.photoUrls ??
-            SupabaseTaskPhotoUrlProvider(Supabase.instance.client);
+            R2PhotoUrlProvider(PhotoApi.forSupabase(Supabase.instance.client));
       } catch (_) {
         _photoUrls = widget.photoUrls; // Supabase not initialized (tests)
       }
@@ -109,7 +110,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
           _controller = TaskDetailController(
             repository: workspace.repository,
             evidencePicker: DeviceTaskEvidencePicker(),
-            evidenceStorage: SupabaseTaskEvidenceStorage(client),
+            evidenceStorage: R2TaskEvidenceStorage(PhotoApi.forSupabase(client)),
             taskId: widget.taskId,
             farmId: farmId,
             userId: userId,

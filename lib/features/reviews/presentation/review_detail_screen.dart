@@ -3,6 +3,7 @@ import 'package:al_wahat_farm_flutter/app/theme/app_visuals.dart';
 import 'package:al_wahat_farm_flutter/core/app_services.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/domain_labels.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
+import 'package:al_wahat_farm_flutter/core/media/photo_api.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/option_visuals.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/wahat_card.dart';
@@ -85,7 +86,7 @@ class _ReviewDetailScreenState extends State<ReviewDetailScreen> {
         taskRepository: workspace.repository,
         reviewRepository: SupabaseEngineerReviewRepository(client),
         evidencePicker: DeviceTaskEvidencePicker(),
-        evidenceStorage: SupabaseTaskEvidenceStorage(client),
+        evidenceStorage: R2TaskEvidenceStorage(PhotoApi.forSupabase(client)),
         taskId: widget.taskId,
         farmId: farmId,
         userId: userId,

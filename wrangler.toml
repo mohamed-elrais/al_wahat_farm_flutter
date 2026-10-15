@@ -1,0 +1,12 @@
+# Cloudflare Pages project settings (deployed by tool/deploy_web.sh).
+# Secrets, set with `wrangler pages secret put` for production and preview:
+# SUPABASE_URL, SUPABASE_ANON_KEY, PHOTO_URL_SECRET (see R2_PHOTOS_PLAN.md).
+name = "al-wahat-farm"
+pages_build_output_dir = "build/web"
+compatibility_date = "2026-10-11"
+
+# Photos (functions/api/photos). Staging and production share this bucket
+# because they share one database.
+[[r2_buckets]]
+binding = "PHOTOS"
+bucket_name = "al-wahat-farm-photos"

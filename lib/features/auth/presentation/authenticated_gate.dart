@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:al_wahat_farm_flutter/core/app_services.dart';
 import 'package:al_wahat_farm_flutter/core/l10n/l10n.dart';
 import 'package:al_wahat_farm_flutter/core/logging/safe_log.dart';
+import 'package:al_wahat_farm_flutter/core/media/photo_api.dart';
 import 'package:al_wahat_farm_flutter/core/platform/app_foreground.dart';
 import 'package:al_wahat_farm_flutter/core/supabase/auth_repository.dart';
 import 'package:al_wahat_farm_flutter/core/widgets/paper_background.dart';
@@ -87,28 +88,28 @@ class _AuthenticatedGateState extends State<AuthenticatedGate> {
       final caching = CachingTaskRepository(inner: base, store: store);
       final taskExecutor = TaskMutationExecutor(
         caching,
-        evidenceStorage: SupabaseTaskEvidenceStorage(client),
+        evidenceStorage: R2TaskEvidenceStorage(PhotoApi.forSupabase(client)),
         pendingPhotos: services.pendingPhotos,
         cache: store,
       );
       final issueExecutor = IssueMutationExecutor(
         repository: SupabaseTreeIssueRepository(client),
-        photoStorage: SupabaseIssuePhotoStorage(client),
+        photoStorage: R2IssuePhotoStorage(PhotoApi.forSupabase(client)),
         pendingPhotos: services.pendingPhotos,
       );
       final reviewExecutor = ReviewMutationExecutor(
         reviewRepository: SupabaseEngineerReviewRepository(client),
-        evidenceStorage: SupabaseTaskEvidenceStorage(client),
+        evidenceStorage: R2TaskEvidenceStorage(PhotoApi.forSupabase(client)),
         pendingPhotos: services.pendingPhotos,
         taskRepository: caching,
       );
-      final resolutionPhotoStorage = SupabaseIssuePhotoStorage(client);
+      final resolutionPhotoStorage = R2IssuePhotoStorage(PhotoApi.forSupabase(client));
       final issueWorkspaceExecutor = IssueWorkspaceMutationExecutor(
         issueWorkspaceBase,
         photoStorage: resolutionPhotoStorage,
         pendingPhotos: services.pendingPhotos,
       );
-      final inspectionEvidenceStorage = SupabaseTaskEvidenceStorage(client);
+      final inspectionEvidenceStorage = R2TaskEvidenceStorage(PhotoApi.forSupabase(client));
       final inspectionExecutor = InspectionMutationExecutor(
         inspectionBase,
         evidenceStorage: inspectionEvidenceStorage,
